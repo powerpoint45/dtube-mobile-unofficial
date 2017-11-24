@@ -1,0 +1,10 @@
+<AppUpdater>
+  <update>
+    <latestVersion>1.0</latestVersion>
+    <latestVersionCode>1</latestVersionCode>
+    <url>https://github.com/powerpoint45/dtube-mobile-unofficial/releases</url>
+    <releaseNotes>
+- Initial Release
+    </releaseNotes>
+  </update>
+</AppUpdater>

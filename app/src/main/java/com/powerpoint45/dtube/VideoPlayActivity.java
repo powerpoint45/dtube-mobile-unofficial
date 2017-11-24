@@ -225,7 +225,7 @@ public class VideoPlayActivity extends AppCompatActivity {
     public void setReplies(CommentsList comments){
 
         if (commentsAdapter == null) {
-            commentsAdapter = new CommentsAdapter(commentsList, this);
+            commentsAdapter = new CommentsAdapter(commentsList, this, accountName != null);
             ((ListView) findViewById(R.id.comments_lv)).setAdapter(commentsAdapter);
 
         }

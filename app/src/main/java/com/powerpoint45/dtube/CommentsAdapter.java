@@ -27,15 +27,17 @@ import java.util.ArrayList;
  * Created by michael on 9/11/17.
  */
 
-public class CommentsAdapter extends BaseAdapter {
+class CommentsAdapter extends BaseAdapter {
 
     private ArrayList<Comment> comments;
     Context c;
     private Transformation transformation;
+    boolean loggedIn;
 
-    CommentsAdapter(ArrayList<Comment> comments, Context c){
+    CommentsAdapter(ArrayList<Comment> comments, Context c, boolean loggedIn){
         this.comments = comments;
         this.c = c;
+        this.loggedIn = loggedIn;
 
         transformation = new RoundedTransformationBuilder()
                 .cornerRadiusDp(30)
@@ -147,6 +149,12 @@ public class CommentsAdapter extends BaseAdapter {
         viewHolder.likeView.setTag(comments.get(position).permlink);
         viewHolder.dislikeView.setTag(comments.get(position).permlink);
         viewHolder.replyButton.setTag(comments.get(position).permlink);
+
+        if (!loggedIn) {
+            viewHolder.replyButton.setEnabled(false);
+            viewHolder.likeView.setEnabled(false);
+            viewHolder.dislikeView.setEnabled(false);
+        }
 
         if (comments.get(position).voteType == 1){
             viewHolder.likeView.setColorFilter(Color.RED, PorterDuff.Mode.SRC_ATOP);

@@ -42,13 +42,12 @@
   steem.api.setOptions({ url: 'wss://steemd.privex.io' });
   var path=window.location.href.split("#!/")[1];
   var videoGateway = path.split("/")[4]
-  console.log(videoGateway);
   var snapGateway = path.split("/")[5]
   steem.api.getContent(path.split("/")[0], path.split("/")[1], function(d,b){
     var a=JSON.parse(b.json_metadata).video;
     if (!videoGateway) videoGateway = gatewayByHash(a.content.videohash)
-    if (!snapGateway) snapGateway = gatewayByHash(a.info.snaphash)
-    var posterUrl="https://"+snapGateway+"/ipfs/"+a.info.snaphash;
+    //if (!snapGateway) snapGateway = gatewayByHash(a.info.snaphash)
+    var posterUrl="https://steemitimages.com/0x0/https://ipfs.io/ipfs/"+a.info.snaphash;
     createPlayer("https://"+videoGateway+"/ipfs/"+a.content.videohash, posterUrl)
     //start video automatically
     //document.getElementsByClassName("vjs-big-play-button")[0].click();

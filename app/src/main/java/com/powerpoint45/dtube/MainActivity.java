@@ -562,7 +562,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                     });
             appUpdaterUtils.setUpdateFrom(UpdateFrom.XML);
-            appUpdaterUtils.setUpdateXML("https://raw.githubusercontent.com/javiersantos/AppUpdater/master/app/update-changelog.xml");
+            appUpdaterUtils.setUpdateXML("https://raw.githubusercontent.com/powerpoint45/dtube-mobile-unofficial/master/app/AutoUpdate.xml");
             appUpdaterUtils.start();
         }
     }

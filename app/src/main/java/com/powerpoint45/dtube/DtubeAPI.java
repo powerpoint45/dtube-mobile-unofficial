@@ -9,7 +9,6 @@ import android.preference.PreferenceManager;
  */
 
 public class DtubeAPI {
-    private static String TAG = "dtubeAPI";
 
     static final int CAT_SUBSCRIBED = 0;
     static final int CAT_HOT = 1;
@@ -43,9 +42,5 @@ public class DtubeAPI {
         Encryption encryption = new Encryption(c);
         encryption.encryptString("privateKeyWif", privateKey);
     }
-
-
-    
-    
     
 }
