@@ -580,7 +580,7 @@ function isVideoViewable(r){
 	if (metadata && metadata.video && metadata.video.content && metadata.video.info){
 		if (!metadata.tags.includes("nsfw") && !metadata.tags.includes("dtube-NSFW") && !metadata.tags.includes("NSFW")){
 			//blacklisted accounts with inappropriate content
-			var BLACKLIST = ["aroused","godfather123","arabebtc","elibella"];
+			var BLACKLIST = ["aroused","godfather123","arabebtc","elibella","anarchyandporn"];
 			if (!BLACKLIST.includes(r.author))
 				return true;
 		}
