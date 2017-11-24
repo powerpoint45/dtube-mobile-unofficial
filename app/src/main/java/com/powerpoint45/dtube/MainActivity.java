@@ -116,7 +116,7 @@ public class MainActivity extends AppCompatActivity {
                         startActivity(new Intent(MainActivity.this, DonateActivity.class));
                         break;
                     case R.id.menu_about:
-                        Intent aboutIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://steemit.com/utopian-io/@immawake/introducing-the-dtube-mobile-app-(unofficial-android-app)"));
+                        Intent aboutIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://steemit.com/utopian-io/@immawake/introducing-the-dtube-mobile-app-unofficial-android-app"));
                         startActivity(aboutIntent);
                         break;
                     case R.id.subscription_id:
