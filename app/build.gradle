@@ -1,0 +1,42 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion "25.0.2"
+    defaultConfig {
+        applicationId "com.powerpoint45.dtube"
+        minSdkVersion 19
+        targetSdkVersion 22
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+
+    compile 'us.feras.mdv:markdownview:1.1.0'
+    compile 'com.github.curioustechizen.android-ago:library:1.3.4'
+    compile 'cn.jzvd:jiaozivideoplayer:6.1.2'
+    compile 'com.squareup.picasso:picasso:2.5.2'
+    compile 'com.github.javiersantos:AppUpdater:2.6.3'
+//    compile 'com.faendir.rhino:rhino-android:1.4'
+//    compile 'org.apache.commons:commons-lang3:3.4'
+//    compile 'org.jsoup:jsoup:1.10.2'
+    compile 'com.makeramen:roundedimageview:2.3.0'
+    compile 'com.android.support:appcompat-v7:25.3.1'
+    compile 'com.android.support:design:25.3.1'
+    compile 'com.android.support:recyclerview-v7:25.3.1'
+//    compile 'com.android.support.constraint:constraint-layout:1.0.2'
+    testCompile 'junit:junit:4.12'
+}

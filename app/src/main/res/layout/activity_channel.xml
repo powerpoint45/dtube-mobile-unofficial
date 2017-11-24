@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_height="match_parent"
+    >
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/channel_video_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingTop="@dimen/toolbar_size_large"
+        android:clipToPadding="false"/>
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/toolbar_size_large"
+        android:background="?attr/colorPrimary"
+        app:contentInsetLeft="0dp"
+        app:contentInsetStart="0dp"
+        android:theme="?attr/actionBarTheme" >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center|left"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/item_profileimage"
+                android:layout_width="90dp"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="5dp"
+                android:adjustViewBounds="true"
+                android:focusableInTouchMode="true"
+                android:scaleType="fitCenter"
+                android:focusable="true"
+                android:padding="5dp"
+                app:srcCompat="@drawable/ic_account_circle" />
+
+            <TextView
+                android:id="@+id/item_user"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Michael"
+                android:layout_marginLeft="10dp"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center|right"
+                android:orientation="horizontal">
+
+            </LinearLayout>
+
+
+
+        </LinearLayout>
+
+    </android.support.v7.widget.Toolbar>
+
+
+
+
+
+
+</FrameLayout>

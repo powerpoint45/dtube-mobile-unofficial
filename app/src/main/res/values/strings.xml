@@ -1,0 +1,42 @@
+<resources>
+    <string name="app_name">D.tube</string>
+    <string name="subscribe">Subscribe</string>
+    <string name="unsubscribe">Unsubscribe</string>
+    <string name="video_error">Error loading video</string>
+    <string name="login">Login</string>
+    <string name="login_comment">Login to comment</string>
+    <string name="comment_placeholder">Add public comment</string>
+    <string name="reply">Reply</string>
+    <string name="subscribers">Subscribers</string>
+    <string name="videos_by">Videos by</string>
+    <string name="open">Open</string>
+    <string name="close">Close</string>
+    <string name="settings">Settings</string>
+    <string name="about">About</string>
+    <string name="login_dtube">Login to d.tube</string>
+    <string name="home">Home</string>
+    <string name="donate">Donate</string>
+    <string name="donate_summary">Select your favorite method of payment to send any amount to the developer of this app. Your support is greatly appreciated ♥♥♥</string>
+    <string name="not_logged_in">Not logged in</string>
+
+    <string name="my_profile">My Profile</string>
+    <string name="feed">Feed</string>
+    <string name="feed_subscribed">Subscribed Feed</string>
+    <string name="feed_hot">Hot Videos</string>
+    <string name="feed_trending">Trending Videos</string>
+    <string name="feed_new">New Videos</string>
+    <string name="feed_history">Watch Again</string>
+
+    <string name="copied">Copied to clipboard</string>
+    <string name="sub_item">Sub items</string>
+    <string name="subscriptions">Subscriptions</string>
+    <string name="username">Username</string>
+    <string name="password">Steemit posting key (not master password)</string>
+    <string name="search">Search</string>
+
+    <string name="update_now">Update now</string>
+    <string name="later">Update later</string>
+    <string name="update_available">Update available</string>
+    <string name="update_summary">Update to get the latest features!</string>
+    <string name="do_not_show">Do not show again</string>
+</resources>

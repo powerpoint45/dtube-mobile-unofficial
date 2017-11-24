@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/menu_profile"
+        android:title="@string/my_profile"
+        android:icon="@drawable/ic_account_circle"/>
+
+    <item
+        android:id="@+id/menu_update"
+        android:title="@string/update_now"
+        android:icon="@drawable/ic_system_update_alt"/>
+
+    <group >
+        <item
+            android:id="@+id/nav_home"
+            android:icon="@drawable/ic_subscriptions"
+            android:title="@string/feed" >
+                <menu>
+                    <group android:checkableBehavior="single">
+                        <item
+                            android:id="@+id/menu_subscribed"
+                            android:title="@string/feed_subscribed"
+                            android:icon="@drawable/ic_subscriptions"/>
+                        <item
+                            android:id="@+id/menu_hot"
+                            android:title="@string/feed_hot"
+                            android:icon="@drawable/ic_whatshot"/>
+                        <item
+                            android:id="@+id/menu_trending"
+                            android:title="@string/feed_trending"
+                            android:icon="@drawable/ic_trending_up"/>
+                        <item
+                            android:id="@+id/menu_new"
+                            android:title="@string/feed_new"
+                            android:icon="@drawable/ic_fiber_new"/>
+                        <item
+                            android:id="@+id/menu_history"
+                            android:title="@string/feed_history"
+                            android:icon="@drawable/ic_history"/>
+                    </group>
+                </menu>
+        </item>
+    </group>
+
+    <item android:title="@string/sub_item">
+        <menu>
+            <!--<item-->
+                <!--android:id="@+id/menu_settings"-->
+                <!--android:title="@string/settings" />-->
+
+            <item
+                android:id="@+id/menu_donate"
+                android:title="@string/donate" />
+
+            <item
+                android:id="@+id/menu_about"
+                android:title="@string/about" />
+
+
+        </menu>
+    </item>
+
+</menu>

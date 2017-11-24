@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:text="@string/donate_summary" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/btcimg"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_margin="5dp"
+            app:srcCompat="@drawable/bitcoin" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_alignParentStart="true"
+                android:layout_toStartOf="@+id/copybtc"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/btctitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="BTC"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/btctxt"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="148kJvCVMmHfEPKxerz6Y4jdc94765c5VK"
+                    android:textAppearance="@style/Base.TextAppearance.AppCompat.Small" />
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/copybtc"
+                android:layout_width="45dp"
+                android:layout_height="match_parent"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentTop="true"
+                android:padding="5dp"
+                android:onClick="copyAddress"
+                android:clickable="true"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                app:srcCompat="?android:attr/actionModeCopyDrawable" />
+
+        </RelativeLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/ethimg"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_margin="5dp"
+            app:srcCompat="@drawable/ethereum" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_alignParentStart="true"
+                android:layout_toStartOf="@+id/copyeth"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/ethtitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="ETH"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/ethtxt"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="0x944e6bc2c86144B89EaF7612782a5F570F5967a2"
+                    android:textAppearance="@style/Base.TextAppearance.AppCompat.Small" />
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/copyeth"
+                android:layout_width="45dp"
+                android:layout_height="match_parent"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentTop="true"
+                android:padding="5dp"
+                android:onClick="copyAddress"
+                android:clickable="true"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                app:srcCompat="?android:attr/actionModeCopyDrawable" />
+
+        </RelativeLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/ltcimg"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_margin="5dp"
+            app:srcCompat="@drawable/litecoin" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_alignParentStart="true"
+                android:layout_toStartOf="@+id/copyltc"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/ltctitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="LTC"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/ltctxt"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="LPxnm3UQ7VpL9stRCgECZgxkXuvb2jw1ik"
+                    android:textAppearance="@style/Base.TextAppearance.AppCompat.Small" />
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/copyltc"
+                android:layout_width="45dp"
+                android:layout_height="match_parent"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentTop="true"
+                android:padding="5dp"
+                android:onClick="copyAddress"
+                android:clickable="true"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                app:srcCompat="?android:attr/actionModeCopyDrawable" />
+
+        </RelativeLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/ppimg"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_margin="5dp"
+            app:srcCompat="@drawable/paypal" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:layout_width="10dp"
+                android:layout_height="match_parent"
+                android:layout_alignParentStart="true"
+
+                android:gravity="center"
+                android:orientation="vertical"
+                android:layout_toStartOf="@+id/sendpp">
+
+                <TextView
+                    android:id="@+id/pptitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="PayPal"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/pptxt"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="paypal.me/immawake"
+                    android:textAppearance="@style/Base.TextAppearance.AppCompat.Small" />
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/sendpp"
+                android:layout_width="45dp"
+                android:layout_height="match_parent"
+                android:padding="5dp"
+                android:onClick="sendMoney"
+                android:clickable="true"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                app:srcCompat="@drawable/ic_send"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentEnd="true" />
+
+        </RelativeLayout>
+    </LinearLayout>
+
+
+</LinearLayout>

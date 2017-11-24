@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="horizontal" android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <View
+        android:id="@+id/comment_indent"
+        android:layout_width="30dp"
+        android:layout_height="10dp"
+        android:visibility="gone"
+        />
+
+    <ImageView
+        android:id="@+id/comment_image"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_margin="5dp"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        app:srcCompat="@drawable/ic_account_circle" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+
+            <TextView
+                android:id="@+id/comment_username"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:text="Username"
+                android:textStyle="bold" />
+
+
+            <com.github.curioustechizen.ago.RelativeTimeTextView
+                android:id="@+id/comment_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:text="some time ago"
+                android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+
+            <TextView
+                android:id="@+id/comment_price"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:text="$36"
+                android:textAppearance="@style/Base.TextAppearance.AppCompat.Small" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/comment_comment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:text="comment" />
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:gravity="right|center">
+
+
+            <ImageView
+                android:id="@+id/comment_like"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:onClick="likeCommentButtonClicked"
+                app:srcCompat="@drawable/ic_thumb_up" />
+
+            <TextView
+                android:id="@+id/text_likes"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="5dp"
+                android:text="0" />
+
+            <ImageView
+                android:id="@+id/comment_dislike"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:onClick="dislikeCommentButtonClicked"
+                app:srcCompat="@drawable/ic_thumb_down" />
+
+            <TextView
+                android:id="@+id/text_dislikes"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="5dp"
+                android:text="0" />
+
+            <TextView
+                android:id="@+id/comment_reply"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="5dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:onClick="replyToCommentButtonClicked"
+                android:text="@string/reply" />
+
+        </LinearLayout>
+
+        <FrameLayout
+            android:id="@+id/comment_reply_holder"
+            android:layout_width="match_parent"
+            android:layout_height="65dp"
+            android:visibility="gone">
+
+            <com.powerpoint45.dtube.BackableEditText
+                android:id="@+id/item_comment_reply_edittext"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="bottom"
+                android:drawablePadding="5dp"
+                android:ems="10"
+                android:focusableInTouchMode="true"
+                android:hint="@string/comment_placeholder"
+                android:imeOptions="actionSend"
+                android:inputType="textPersonName"
+                android:paddingLeft="50dp" />
+
+            <ImageView
+                android:id="@+id/item_account_comment_image"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="center|left"
+                android:layout_marginBottom="5dp"
+                android:layout_marginLeft="5dp"
+                android:layout_marginTop="4dp"
+                app:srcCompat="@drawable/ic_account_circle" />
+
+        </FrameLayout>
+
+    </LinearLayout>
+</LinearLayout>

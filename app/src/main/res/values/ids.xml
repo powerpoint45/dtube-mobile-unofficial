@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="subscription_id" type="id"/>
+    <item name="subscriptions_id" type="id"/>
+    <item name="native_video_view" type="id"/>
+    <item name="embeded_video_view" type="id"/>
+</resources>

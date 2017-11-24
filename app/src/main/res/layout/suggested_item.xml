@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="horizontal" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:weightSum="5"
+    android:padding="5dp"
+    android:gravity="center_vertical">
+
+    <ImageView
+        android:id="@+id/item_image"
+        android:layout_width="match_parent"
+        android:layout_height="90dp"
+        android:layout_weight="3"
+        android:scaleType="fitCenter"
+        app:srcCompat="@android:drawable/presence_video_online" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="2"
+        android:orientation="vertical"
+        android:paddingLeft="5dp"
+        android:gravity="center_vertical">
+
+
+        <TextView
+            android:id="@+id/item_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="TextView"
+            android:maxLines="2"
+            android:textAppearance="@style/Base.TextAppearance.AppCompat.Medium" />
+
+
+        <TextView
+            android:id="@+id/item_user"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Michael"
+            android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/item_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingTop="5dp"
+                android:paddingBottom="5dp"
+                android:paddingRight="8dp"
+                android:text="$10"
+                android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                android:textStyle="bold" />
+
+            <com.github.curioustechizen.ago.RelativeTimeTextView
+                android:id="@+id/item_time"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="1 hour ago"
+                android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+
+
+        </LinearLayout>
+
+
+
+    </LinearLayout>
+
+
+
+</LinearLayout>
