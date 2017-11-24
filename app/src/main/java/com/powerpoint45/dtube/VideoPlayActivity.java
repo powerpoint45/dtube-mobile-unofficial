@@ -379,7 +379,8 @@ public class VideoPlayActivity extends AppCompatActivity {
 
 
     public void onItemClick(int pos){
-        steemWebView.getVideoInfo(suggestedVideos.get(pos).user, suggestedVideos.get(pos).permlink, DtubeAPI.getAccountName(this));
+        if (steemWebView!=null)
+            steemWebView.getVideoInfo(suggestedVideos.get(pos).user, suggestedVideos.get(pos).permlink, DtubeAPI.getAccountName(this));
     }
 
     public final boolean useEmbeded = true;

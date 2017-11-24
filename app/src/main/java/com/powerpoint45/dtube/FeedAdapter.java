@@ -49,8 +49,6 @@ class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
     }
 
     public void setVideos(VideoArrayList videos){
-        for (Video v: videos)
-            Log.d("dtube","VIDS:"+ v.title +","+v.categoryId);
         this.videos = videos;
     }
 
@@ -97,7 +95,6 @@ class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
         holder.userView.setText(videos.get(position).user);
 
 
-        Log.d("dtube3", "picasso loading:"+videos.get(position).getImageURL());
         Picasso.with(c).load(videos.get(position).getImageURL()).placeholder(R.drawable.ic_ondemand_video).resize(720,720).centerInside().into(
                 holder.thumbView);
     }

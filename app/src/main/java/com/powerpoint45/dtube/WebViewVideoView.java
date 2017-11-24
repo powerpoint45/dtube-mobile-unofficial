@@ -24,6 +24,8 @@ public class WebViewVideoView extends WebView {
         getSettings().setDatabaseEnabled(true);
         getSettings().setAllowContentAccess(true);
         getSettings().setAllowFileAccess(true);
+        getSettings().setAllowFileAccessFromFileURLs(true);
+        getSettings().setAllowFileAccessFromFileURLs(true);
         getSettings().setDomStorageEnabled(true);
         getSettings().setMediaPlaybackRequiresUserGesture(false);
         setLongClickable(false);

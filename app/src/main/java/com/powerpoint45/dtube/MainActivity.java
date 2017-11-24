@@ -48,6 +48,8 @@ public class MainActivity extends AppCompatActivity {
     FrameLayout navigationHeader;
     ActionBarDrawerToggle drawerToggle;
 
+    boolean activityPaused;
+
     VideoArrayList allVideos = new VideoArrayList();
     VideoArrayList videos = new VideoArrayList();
     int selectedTab;
@@ -114,7 +116,7 @@ public class MainActivity extends AppCompatActivity {
                         startActivity(new Intent(MainActivity.this, DonateActivity.class));
                         break;
                     case R.id.menu_about:
-                        Intent aboutIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.google.com"));
+                        Intent aboutIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://steemit.com/utopian-io/@immawake/introducing-the-dtube-mobile-app-(unofficial-android-app)"));
                         startActivity(aboutIntent);
                         break;
                     case R.id.subscription_id:
@@ -207,21 +209,23 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onItemClick(int pos){
-        steemWebView.getVideoInfo(videos.get(pos).user, videos.get(pos).permlink, DtubeAPI.getAccountName(this));
+        if (!activityPaused)
+            steemWebView.getVideoInfo(videos.get(pos).user, videos.get(pos).permlink, DtubeAPI.getAccountName(this));
     }
 
 
     public void playVideo(Video v){
+        if (!activityPaused) {
+            Intent videoPlayIntent = new Intent(MainActivity.this, VideoPlayActivity.class);
+            Bundle videoBundle = new Bundle();
+            videoBundle.putSerializable("video", v);
+            videoPlayIntent.putExtra("video", videoBundle);
 
-        Intent videoPlayIntent = new Intent(MainActivity.this, VideoPlayActivity.class);
-        Bundle videoBundle = new Bundle();
-        videoBundle.putSerializable("video", v);
-        videoPlayIntent.putExtra("video", videoBundle);
+            if (accountInfo != null)
+                videoPlayIntent.putExtra("clientprofileimage", accountInfo.getImageURL());
 
-        if (accountInfo!=null)
-            videoPlayIntent.putExtra("clientprofileimage", accountInfo.getImageURL());
-
-        startActivityForResult(videoPlayIntent, REQUEST_CODE_PLAY_VIDEO);
+            startActivityForResult(videoPlayIntent, REQUEST_CODE_PLAY_VIDEO);
+        }
     }
 
     public boolean addVideos(VideoArrayList videos){
@@ -392,25 +396,34 @@ public class MainActivity extends AppCompatActivity {
 
     public void initFeed(){
         Log.d("dtube","UI:initFeed");
-        videos = allVideos.getCategorizedVideos(selectedTab);
-
-        class SortVideos implements Comparator<Video>
-        {
-            // Used for sorting in ascending order of
-            // roll number
-            public int compare(Video a, Video b)
-            {
-                if (a.getDate() > b.getDate()) {
-                    return  -1;
-                } else {
-                    return 1;
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                videos = allVideos.getCategorizedVideos(selectedTab);
+                class SortVideos implements Comparator<Video>
+                {
+                    // Used for sorting in ascending order of
+                    // roll number
+                    public int compare(Video a, Video b)
+                    {
+                        if (a.getDate() > b.getDate()) {
+                            return  -1;
+                        } else {
+                            return 1;
+                        }
+                    }
                 }
+                Collections.sort(videos, new SortVideos());
+                MainActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        feedAdapter.setVideos(videos);
+                        feedAdapter.notifyDataSetChanged();
+                    }
+                });
             }
-        }
+        }).start();
 
-        Collections.sort(videos, new SortVideos());
-        feedAdapter.setVideos(videos);
-        feedAdapter.notifyDataSetChanged();
 
         updateBottomBar();
     }
@@ -426,21 +439,12 @@ public class MainActivity extends AppCompatActivity {
 
 
     public void expandToolbar(){
-        recyclerView.postDelayed(new Runnable() {
+        toolbar.postDelayed(new Runnable() {
             @Override
             public void run() {
-                ValueAnimator toolbarAnimator = ValueAnimator.ofInt(toolbar.getHeight(), (int)getResources().getDimension(R.dimen.toolbar_size));
-                toolbarAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                    @Override
-                    public void onAnimationUpdate(ValueAnimator animation) {
-                        int animatedValue = (int) animation.getAnimatedValue();
-                        toolbar.getLayoutParams().height = animatedValue;
-                        toolbar.requestLayout();
-                    }
-                });
-                toolbarAnimator.setDuration(100);
-                toolbarAnimator.start();
                 toolbar.setVisibility(View.VISIBLE);
+                toolbar.getLayoutParams().height = (int)getResources().getDimension(R.dimen.toolbar_size);
+                toolbar.requestLayout();
             }
         },100);
 
@@ -477,7 +481,6 @@ public class MainActivity extends AppCompatActivity {
         selectedTab = DtubeAPI.CAT_TRENDING;
         initFeed();
         checkMenuItem(R.id.menu_trending);
-        recyclerView.scrollToPosition(recyclerView.computeVerticalScrollRange());
         recyclerView.smoothScrollToPosition(0);
         expandToolbar();
     }
@@ -486,7 +489,6 @@ public class MainActivity extends AppCompatActivity {
         selectedTab = DtubeAPI.CAT_NEW;
         initFeed();
         checkMenuItem(R.id.menu_new);
-        recyclerView.scrollToPosition(recyclerView.computeVerticalScrollRange());
         recyclerView.smoothScrollToPosition(0);
         expandToolbar();
     }
@@ -495,7 +497,6 @@ public class MainActivity extends AppCompatActivity {
         selectedTab = DtubeAPI.CAT_HISTORY;
         initFeed();
         checkMenuItem(R.id.menu_history);
-        recyclerView.scrollToPosition(recyclerView.computeVerticalScrollRange());
         recyclerView.smoothScrollToPosition(0);
         expandToolbar();
     }
@@ -504,7 +505,6 @@ public class MainActivity extends AppCompatActivity {
         selectedTab = DtubeAPI.CAT_SUBSCRIBED;
         initFeed();
         checkMenuItem(R.id.menu_subscribed);
-        recyclerView.scrollToPosition(recyclerView.computeVerticalScrollRange());
         recyclerView.smoothScrollToPosition(0);
         expandToolbar();
     }
@@ -584,5 +584,23 @@ public class MainActivity extends AppCompatActivity {
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
         drawerToggle.syncState();
+    }
+
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        activityPaused = true;
+    }
+
+    @Override
+    public void finish() {
+        super.finish();
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        activityPaused = false;
     }
 }
