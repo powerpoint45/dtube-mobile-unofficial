@@ -1,4 +1,4 @@
-# Who an I
+# Who am I
 my alias on Github is powerpoint45 but my alias on steemit is [immawake](https://steemit.com/@immawake)
 
 
