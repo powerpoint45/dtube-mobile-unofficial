@@ -36,13 +36,17 @@ The app can be downloaded as an **APK** (Android Package). This is a standard ap
 
 # Getting Started
 Now that you got the app installed let's explore! When you open the app, you will be shown a screen like this presenting you with the hot videos feed
+
 ![](https://i.imgur.com/KRMK6tF.png)
+
 Notice that if you click on your subscription feed or the recently watched tab that it will be completely blank. This is because you are not logged in and you have not watched any videos yet. I would start by logging in. This will unlock many of the features that makes Steemit & Dtube awesome. Press the account icon in the to right of the screen and you will be prompted to a login
+
 ![](https://i.imgur.com/6XYlckp.png)
 
 Now enter your username and your Steemit posting key. To get your posting key, log into steemit, click your profile icon in the top right, choose "change password", select "permissions tab", press "show private key" besides the posting key, copy that key to your phone. What I do is store a file on my phone with that private key so I can go back to it anytime. You could also email it to yourself. Then just paste that private key into the posting password box and press login. As discussed earlier, your password is safely stored and encrypted inside the app. 
 
 After logged in, your subscription feed will begin to populate and you will have your subscriptions in the right sidebar of the app as shown below
+
 ![](https://i.imgur.com/pGJgbPY.png)
 
 Now I just encourage you to explore the app! Play some videos, comment on a video, subscribe to a channel, and like videos. I am sure you will love this app!
