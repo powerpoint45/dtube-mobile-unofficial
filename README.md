@@ -1,8 +1,3 @@
-# Who am I (Proof of Ownership)
-my alias on Github is powerpoint45 but my alias on steemit is [immawake](https://steemit.com/@immawake)
-
-
-
 ![](https://i.imgur.com/rWNRw1X.png)
 # Yes! A dtube Android app
 This is the first release of the Dtube unofficial app! I am confident that every dtube user will love this! 
