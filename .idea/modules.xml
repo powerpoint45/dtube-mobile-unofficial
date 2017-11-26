@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/D.tube.iml" filepath="$PROJECT_DIR$/D.tube.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/dtube-mobile-unofficial.iml" filepath="$PROJECT_DIR$/dtube-mobile-unofficial.iml" />
     </modules>
   </component>
 </project>
