@@ -3,7 +3,6 @@ package com.powerpoint45.dtube;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
 
 /**
  * Created by michael on 22/11/17.

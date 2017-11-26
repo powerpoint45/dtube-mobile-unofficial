@@ -7,8 +7,6 @@ import android.view.ViewGroup;
 import android.webkit.WebChromeClient;
 import android.widget.FrameLayout;
 
-import com.powerpoint45.dtube.WebViewVideoView;
-
 /**
  * This class serves as a WebChromeClient to be set to a WebView, allowing it to play video.
  * Video will play differently depending on target API level (in-line, fullscreen, or both).

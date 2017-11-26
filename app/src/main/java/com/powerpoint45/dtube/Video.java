@@ -2,7 +2,6 @@ package com.powerpoint45.dtube;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.util.Log;
 
 import java.io.EOFException;
 import java.io.FileNotFoundException;
