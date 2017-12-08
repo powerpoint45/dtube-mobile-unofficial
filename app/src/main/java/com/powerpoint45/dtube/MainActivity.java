@@ -389,7 +389,7 @@ public class MainActivity extends AppCompatActivity {
             i.putExtra("userurl", "/#!/c/" + accountInfo.userName);
             startActivityForResult(i, REQUEST_CODE_PROFILE);
         }else {
-            startActivityForResult(new Intent(MainActivity.this, LoginActivity2.class), REQUEST_CODE_LOGIN);
+            startActivityForResult(new Intent(MainActivity.this, LoginActivity.class), REQUEST_CODE_LOGIN);
         }
     }
 

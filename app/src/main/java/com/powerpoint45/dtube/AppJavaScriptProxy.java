@@ -28,8 +28,8 @@ class AppJavaScriptProxy {
 
     @JavascriptInterface
     public void loginCallback(boolean sucess){
-        if (activity instanceof LoginActivity2)
-            ((LoginActivity2)activity).gotLoginResult(sucess);
+        if (activity instanceof LoginActivity)
+            ((LoginActivity)activity).gotLoginResult(sucess);
         else
             Log.d("dtube4", sucess ? "logged in":"login failed");
     }

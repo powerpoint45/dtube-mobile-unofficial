@@ -1,5 +1,6 @@
 package com.powerpoint45.dtube;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -11,22 +12,20 @@ import android.widget.EditText;
  * Created by michael on 18/11/17.
  */
 
-public class LoginActivity2 extends AppCompatActivity {
+public class LoginActivity extends AppCompatActivity {
     SteemitWebView steemitWebView;
     EditText userNameEditText;
     EditText passwordEditText;
 
+    final int RESULT_QR_CODE = 0;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login2);
+        setContentView(R.layout.activity_login);
         userNameEditText = ((EditText)findViewById(R.id.username));
         passwordEditText = ((EditText)findViewById(R.id.password));
         steemitWebView = new SteemitWebView(this);
-
-//        RhinoJS rhinoJS = new RhinoJS(this);
-//        rhinoJS.loadRhino();
-
     }
 
     public void gotLoginResult(final boolean sucess){
@@ -45,6 +44,28 @@ public class LoginActivity2 extends AppCompatActivity {
             }
         });
 
+    }
+
+    public void qrButtonClicked(View v){
+        if (passwordEditText.isEnabled()){
+
+            Intent qrIntent = new Intent(LoginActivity.this, SimpleScannerActivity.class);
+            startActivityForResult(qrIntent, RESULT_QR_CODE);
+
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == RESULT_QR_CODE){
+            if (resultCode == RESULT_OK){
+                passwordEditText.setText(data.getExtras().getString("password"));
+                if (userNameEditText.getText().toString().length()>0)
+                    loginButtonClicked(new View(this));
+            }
+        }
     }
 
     public void loginButtonClicked(View v){

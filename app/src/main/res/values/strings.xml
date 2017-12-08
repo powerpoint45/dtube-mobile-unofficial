@@ -39,4 +39,6 @@
     <string name="update_available">Update available</string>
     <string name="update_summary">Update to get the latest features!</string>
     <string name="do_not_show">Do not show again</string>
+    <string name="wrong_qr_code">Please click on the QR code on Steemit first before scanning</string>
+    <string name="no_data_qr_code">No data found</string>
 </resources>
