@@ -51,7 +51,7 @@ Now I just encourage you to explore the app! Play some videos, comment on a vide
 ![](https://i.imgur.com/8sOqEA4.png)
 
 # Known Issues
-There are some things I am still trying to work out completely. One is the formatting of video descriptions and comments. I'm using a very poor parsing method for this as found [here](https://github.com/powerpoint45/dtube-mobile-unofficial/blob/master/app/src/main/java/com/powerpoint45/dtube/Tools.java) in the method **getFormattedText**. Basically it needs to format it into normal HTML but it doesn't do very well as links are often fragmented and markdown is not properly processed. This is something I will have fixed soon in upcoming releases. Apart from that issue, one other one is that the app will freeze upon launch very rarely. I am not aware of what is causing this at the moment. Consider this release a beta build. More features and fixes are soon to come!
+There are some things I am still trying to work out completely. One issue is that the app will freeze upon launch very rarely. I am not aware of what is causing this at the moment. Consider this release a beta build. More features and fixes are soon to come!
 
 # Libraries used
 I did not reinvent wheels. I am very appreciative of all those devs who make this work!
@@ -65,6 +65,9 @@ I did not reinvent wheels. I am very appreciative of all those devs who make thi
    * [Steemit JS API ](https://github.com/steemit/steem-js)(locally stored on app)
    * [dtube embedded player](https://github.com/dtube/embed) (locally stored on app)
    * [Asksteem API](https://steemit.com/steemit/@thekyle/introducing-asksteem-a-steem-search-engine)
+   * [Showdown JS](https://github.com/showdownjs/showdown)
+   * [Bluebird JS](http://bluebirdjs.com/docs/getting-started.html)
+   * [DateFormat JS](https://github.com/felixge/node-dateformat)
 
 # Download
 Just in case you missed the download link mentioned in the article. 
