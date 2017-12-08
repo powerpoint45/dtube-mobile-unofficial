@@ -185,7 +185,7 @@ class AppJavaScriptProxy {
                 comment.likes = jo.getInt("likes");
                 comment.dislikes = jo.getInt("dislikes");
                 comment.commentHTML = jo.getString("comment");
-                comment.commentHTML = Tools.getFormattedText(comment.commentHTML);
+                //comment.commentHTML = Tools.getFormattedText(comment.commentHTML);
                 comment.setTime(jo.getString("date"));
                 comment.voteType = jo.getInt("voteType");
                 comment.price = jo.getString("price");
@@ -279,7 +279,7 @@ class AppJavaScriptProxy {
             }
             if (jo.has("description")) {
                 video.longDescriptionHTML = jo.getString("description");
-                video.longDescriptionHTML = Tools.getFormattedText(video.longDescriptionHTML);
+                //video.longDescriptionHTML = Tools.getFormattedText(video.longDescriptionHTML);
             }
             if (jo.has("voteType"))
                 video.voteType = jo.getInt("voteType");

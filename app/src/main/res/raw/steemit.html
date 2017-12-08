@@ -1,6 +1,7 @@
 <script src="steem.js"></script>
 <script src="bluebird.js"></script>
 <script src="dateformat.js"></script>
+<script src="showdown.js"></script>
 <script language="javascript">
 
 
@@ -504,7 +505,14 @@ function getAdvancedVideoObject(r, accountName){
 	if (metadata && metadata.video && metadata.video.content && metadata.video.info){
 		video.snaphash = metadata.video.info.snaphash;
 		video.hash = metadata.video.content.videohash;
-		video.description = metadata.video.content.description;
+
+
+		var converter = new showdown.Converter()
+		converter.setOption('simplifiedAutoLink', true);
+	  textDescription      = metadata.video.content.description,
+	  htmlDescription      = converter.makeHtml(textDescription);
+
+		video.description = htmlDescription;
 	}
 	//video.description = r.body;
 
@@ -551,7 +559,14 @@ function getCommentsObject(replies, indent){
 		var commentObject = new Object();
 		commentObject.permlink = replies[i].permlink;
 		commentObject.parentPermlink = replies[i].parent_permlink;
-		commentObject.comment = replies[i].body;
+
+
+		var converter = new showdown.Converter()
+		converter.setOption('simplifiedAutoLink', true);
+	  textBody     = replies[i].body,
+	  htmlBody      = converter.makeHtml(textBody);
+
+		commentObject.comment = htmlBody;
 		commentObject.author = replies[i].author;
 		commentObject.indent = indent
 		commentObject.date = replies[i].created;
@@ -581,8 +596,21 @@ function isVideoViewable(r){
 		if (!metadata.tags.includes("nsfw") && !metadata.tags.includes("dtube-NSFW") && !metadata.tags.includes("NSFW")){
 			//blacklisted accounts with inappropriate content
 			var BLACKLIST = ["aroused","godfather123","arabebtc","elibella","anarchyandporn"];
-			if (!BLACKLIST.includes(r.author))
+			if (!BLACKLIST.includes(r.author)){
+
+				//check if video was downvoted by cheetah.
+				//cheetah detects improper content posted on steem
+				for (voteIndex in r.active_votes) {
+					vote =  r.active_votes[voteIndex];
+
+					if (vote.voter == "cheetah" && vote.percent<0){
+						console.log("blocked video by cheetah");
+						return false;
+					}
+				}
+
 				return true;
+			}
 		}
 	}
 	return false;

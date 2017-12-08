@@ -1,3 +1,5 @@
+12-8-17
+*Video descriptions and comments full support with markdown and autolinking using showdownjs
 12-7-17
 *Addeb QRcode scanner for logging into steem
 *Updated embedded video player (420p as default)

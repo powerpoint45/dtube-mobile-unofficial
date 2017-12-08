@@ -1,5 +1,6 @@
 package com.powerpoint45.dtube;
 
+import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
@@ -157,8 +158,8 @@ public class MainActivity extends AppCompatActivity {
 
         steemWebView = new SteemitWebView(this);
 
-        bottomBar = (LinearLayout)findViewById(R.id.bottom_bar);
-        toolbar = (Toolbar)findViewById(R.id.toolbar);
+        bottomBar = findViewById(R.id.bottom_bar);
+        toolbar = findViewById(R.id.toolbar);
 
         recyclerView = ((RecyclerView) findViewById(R.id.feed_rv));
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -252,24 +253,24 @@ public class MainActivity extends AppCompatActivity {
         return false;
     }
 
-    public boolean setAllVideos(VideoArrayList videos){
-
-        if (videos == null)
-            return false;
-
-        if (videos.size()<1)
-            return false;
-
-        if (allVideos.hasNewContent(videos)) {
-            if (videos.size()>=allVideos.size()) {
-                if (videos.getCategorizedVideos(selectedTab).size()>0) {
-                    allVideos = (VideoArrayList) videos.clone();
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
+//    public boolean setAllVideos(VideoArrayList videos){
+//
+//        if (videos == null)
+//            return false;
+//
+//        if (videos.size()<1)
+//            return false;
+//
+//        if (allVideos.hasNewContent(videos)) {
+//            if (videos.size()>=allVideos.size()) {
+//                if (videos.getCategorizedVideos(selectedTab).size()>0) {
+//                    allVideos = (VideoArrayList) videos.clone();
+//                    return true;
+//                }
+//            }
+//        }
+//        return false;
+//    }
 
 
     @Override
@@ -299,13 +300,15 @@ public class MainActivity extends AppCompatActivity {
             case REQUEST_CODE_PROFILE:
                 if (resultCode == RESULT_OK){
                     Video v = (Video)data.getBundleExtra("video").getSerializable("video");
-                    steemWebView.getVideoInfo(v.user, v.permlink, DtubeAPI.getAccountName(this));
+                    if (v!=null)
+                        steemWebView.getVideoInfo(v.user, v.permlink, DtubeAPI.getAccountName(this));
                 }
                 break;
             case REQUEST_CODE_SEARCH:
                 if (resultCode == RESULT_OK){
                     Video v = (Video)data.getBundleExtra("video").getSerializable("video");
-                    steemWebView.getVideoInfo(v.user, v.permlink, DtubeAPI.getAccountName(this));
+                    if (v!=null)
+                        steemWebView.getVideoInfo(v.user, v.permlink, DtubeAPI.getAccountName(this));
                 }
                 break;
             default:
@@ -318,6 +321,7 @@ public class MainActivity extends AppCompatActivity {
     public void setSubscribers(String account, final int subscribers){
         if (account.equals(accountInfo.userName)){
             runOnUiThread(new Runnable() {
+                @SuppressLint("SetTextI18n")
                 @Override
                 public void run() {
                     ((TextView)navigationHeader.findViewById(R.id.header_status)).setText(subscribers+" "+getResources().getString(R.string.subscribers));
@@ -326,7 +330,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    final List<CustomMenuTarget> targets = new ArrayList<CustomMenuTarget>();
+    final List<CustomMenuTarget> targets = new ArrayList<>();
     public void setSubscriptions(final ArrayList<Person> persons){
 
         runOnUiThread(new Runnable() {
