@@ -385,18 +385,24 @@ public class VideoPlayActivity extends AppCompatActivity {
     public final boolean useEmbeded = true;
     public void setupVideoView(){
         if (useEmbeded){
-            if (webViewVideoView == null)
-                webViewVideoView = new WebViewVideoView(this);
-            webViewVideoView.loadUrl("about:blank");
+
+            if (webViewVideoView != null) {
+                videoLayoutHolder.removeView(webViewVideoView);
+                webViewVideoView.killWebView();
+            }
+
+            webViewVideoView = new WebViewVideoView(this);
 
             webViewVideoView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
             webViewVideoView.setBackgroundColor(Color.BLACK);
             Log.d("dtube4","To load "+videoToPlay.getVideoFrameUrl());
+
             webViewVideoView.loadUrl(videoToPlay.getVideoFrameUrl());
 
             if (videoLayoutHolder.findViewById(R.id.embeded_video_view)==null)
                 videoLayoutHolder.addView(webViewVideoView);
         }else {
+            Log.d("dtube4","setupVideoView");
             if (videoView == null){
                 videoView = new JZVideoPlayerStandard(this);
             }
@@ -425,40 +431,34 @@ public class VideoPlayActivity extends AppCompatActivity {
 
 
     public void playVideo(Video v){
-
         videoToPlay = v;
 
-        this.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Log.d("dtube3", "to play andr "+videoToPlay.title+","+videoToPlay.permlink);
-                setupVideoView();
+        Log.d("dtube3", "to play andr "+videoToPlay.title+","+videoToPlay.permlink);
+        setupVideoView();
 
-                if (commentsAdapter!=null) {
-                    commentsList.clear();
-                    commentsAdapter.notifyDataSetChanged();
-                }
+        if (commentsAdapter!=null) {
+            commentsList.clear();
+            commentsAdapter.notifyDataSetChanged();
+        }
 
-                if (suggestionAdapter!=null) {
-                    suggestedVideos.clear();
-                    suggestionAdapter.notifyDataSetChanged();
-                }
+        if (suggestionAdapter!=null) {
+            suggestedVideos.clear();
+            suggestionAdapter.notifyDataSetChanged();
+        }
 
 
-                setFullDescription = false;
-                restrictClicks = true;
-                replyBox.setText("");
+        setFullDescription = false;
+        restrictClicks = true;
+        replyBox.setText("");
 
-                ((TextView) findViewById(R.id.item_description)).setText(videoToPlay.longDescriptionHTML);
+        ((TextView) findViewById(R.id.item_description)).setText(videoToPlay.longDescriptionHTML);
 
-                updateUI();
+        updateUI();
 
-                steemWebView.getReplies(videoToPlay.user, videoToPlay.permlink, DtubeAPI.getAccountName(VideoPlayActivity.this));
-                steemWebView.getIsFollowing(videoToPlay.user, DtubeAPI.getAccountName(VideoPlayActivity.this));
-                steemWebView.getSuggestedVideos(videoToPlay.user);
-                steemWebView.getSubscriberCount(videoToPlay.user);
-            }
-        });
+        steemWebView.getReplies(videoToPlay.user, videoToPlay.permlink, DtubeAPI.getAccountName(VideoPlayActivity.this));
+        steemWebView.getIsFollowing(videoToPlay.user, DtubeAPI.getAccountName(VideoPlayActivity.this));
+        steemWebView.getSuggestedVideos(videoToPlay.user);
+        steemWebView.getSubscriberCount(videoToPlay.user);
 
     }
 
