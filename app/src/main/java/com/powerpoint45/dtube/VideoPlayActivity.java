@@ -266,7 +266,13 @@ public class VideoPlayActivity extends AppCompatActivity {
                             return 0;
                     }
                 }
-                Collections.sort(commentsList, new SortComments());
+
+                try {
+                    Collections.sort(commentsList, new SortComments());
+                }catch (IllegalArgumentException ia){
+                    ia.printStackTrace();
+                }
+
             }
         }else {
             //coment is a nested comment
