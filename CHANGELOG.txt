@@ -1,6 +1,7 @@
 01-23-18
 *All nested comments do not load all at once (press view replies on specific comments)
 *More efficient fetching requests for steemit content (more efficiency to come)
+*Login with QR code
 *Embedded video player updated from official dtube github
 *Fixed app not working due to steemit updates
 12-8-17

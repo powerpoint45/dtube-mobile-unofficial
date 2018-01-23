@@ -7,6 +7,7 @@
 	*All nested comments do not load all at once (press view replies on specific comments)
 	*More efficient fetching requests for steemit content (more efficiency to come)
 	*Embedded video player updated from official dtube github
+	*QR code login
 	*Fixed app not working due to steemit updates
     </releaseNotes>
   </update>
