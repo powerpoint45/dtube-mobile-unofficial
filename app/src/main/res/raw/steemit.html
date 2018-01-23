@@ -5,6 +5,19 @@
 <script language="javascript">
 
 
+steem.api.setOptions({
+		 url: 'https://api.steemit.com'
+    });
+
+//this is how many posts are returned when when using calls for hot videos, trending videos, and new videos
+const numQuerries = 30;
+
+//this is a common querry for calls for hot videos, trending videos, and new videos
+var querry ={
+	limit: numQuerries,
+	tag: 'dtube',
+};
+
 //A callback function
 //checks the user credintials At login
 function login(username, password){
@@ -125,7 +138,7 @@ function commentPost(author, permlink, accountName, privateKey, comment, parentP
 		{ tags: [], app: 'steemjs/dtubemobileapp' }, // Json Metadata
 		function(err, result) {
 			console.log(err, result);
-			getAllReplies(parentAuthor, parentPermlink, accountName);
+			getReplies(author, permlink, accountName);
 		}
   	);
 }
@@ -145,99 +158,116 @@ function getVideoInfo(author, permlink, accountName){
 
 
 //A callback function
+//gets root replies on a permlink
+//and sends easy workable reply objects one at a time
+function getReplies(author, permlink, accountName){
+		steem.api.getContentReplies(author, permlink, function (err,replies) {
+					for(var key in replies){
+							(function(reply){
+								steem.api.getActiveVotes(reply.author, reply.permlink, function (err, votes) {
+										var replyObject = getCommentObject(reply,votes, accountName);
+										console.log(replyObject);
+										androidAppProxy.getRepliesCallback(JSON.stringify(replyObject));
+								});
+							})(replies[key]);
+					}
+		});
+}
+
+//A callback function
 //gets all replies on a post plus replies to replies
 //and sends an easy workable array of comment Objects
-function getAllReplies(author, permlink, accountName){
-  var comments = [];
-
-  // Eagerly fetch all of the descendant replies (recursively)
-  var fetchReplies = function (author, permlink) {
-    return steem.api.getContentReplies(author, permlink)
-      .then(function (replies) {
-        return Promise.map(replies, function (r) {
-          if (r.children > 0) {
-            return fetchReplies(r.author, r.permlink)
-              .then(function (children) {
-                r.replies = children;
-                return r;
-              })
-          } else {
-            return r;
-          }
-        });
-      });
-  }
-
-  steem.api.getContentAsync(author, permlink)
-    .then(function (post) {
-      return fetchReplies(author, permlink)
-        .then(function (comments) {
-          post.replies = comments;
-          return post;
-        });
-    })
-    .then(function (post) {
-	//create a comparator to sort by net_votes
-	function compare(a, b){
-	  var comparison = 0;
-
-	  if (a.net_votes > b.net_votes) {
-	    comparison = -1;
-	  } else if (b.net_votes > a.net_votes) {
-	    comparison = 1;
-	  }
-
-	  return comparison;
-	}
-
-	//sort replies by net_vote
-	post.replies.sort(compare);
-
-	//now add likes and dislikes to the comments
-	var repliesObject = getCommentsObject(post.replies, 0);
-	var promises = repliesObject.map(function(name) {
-		return steem.api.getActiveVotes(name.author, name.permlink, function(err, r) {
-
-			var likes = 0;
-			var dislikes = 0;
-
-			//0=no vote
-			//1=vote up
-			//-1=vote down
-			var voteType = 0;
-
-			var vote;
-			for (voteIndex in r) {
-				vote =  r[voteIndex];
-
-				if (vote.percent>0)
-					likes++;
-				else if (vote.percent<0)
-					dislikes++;
-
-				if (vote.voter == accountName){
-					if (vote.percent>0)
-						voteType = 1;
-					else if (vote.percent<0)
-						voteType = -1;
-				}
-			}
-
-			name.likes = likes;
-			name.dislikes = dislikes;
-			name.voteType = voteType;
-		});
-
-	});
-
-	Promise.all(promises)
-	.then(function() {
-		//console.log(repliesObject);
-		androidAppProxy.getAllRepliesCallback(JSON.stringify(repliesObject));
-	}).error(console.error);
-	 	return post;
-    	}).catch(console.log);
-}
+// function getAllReplies(author, permlink, accountName){
+//   var comments = [];
+//
+//   // Eagerly fetch all of the descendant replies (recursively)
+//   var fetchReplies = function (author, permlink) {
+//     return steem.api.getContentReplies(author, permlink)
+//       .then(function (replies) {
+//         return Promise.map(replies, function (r) {
+//           if (r.children > 0) {
+//             return fetchReplies(r.author, r.permlink)
+//               .then(function (children) {
+//                 r.replies = children;
+//                 return r;
+//               })
+//           } else {
+//             return r;
+//           }
+//         });
+//       });
+//   }
+//
+//   steem.api.getContentAsync(author, permlink)
+//     .then(function (post) {
+//       return fetchReplies(author, permlink)
+//         .then(function (comments) {
+//           post.replies = comments;
+//           return post;
+//         });
+//     })
+//     .then(function (post) {
+// 	//create a comparator to sort by net_votes
+// 	function compare(a, b){
+// 	  var comparison = 0;
+//
+// 	  if (a.net_votes > b.net_votes) {
+// 	    comparison = -1;
+// 	  } else if (b.net_votes > a.net_votes) {
+// 	    comparison = 1;
+// 	  }
+//
+// 	  return comparison;
+// 	}
+//
+// 	//sort replies by net_vote
+// 	post.replies.sort(compare);
+//
+// 	//now add likes and dislikes to the comments
+// 	var repliesObject = getCommentsObject(post.replies, 0);
+// 	var promises = repliesObject.map(function(name) {
+// 		return steem.api.getActiveVotes(name.author, name.permlink, function(err, r) {
+//
+// 			var likes = 0;
+// 			var dislikes = 0;
+//
+// 			//0=no vote
+// 			//1=vote up
+// 			//-1=vote down
+// 			var voteType = 0;
+//
+// 			var vote;
+// 			for (voteIndex in r) {
+// 				vote =  r[voteIndex];
+//
+// 				if (vote.percent>0)
+// 					likes++;
+// 				else if (vote.percent<0)
+// 					dislikes++;
+//
+// 				if (vote.voter == accountName){
+// 					if (vote.percent>0)
+// 						voteType = 1;
+// 					else if (vote.percent<0)
+// 						voteType = -1;
+// 				}
+// 			}
+//
+// 			name.likes = likes;
+// 			name.dislikes = dislikes;
+// 			name.voteType = voteType;
+// 		});
+//
+// 	});
+//
+// 	Promise.all(promises)
+// 	.then(function() {
+// 		//console.log(repliesObject);
+// 		androidAppProxy.getAllRepliesCallback(JSON.stringify(repliesObject));
+// 	}).error(console.error);
+// 	 	return post;
+//     	}).catch(console.log);
+// }
 
 
 
@@ -261,14 +291,10 @@ function getAuthorVideos(author, lastPermlink){
 					result.shift()
 				var videos = [];
 				for (i in result){
-					if (result[i].category == "dtube"){
 						//dtube permlinks have a length of 8
-						if (result[i].permlink.length == 8){
-							if (isVideoViewable(result[i])){
-								videos.push(getSimpleVideoObject(result[i]));
-							}
+						if (isVideoViewable(result[i])){
+							videos.push(getSimpleVideoObject(result[i]));
 						}
-					}
 				}
 				console.log(err,"found " + videos.length +" videos from author");
 
@@ -296,25 +322,20 @@ function getSuggestedVideos(author){
 			d.setTime( d.getTime() + d.getTimezoneOffset()*60*1000 );
 			var dateString = dateFormat(d, "yyyy-mm-dd'T'HH:MM:ss");
 
-	steem.api.getDiscussionsByAuthorBeforeDate(author,"",dateString,100).then(function (result) {
+	steem.api.getDiscussionsByAuthorBeforeDate(author,"",dateString,100, function(err, result) {
 		var videos = [];
 		for (i in result){
-			if (result[i].category == "dtube"){
-				//dtube permlinks
-				if (result[i].permlink.length == 8){
-					if (isVideoViewable(result[i])){
-						videos.push(getSimpleVideoObject(result[i]));
-						if (videos.length == 6)
-							break;
-					}
+				if (isVideoViewable(result[i])){
+					videos.push(getSimpleVideoObject(result[i]));
+					if (videos.length == 6)
+						break;
 				}
-			}
 		}
 		if (videos.length > 0){
 			console.log("suggested videos for" + author + " loaded");
 			androidAppProxy.getSuggestedVideosCallback(JSON.stringify(videos));
 		}
-	}).catch(console.log);
+	});
 }
 
 
@@ -345,18 +366,13 @@ function getSubscriptionFeed(username){
 			d.setTime( d.getTime() + d.getTimezoneOffset()*60*1000);
 			var dateString = dateFormat(d, "yyyy-mm-dd'T'HH:MM:ss");
 
-			steem.api.getDiscussionsByAuthorBeforeDate(result[u].following,"",dateString,numberOfItemsToProcess).then(function (result) {
+			steem.api.getDiscussionsByAuthorBeforeDate(result[u].following,"",dateString,numberOfItemsToProcess,function(err, result) {
 				var videos = [];
 				for (i in result){
-					if (result[i].category == "dtube"){
-						//dtube permlinks
-						if (result[i].permlink.length == 8){
-							if (isVideoViewable(result[i])){
-								videos.push(getSimpleVideoObject(result[i]));
-								if (videos.length == numberOfVideosToGetFromEachSub)
-									break;
-							}
-						}
+					if (isVideoViewable(result[i])){
+						videos.push(getSimpleVideoObject(result[i]));
+						if (videos.length == numberOfVideosToGetFromEachSub)
+							break;
 					}
 				}
 				if (videos.length > 0){
@@ -364,7 +380,7 @@ function getSubscriptionFeed(username){
 					//app will load one set of subscriptions at a time
 					androidAppProxy.getSubscriptionFeedCallback(JSON.stringify(videos));
 				}
-			}).catch(console.log);
+			});
 		}
 	});
 }
@@ -374,21 +390,16 @@ function getSubscriptionFeed(username){
 //A callback function
 //gets a set of videos and sends as a single chunk
 function getHotVideosFeed(){
-	  steem.api.getState('hot/dtube', function(err, r) {
+	steem.api.getDiscussionsByHot(querry, function(err, r) {
 		var videos = [];
-		for(var key in r.content){
-			if (key.substring(key.indexOf("/")+1).length == 8){
-				if (r.content[key].category == "dtube"){
-					if (isVideoViewable(r.content[key])){
-						videos.push(getSimpleVideoObject(r.content[key]));
-					}
+		for(var key in r){
+				if (isVideoViewable(r[key])){
+					videos.push(getSimpleVideoObject(r[key]));
 				}
-			}
 		}
 		console.log("hot loaded");
 		androidAppProxy.getHotVideosFeedCallback(JSON.stringify(videos));
-		})
-	  .catch(console.log);
+		});
 }
 
 
@@ -396,21 +407,16 @@ function getHotVideosFeed(){
 //A callback function
 //gets a set of videos and sends as a single chunk
 function getTrendingVideosFeed(){
-	 steem.api.getState('trending/dtube', function(err, r) {
+	 steem.api.getDiscussionsByTrending(querry, function(err, r) {
 		var videos = [];
-		for(var key in r.content){
-			if (key.substring(key.indexOf("/")+1).length == 8){
-				if (r.content[key].category == "dtube"){
-					if (isVideoViewable(r.content[key])){
-						videos.push(getSimpleVideoObject(r.content[key]));
-					}
+		for(var key in r){
+				if (isVideoViewable(r[key])){
+					videos.push(getSimpleVideoObject(r[key]));
 				}
-			}
 		}
 		console.log("trending loaded");
 		androidAppProxy.getTrendingVideosFeedCallback(JSON.stringify(videos));
-		})
-	  .catch(console.log);
+		});
 }
 
 
@@ -418,21 +424,16 @@ function getTrendingVideosFeed(){
 //A callback function
 //gets a set of videos and sends as a single chunk
 function getNewVideosFeed(){
-	  steem.api.getState('created/dtube', function(err, r) {
+	  steem.api.getDiscussionsByCreated(querry, function(err, r) {
 				var videos = [];
-				for(var key in r.content){
-					if (key.substring(key.indexOf("/")+1).length == 8){
-						if (r.content[key].category == "dtube"){
-							if (isVideoViewable(r.content[key])){
-								videos.push(getSimpleVideoObject(r.content[key]));
-							}
+				for(var key in r){
+						if (isVideoViewable(r[key])){
+							videos.push(getSimpleVideoObject(r[key]));
 						}
-					}
 				}
 				console.log("new loaded");
 				androidAppProxy.getNewVideosFeedCallback(JSON.stringify(videos));
-		})
-	  .catch(console.log);
+		});
 }
 
 
@@ -550,66 +551,130 @@ function getAdvancedVideoObject(r, accountName){
 }
 
 
-
 //turnes a reply object from Steemit API into something more workable
-function getCommentsObject(replies, indent){
-	var commentsObject = [];
-
-	for (i in replies){
+function getCommentObject(reply, votes, accountName){
 		var commentObject = new Object();
-		commentObject.permlink = replies[i].permlink;
-		commentObject.parentPermlink = replies[i].parent_permlink;
+		commentObject.permlink = reply.permlink;
+		commentObject.parent = reply.parent_permlink;
+		commentObject.author = reply.author;
+		commentObject.indent = reply.depth-1;
+		commentObject.date = reply.created;
+		commentObject.children = reply.children;
 
 
 		var converter = new showdown.Converter()
 		converter.setOption('simplifiedAutoLink', true);
-	  textBody     = replies[i].body,
+	  textBody     = reply.body,
 	  htmlBody      = converter.makeHtml(textBody);
 
 		commentObject.comment = htmlBody;
-		commentObject.author = replies[i].author;
-		commentObject.indent = indent
-		commentObject.date = replies[i].created;
 
-		var pendingValue = parseFloat(replies[i].pending_payout_value.substring(0,replies[i].pending_payout_value.indexOf(" ")));
-		var payoutValue = parseFloat(replies[i].total_payout_value.substring(0,replies[i].total_payout_value.indexOf(" ")));
-		var curatorValue = parseFloat(replies[i].curator_payout_value.substring(0,replies[i].curator_payout_value.indexOf(" ")));
+
+		var pendingValue = parseFloat(reply.pending_payout_value.substring(0,reply.pending_payout_value.indexOf(" ")));
+		var payoutValue = parseFloat(reply.total_payout_value.substring(0,reply.total_payout_value.indexOf(" ")));
+		var curatorValue = parseFloat(reply.curator_payout_value.substring(0,reply.curator_payout_value.indexOf(" ")));
 
 		var totalPrice = pendingValue + payoutValue + curatorValue;
 		totalPrice = totalPrice.toFixed(3);
 
-		//video.price = r.pending_payout_value;
-		//video.price = video.price.substring(0,video.price.indexOf(" "));
 		commentObject.price = "$" +totalPrice;
 
-		commentsObject.push(commentObject);
-		if (replies[i].replies.length>0)
-			commentsObject.push.apply(commentsObject, getCommentsObject(replies[i].replies, indent+1));
-	}
-	return commentsObject;
+		var likes = 0;
+		var dislikes = 0;
+
+		//0=no vote
+		//1=vote up
+		//-1=vote down
+		var voteType = 0;
+
+		var vote;
+		for (voteIndex in votes) {
+			vote =  votes[voteIndex];
+
+			if (vote.percent>0)
+				likes++;
+			else if (vote.percent<0)
+				dislikes++;
+
+			if (vote.voter == accountName){
+				if (vote.percent>0)
+					voteType = 1;
+				else if (vote.percent<0)
+					voteType = -1;
+			}
+
+		}
+
+		commentObject.likes = likes;
+		commentObject.dislikes = dislikes;
+		commentObject.voteType = voteType;
+
+		return commentObject;
 }
+
+
+//turnes a reply object from Steemit API into something more workable
+// function getCommentsObject(replies, indent){
+// 	var commentsObject = [];
+//
+// 	for (i in replies){
+// 		var commentObject = new Object();
+// 		commentObject.permlink = replies[i].permlink;
+// 		commentObject.parentPermlink = replies[i].parent_permlink;
+//
+//
+// 		var converter = new showdown.Converter()
+// 		converter.setOption('simplifiedAutoLink', true);
+// 	  textBody     = replies[i].body,
+// 	  htmlBody      = converter.makeHtml(textBody);
+//
+// 		commentObject.comment = htmlBody;
+// 		commentObject.author = replies[i].author;
+// 		commentObject.indent = indent
+// 		commentObject.date = replies[i].created;
+//
+// 		var pendingValue = parseFloat(replies[i].pending_payout_value.substring(0,replies[i].pending_payout_value.indexOf(" ")));
+// 		var payoutValue = parseFloat(replies[i].total_payout_value.substring(0,replies[i].total_payout_value.indexOf(" ")));
+// 		var curatorValue = parseFloat(replies[i].curator_payout_value.substring(0,replies[i].curator_payout_value.indexOf(" ")));
+//
+// 		var totalPrice = pendingValue + payoutValue + curatorValue;
+// 		totalPrice = totalPrice.toFixed(3);
+//
+// 		//video.price = r.pending_payout_value;
+// 		//video.price = video.price.substring(0,video.price.indexOf(" "));
+// 		commentObject.price = "$" +totalPrice;
+//
+// 		commentsObject.push(commentObject);
+// 		if (replies[i].replies.length>0)
+// 			commentsObject.push.apply(commentsObject, getCommentsObject(replies[i].replies, indent+1));
+// 	}
+// 	return commentsObject;
+// }
 
 //detects if appropriate dtube video information exists and detects any NSFW
 function isVideoViewable(r){
-	var metadata = JSON.parse(r.json_metadata);
-	if (metadata && metadata.video && metadata.video.content && metadata.video.info){
-		if (!metadata.tags.includes("nsfw") && !metadata.tags.includes("dtube-NSFW") && !metadata.tags.includes("NSFW")){
-			//blacklisted accounts with inappropriate content
-			var BLACKLIST = ["aroused","godfather123","arabebtc","elibella","anarchyandporn"];
-			if (!BLACKLIST.includes(r.author)){
+	//dtube permalinks are length 8
+	if (r.permlink.length == 8){
+		var metadata = JSON.parse(r.json_metadata);
+		if (metadata && metadata.video && metadata.video.content && metadata.video.info){
+			if (!metadata.tags.includes("nsfw") && !metadata.tags.includes("dtube-NSFW") && !metadata.tags.includes("NSFW")){
+				//blacklisted accounts with inappropriate content
+				var BLACKLIST = ["aroused","godfather123","arabebtc","elibella","anarchyandporn"];
+				if (!BLACKLIST.includes(r.author)){
 
-				//check if video was downvoted by cheetah.
-				//cheetah detects improper content posted on steem
-				for (voteIndex in r.active_votes) {
-					vote =  r.active_votes[voteIndex];
+					//check if video was downvoted by cheetah.
+					//cheetah detects improper content posted on steem
+					for (voteIndex in r.active_votes) {
+						vote =  r.active_votes[voteIndex];
 
-					if (vote.voter == "cheetah" && vote.percent<0){
-						console.log("blocked video by cheetah");
-						return false;
+						if (vote.voter == "cheetah" && vote.percent<0){
+							console.log("blocked video by cheetah");
+							return false;
+						}
 					}
-				}
 
-				return true;
+					return true;
+				}
 			}
 		}
 	}

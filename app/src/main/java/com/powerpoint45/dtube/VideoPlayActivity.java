@@ -28,6 +28,9 @@ import com.makeramen.roundedimageview.RoundedTransformationBuilder;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Transformation;
 
+import java.util.Collections;
+import java.util.Comparator;
+
 import cn.jzvd.JZVideoPlayerStandard;
 
 /**
@@ -145,7 +148,9 @@ public class VideoPlayActivity extends AppCompatActivity {
                     imm.hideSoftInputFromWindow(replyBox.getWindowToken(), 0);
 
                 v.clearFocus();
-                commentsAdapter.notifyDataSetChanged();
+
+                if (commentsAdapter!=null)
+                    commentsAdapter.notifyDataSetChanged();
                 // do your stuff here
             }
             return false;
@@ -221,16 +226,62 @@ public class VideoPlayActivity extends AppCompatActivity {
     }
 
     //called from proxy
-    public void setReplies(CommentsList comments){
+//    public void setReplies(CommentsList comments){
+//
+//        if (commentsAdapter == null) {
+//            commentsAdapter = new CommentsAdapter(commentsList, this, accountName != null);
+//            ((ListView) findViewById(R.id.comments_lv)).setAdapter(commentsAdapter);
+//
+//        }
+//
+//        commentsList = comments;
+//        commentsAdapter.setCommentsList(commentsList);
+//    }
+
+    //called from proxy
+    public void addReply(Comment comment){
 
         if (commentsAdapter == null) {
             commentsAdapter = new CommentsAdapter(commentsList, this, accountName != null);
             ((ListView) findViewById(R.id.comments_lv)).setAdapter(commentsAdapter);
-
         }
 
-        commentsList = comments;
+        if (commentsList == null)
+            commentsList = new CommentsList();
+
+
+        //comment is a root comment
+        if (comment.parent.equals(videoToPlay.permlink)) {
+            //ensure we are not adding duplicate comments
+            if (commentsList.getCommentByID(comment.permlink)==null) {
+                commentsList.add(comment);
+
+                class SortComments implements Comparator<Comment> {
+                    public int compare(Comment a, Comment b) {
+                        if (a.likes > b.likes || a.getDate() > b.getDate()) {
+                            return -1;
+                        } else if (a.likes < b.likes || a.getDate() < b.getDate()) {
+                            return 1;
+                        } else
+                            return 0;
+                    }
+                }
+                Collections.sort(commentsList, new SortComments());
+            }
+        }else {
+            //coment is a nested comment
+            Comment rootComment = commentsList.getCommentByID(comment.parent);
+            if (rootComment.childComments==null)
+                rootComment.childComments = new CommentsList();
+            Log.d("DT","Added child "+comment.commentHTML);
+            rootComment.childComments.add(comment);
+        }
+
+
+
         commentsAdapter.setCommentsList(commentsList);
+
+
     }
 
     //called from proxy
@@ -335,6 +386,13 @@ public class VideoPlayActivity extends AppCompatActivity {
             }
             commentsAdapter.notifyDataSetChanged();
         }
+
+    }
+
+    public void viewRepliesButtonClicked(View v){
+        String permlink = v.getTag().toString();
+        Comment c = commentsList.getCommentByID(permlink);
+        steemWebView.getReplies(c.userName,c.permlink, DtubeAPI.getAccountName(this));
 
     }
 

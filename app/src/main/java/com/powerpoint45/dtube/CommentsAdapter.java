@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -22,6 +23,7 @@ import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Transformation;
 
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by michael on 9/11/17.
@@ -29,12 +31,12 @@ import java.util.ArrayList;
 
 class CommentsAdapter extends BaseAdapter {
 
-    private ArrayList<Comment> comments;
+    private CommentsList comments;
     Context c;
     private Transformation transformation;
     boolean loggedIn;
 
-    CommentsAdapter(ArrayList<Comment> comments, Context c, boolean loggedIn){
+    CommentsAdapter(CommentsList comments, Context c, boolean loggedIn){
         this.comments = comments;
         this.c = c;
         this.loggedIn = loggedIn;
@@ -45,7 +47,7 @@ class CommentsAdapter extends BaseAdapter {
                 .build();
     }
 
-    void setCommentsList(ArrayList<Comment> comments){
+    void setCommentsList(CommentsList comments){
         this.comments = comments;
         notifyDataSetChanged();
     }
@@ -65,6 +67,7 @@ class CommentsAdapter extends BaseAdapter {
         View indentView;
         FrameLayout commentReplyHolder;
         EditText replyEditText;
+        Button viewReplies;
     }
 
     @Override
@@ -72,7 +75,7 @@ class CommentsAdapter extends BaseAdapter {
         if(comments == null)
             return 0;
         else
-            return comments.size();
+            return comments.getTotalComments();
     }
 
     @Override
@@ -88,6 +91,8 @@ class CommentsAdapter extends BaseAdapter {
     @SuppressLint("SetTextI18n")
     @Override
     public View getView(int position, View v, ViewGroup parent) {
+
+        Comment currentComment = comments.getCommentByPosition(position, new AtomicInteger(0));
 
         ViewHolder viewHolder;
 
@@ -111,25 +116,26 @@ class CommentsAdapter extends BaseAdapter {
             viewHolder.replyButton = (TextView) v.findViewById(R.id.comment_reply);
             viewHolder.commentReplyHolder = (FrameLayout) v.findViewById(R.id.comment_reply_holder);
             viewHolder.replyEditText = (EditText)v.findViewById(R.id.item_comment_reply_edittext);
+            viewHolder.viewReplies = (Button)v.findViewById(R.id.view_replies);
         }
 
-        if (!(viewHolder.likeView.getTag()!=null && comments.get(position).permlink!=null && viewHolder.likeView.getTag().equals(comments.get(position).permlink))){
+        if (!(viewHolder.likeView.getTag()!=null && currentComment.permlink!=null && viewHolder.likeView.getTag().equals(currentComment.permlink))){
             Spanned result;
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-                result = Html.fromHtml(comments.get(position).commentHTML, Html.FROM_HTML_MODE_LEGACY);
+                result = Html.fromHtml(currentComment.commentHTML, Html.FROM_HTML_MODE_LEGACY);
             } else {
-                result = Html.fromHtml(comments.get(position).commentHTML);
+                result = Html.fromHtml(currentComment.commentHTML);
             }
             viewHolder.commentView.setText(result);
             viewHolder.commentView.setMovementMethod(LinkMovementMethod.getInstance());
-            viewHolder.usernameView.setText(comments.get(position).userName);
-            viewHolder.dateView.setReferenceTime(comments.get(position).getDate());
-            if (comments.get(position).indent>0)
+            viewHolder.usernameView.setText(currentComment.userName);
+            viewHolder.dateView.setReferenceTime(currentComment.getDate());
+            if (currentComment.indent>0)
                 viewHolder.indentView.setVisibility(View.VISIBLE);
             else
                 viewHolder.indentView.setVisibility(View.GONE);
 
-            Picasso.with(c).load(comments.get(position).getImageURL()).placeholder(R.drawable.ic_account_circle).transform(transformation)
+            Picasso.with(c).load(currentComment.getImageURL()).placeholder(R.drawable.ic_account_circle).transform(transformation)
                     .into(viewHolder.profileView);
         }
 
@@ -137,18 +143,25 @@ class CommentsAdapter extends BaseAdapter {
         viewHolder.replyEditText.setOnEditorActionListener(null);
         viewHolder.replyEditText.setOnKeyListener(null);
 
+        if (currentComment.children>0 && currentComment.childComments==null){
+            viewHolder.viewReplies.setVisibility(View.VISIBLE);
+        }else if (currentComment.childComments!=null){
+            viewHolder.viewReplies.setVisibility(View.GONE);
+        }else {
+            viewHolder.viewReplies.setVisibility(View.GONE);
+        }
 
-
-        viewHolder.priceView.setText(comments.get(position).price);
-        viewHolder.likesView.setText(""+comments.get(position).likes);
-        viewHolder.dislikesView.setText(""+comments.get(position).dislikes);
+        viewHolder.priceView.setText(currentComment.price);
+        viewHolder.likesView.setText(""+currentComment.likes);
+        viewHolder.dislikesView.setText(""+currentComment.dislikes);
 
         viewHolder.likeView.setColorFilter(null);
         viewHolder.dislikeView.setColorFilter(null);
 
-        viewHolder.likeView.setTag(comments.get(position).permlink);
-        viewHolder.dislikeView.setTag(comments.get(position).permlink);
-        viewHolder.replyButton.setTag(comments.get(position).permlink);
+        viewHolder.replyButton.setTag(currentComment.permlink);
+        viewHolder.likeView.setTag(currentComment.permlink);
+        viewHolder.dislikeView.setTag(currentComment.permlink);
+        viewHolder.viewReplies.setTag(currentComment.permlink);
 
         if (!loggedIn) {
             viewHolder.replyButton.setEnabled(false);
@@ -156,9 +169,9 @@ class CommentsAdapter extends BaseAdapter {
             viewHolder.dislikeView.setEnabled(false);
         }
 
-        if (comments.get(position).voteType == 1){
+        if (currentComment.voteType == 1){
             viewHolder.likeView.setColorFilter(Color.RED, PorterDuff.Mode.SRC_ATOP);
-        }else if(comments.get(position).voteType == -1)
+        }else if(currentComment.voteType == -1)
             viewHolder.dislikeView.setColorFilter(Color.RED, PorterDuff.Mode.SRC_ATOP);
 
 

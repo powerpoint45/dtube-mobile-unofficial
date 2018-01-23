@@ -92,8 +92,12 @@ public class SteemitWebView extends WebView {
     }
 
     public void getReplies(String author, String permlink, String accountName){
-        queURL("javascript:getAllReplies('"+author+"','"+permlink+"','"+accountName+"');");
+        queURL("javascript:getReplies('"+author+"','"+permlink+"','"+accountName+"');");
     }
+
+//    public void getAllReplies(String author, String permlink, String accountName){
+//        queURL("javascript:getAllReplies('"+author+"','"+permlink+"','"+accountName+"');");
+//    }
 
     public void getChannelVideos(String author, String lastPermlink){
         queURL("javascript:getAuthorVideos('"+author+"','"+lastPermlink+"');");

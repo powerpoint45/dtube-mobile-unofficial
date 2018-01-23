@@ -18,14 +18,18 @@ class Comment implements Serializable {
     String price;
     int likes;
     int dislikes;
+    int children;
 
     int indent;
     String permlink;
+    String parent;
 
     //0=no vote
     //1=vote up
     //-1=vote down
     int voteType;
+
+    CommentsList childComments;
 
     String getImageURL(){
         return DtubeAPI.PROFILE_IMAGE_SMALL_URL.replace("username",userName);

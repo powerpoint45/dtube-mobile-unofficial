@@ -46,12 +46,9 @@ class Video implements Serializable{
     //private static String VIDEO_FRAME_URL = "https://skzap.github.io/embedtube/#!/AUTHOR/PERMLINK/true/true/GATEWAY";
 
     private final String[] GATEWAYS = new String[]{
+            "https://ipfs.infura.io",
             "https://ipfs.io",
-            "https://dtube1.gateway.ipfsstore.it:8443",
-            "https://dtube2.gateway.ipfsstore.it:8443",
             "https://gateway.ipfs.io",
-            "https://earth.i.ipfs.io",
-            "https://gateway.ipfsstore.it:8443",
             "https://scrappy.i.ipfs.io",
             "https://chappy.i.ipfs.io"
     };

@@ -173,32 +173,29 @@ class AppJavaScriptProxy {
     }
 
     @JavascriptInterface
-    public void getAllRepliesCallback(String jsonComments){
+    public void getRepliesCallback(String jsonComments){
         try {
-            JSONArray jarr = new JSONArray(jsonComments);
-            final CommentsList commentsList = new CommentsList();
-            for (int i = 0; i<jarr.length(); i++){
-                JSONObject jo = jarr.getJSONObject(i);
-                Comment comment = new Comment();
-                comment.indent = jo.getInt("indent");
-                comment.permlink = jo.getString("permlink");
-                comment.likes = jo.getInt("likes");
-                comment.dislikes = jo.getInt("dislikes");
-                comment.commentHTML = jo.getString("comment");
-                //comment.commentHTML = Tools.getFormattedText(comment.commentHTML);
-                comment.setTime(jo.getString("date"));
-                comment.voteType = jo.getInt("voteType");
-                comment.price = jo.getString("price");
-                comment.userName = jo.getString("author");
+            JSONObject jo = new JSONObject(jsonComments);
+            final Comment comment = new Comment();
+            comment.indent = jo.getInt("indent");
+            comment.permlink = jo.getString("permlink");
+            comment.likes = jo.getInt("likes");
+            comment.dislikes = jo.getInt("dislikes");
+            comment.commentHTML = jo.getString("comment");
+            //comment.commentHTML = Tools.getFormattedText(comment.commentHTML);
+            comment.setTime(jo.getString("date"));
+            comment.voteType = jo.getInt("voteType");
+            comment.price = jo.getString("price");
+            comment.userName = jo.getString("author");
+            comment.children = jo.getInt("children");
+            comment.parent = jo.getString("parent");
 
-                commentsList.add(comment);
-            }
 
             if (activity instanceof VideoPlayActivity){
                 activity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        ((VideoPlayActivity)activity).setReplies(commentsList);
+                        ((VideoPlayActivity)activity).addReply(comment);
                     }
                 });
             }
@@ -207,6 +204,42 @@ class AppJavaScriptProxy {
             e.printStackTrace();
         }
     }
+
+//    @JavascriptInterface
+//    public void getAllRepliesCallback(String jsonComments){
+//        try {
+//            JSONArray jarr = new JSONArray(jsonComments);
+//            final CommentsList commentsList = new CommentsList();
+//            for (int i = 0; i<jarr.length(); i++){
+//                JSONObject jo = jarr.getJSONObject(i);
+//                Comment comment = new Comment();
+//                comment.indent = jo.getInt("indent");
+//                comment.permlink = jo.getString("permlink");
+//                comment.likes = jo.getInt("likes");
+//                comment.dislikes = jo.getInt("dislikes");
+//                comment.commentHTML = jo.getString("comment");
+//                //comment.commentHTML = Tools.getFormattedText(comment.commentHTML);
+//                comment.setTime(jo.getString("date"));
+//                comment.voteType = jo.getInt("voteType");
+//                comment.price = jo.getString("price");
+//                comment.userName = jo.getString("author");
+//
+//                commentsList.add(comment);
+//            }
+//
+//            if (activity instanceof VideoPlayActivity){
+//                activity.runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        ((VideoPlayActivity)activity).setReplies(commentsList);
+//                    }
+//                });
+//            }
+//
+//        }catch (JSONException e){
+//            e.printStackTrace();
+//        }
+//    }
 
     @JavascriptInterface
     public void getSubscriberCountCallback(String account, final int count){

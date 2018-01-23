@@ -148,5 +148,14 @@
 
         </FrameLayout>
 
+        <Button
+            android:id="@+id/view_replies"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:onClick="viewRepliesButtonClicked"
+            android:text="@string/replies" />
+
     </LinearLayout>
 </LinearLayout>
