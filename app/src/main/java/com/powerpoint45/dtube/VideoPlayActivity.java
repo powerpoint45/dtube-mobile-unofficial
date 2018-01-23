@@ -165,7 +165,8 @@ public class VideoPlayActivity extends AppCompatActivity {
             commentReplyBox.clearFocus();
         Log.d("dtube3","imei back");
 
-        commentsAdapter.notifyDataSetChanged();
+        if (commentsAdapter!=null)
+            commentsAdapter.notifyDataSetChanged();
 
         InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
         if (commentReplyBox!=null)
