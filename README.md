@@ -73,4 +73,7 @@ I did not reinvent wheels. I am very appreciative of all those devs who make thi
 Just in case you missed the download link mentioned in the article. 
 [Download Here](https://github.com/powerpoint45/dtube-mobile-unofficial/releases/)
 
+# Discord
+Join our Dtube Mobile Unofficial [Discord](https://discord.gg/3h88GDb)
+
 <br /><hr/><em>Posted on <a href="https://utopian.io/utopian-io/@immawake/introducing-the-dtube-mobile-app-unofficial-android-app">Utopian.io -  Rewarding Open Source Contributors</a></em><hr/>

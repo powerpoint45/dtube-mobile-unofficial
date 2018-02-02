@@ -91,13 +91,7 @@ public class LoginActivity extends AppCompatActivity {
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     qrButtonClicked(new View(this));
-
-
-                } else {
-
-                    // permission denied, boo! Disable the
                 }
-                return;
             }
         }
     }
