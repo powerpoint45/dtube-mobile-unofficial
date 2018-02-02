@@ -1,8 +1,12 @@
 package com.powerpoint45.dtube;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -46,12 +50,23 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
+    final int CAMERA_REQUEST_PERMISSION = 10;
+
     public void qrButtonClicked(View v){
-        if (passwordEditText.isEnabled()){
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) {
 
-            Intent qrIntent = new Intent(LoginActivity.this, SimpleScannerActivity.class);
-            startActivityForResult(qrIntent, RESULT_QR_CODE);
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.CAMERA},
+                    CAMERA_REQUEST_PERMISSION);
+        }else {
+            if (passwordEditText.isEnabled()) {
 
+                Intent qrIntent = new Intent(LoginActivity.this, SimpleScannerActivity.class);
+                startActivityForResult(qrIntent, RESULT_QR_CODE);
+
+            }
         }
     }
 
@@ -64,6 +79,25 @@ public class LoginActivity extends AppCompatActivity {
                 passwordEditText.setText(data.getExtras().getString("password"));
                 if (userNameEditText.getText().toString().length()>0)
                     loginButtonClicked(new View(this));
+            }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case CAMERA_REQUEST_PERMISSION: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    qrButtonClicked(new View(this));
+
+
+                } else {
+
+                    // permission denied, boo! Disable the
+                }
+                return;
             }
         }
     }
