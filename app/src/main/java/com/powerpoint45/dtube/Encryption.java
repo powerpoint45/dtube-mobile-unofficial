@@ -90,11 +90,9 @@ class Encryption {
             KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
             keyStore.load(null);
             KeyStore.PrivateKeyEntry privateKeyEntry = (KeyStore.PrivateKeyEntry)keyStore.getEntry(alias, null);
-            RSAPrivateKey privateKey = (RSAPrivateKey) privateKeyEntry.getPrivateKey();
 
-            Cipher output = Cipher.getInstance("RSA/ECB/PKCS1Padding", "AndroidOpenSSL");
-            output.init(Cipher.DECRYPT_MODE, privateKey);
-
+            Cipher output = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+            output.init(Cipher.DECRYPT_MODE, privateKeyEntry.getPrivateKey());
 
             SharedPreferences sharedPref =PreferenceManager.getDefaultSharedPreferences(c);
             String cipherText = sharedPref.getString("cypher",null);
