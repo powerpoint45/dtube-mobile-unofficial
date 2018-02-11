@@ -9,12 +9,13 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
-    <ImageView
-        android:id="@+id/item_image"
-        android:layout_width="match_parent"
-        android:layout_height="300dp"
-        android:scaleType="centerCrop"
-        app:srcCompat="@android:drawable/presence_video_online" />
+
+        <ImageView
+            android:id="@+id/item_image"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scaleType="fitStart"
+            android:adjustViewBounds="true"/>
 
         <ImageView
             android:id="@+id/item_remove"
@@ -65,9 +66,6 @@
             android:layout_height="wrap_content"
             android:text="some time ago"
             android:textAppearance="@style/TextAppearance.AppCompat.Medium"/>
-
-
-
 
     </LinearLayout>
 
