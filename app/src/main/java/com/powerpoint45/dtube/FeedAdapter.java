@@ -33,12 +33,12 @@ class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
         ViewHolder(LinearLayout v) {
             super(v);
             itemView = v;
-            thumbView = ((ImageView)v.findViewById(R.id.item_image));
-            titleView = ((TextView)v.findViewById(R.id.item_title));
-            timeView = ((RelativeTimeTextView)v.findViewById(R.id.item_time));
-            priceView = ((TextView)v.findViewById(R.id.item_value));
-            userView = ((TextView)v.findViewById(R.id.item_user));
-            removeButton = ((ImageView)v.findViewById(R.id.item_remove));
+            thumbView = (ImageView) v.findViewById(R.id.item_image);
+            titleView = (TextView) v.findViewById(R.id.item_title);
+            timeView = (RelativeTimeTextView) v.findViewById(R.id.item_time);
+            priceView = (TextView) v.findViewById(R.id.item_value);
+            userView = (TextView) v.findViewById(R.id.item_user);
+            removeButton = (ImageView) v.findViewById(R.id.item_remove);
         }
     }
 
@@ -94,8 +94,9 @@ class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
         holder.userView.setText(videos.get(position).user);
 
 
-        Picasso.with(c).load(videos.get(position).getImageURL()).placeholder(R.drawable.ic_ondemand_video).resize(720,720).centerInside().into(
+        Picasso.with(c).load(videos.get(position).getImageURL()).placeholder(R.drawable.ic_ondemand_video).into(
                 holder.thumbView);
+
     }
 
     // Return the size of your dataset (invoked by the layout manager)
