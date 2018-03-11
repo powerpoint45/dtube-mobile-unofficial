@@ -26,7 +26,9 @@
             android:layout_marginLeft="20dp"
             android:layout_marginTop="25dp"
             android:clickable="true"
+            android:focusable="true"
             android:onClick="loginButtonClicked"
+            android:background="?attr/selectableItemBackground"
             app:srcCompat="@drawable/login" />
 
 
@@ -72,6 +74,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginRight="20dp"
                     android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackground"
                     android:onClick="loginButtonClicked"
                     app:srcCompat="@drawable/ic_person_login" />
             </LinearLayout>

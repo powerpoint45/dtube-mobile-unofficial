@@ -1,6 +1,11 @@
 package com.powerpoint45.dtube;
 
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.ScaleDrawable;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,6 +24,7 @@ class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
 
     private VideoArrayList videos;
     MainActivity c;
+    Drawable placeholderDrawable;
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         // each data item is just a string in this case
@@ -45,6 +51,8 @@ class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
     // Provide a suitable constructor (depends on the kind of dataset)
     FeedAdapter(MainActivity c) {
         this.c = c;
+
+        placeholderDrawable = c.getResources().getDrawable(R.drawable.ic_ondemand_video);
     }
 
     public void setVideos(VideoArrayList videos){
@@ -94,8 +102,12 @@ class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
         holder.userView.setText(videos.get(position).user);
 
 
-        Picasso.with(c).load(videos.get(position).getImageURL()).placeholder(R.drawable.ic_ondemand_video).into(
-                holder.thumbView);
+
+
+        Picasso.with(c).load(videos.get(position).getImageURL()).placeholder(placeholderDrawable)
+                .resize(720,720).centerInside()//prevents image to be shown to be larger than 720px w or h. Makes scrolling smoother
+                .noFade()
+                .into(holder.thumbView);
 
     }
 

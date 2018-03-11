@@ -42,6 +42,7 @@
                 android:layout_weight="1"
                 android:onClick="tabGoToSubscribedClicked"
                 android:clickable="true"
+                android:focusable="true"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 app:srcCompat="@drawable/ic_subscriptions"
                 android:padding="10dp"
@@ -52,6 +53,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
+                android:focusable="true"
                 android:onClick="tabGoToHotClicked"
                 app:srcCompat="@drawable/ic_whatshot"
                 android:background="?attr/selectableItemBackgroundBorderless"
@@ -64,6 +66,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
+                android:focusable="true"
                 android:onClick="tabGoToTrendingClicked"
                 app:srcCompat="@drawable/ic_trending_up"
                 android:background="?attr/selectableItemBackgroundBorderless"
@@ -75,6 +78,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
+                android:focusable="true"
                 android:onClick="tabGoToNewClicked"
                 app:srcCompat="@drawable/ic_fiber_new"
                 android:background="?attr/selectableItemBackgroundBorderless"
@@ -86,6 +90,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
+                android:focusable="true"
                 android:onClick="tabGoToHistoryClicked"
                 app:srcCompat="@drawable/ic_history"
                 android:background="?attr/selectableItemBackgroundBorderless"
@@ -142,6 +147,7 @@
                         android:clickable="true"
                         android:onClick="searchButtonClicked"
                         android:background="?attr/selectableItemBackgroundBorderless"
+                        android:focusable="true"
                         app:srcCompat="@drawable/ic_search" />
 
                     <ImageView
@@ -153,6 +159,7 @@
                         android:onClick="loginButtonClicked"
                         android:layout_marginRight="1dp"
                         android:padding="7dp"
+                        android:focusable="true"
                         app:srcCompat="@drawable/login" />
 
                 </LinearLayout>

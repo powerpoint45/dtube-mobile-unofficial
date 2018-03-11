@@ -3,6 +3,7 @@ package com.powerpoint45.dtube;
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.media.AudioManager;
@@ -15,10 +16,12 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SubMenu;
@@ -162,7 +165,10 @@ public class MainActivity extends AppCompatActivity {
         toolbar = findViewById(R.id.toolbar);
 
         recyclerView = ((RecyclerView) findViewById(R.id.feed_rv));
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        //set recyclerView either landscape or portrait
+        onConfigurationChanged(getResources().getConfiguration());
+
         //Animate toolbar when scrolling feed
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
 
@@ -512,6 +518,27 @@ public class MainActivity extends AppCompatActivity {
         expandToolbar();
     }
 
+    public void goToTab(int tab){
+        switch (tab){
+            case DtubeAPI.CAT_HISTORY:
+                tabGoToHistoryClicked(null);
+                break;
+            case DtubeAPI.CAT_HOT:
+                tabGoToHotClicked(null);
+                break;
+            case DtubeAPI.CAT_NEW:
+                tabGoToNewClicked(null);
+                break;
+            case DtubeAPI.CAT_SUBSCRIBED:
+                tabGoToSubscribedClicked(null);
+                break;
+            case DtubeAPI.CAT_TRENDING:
+                tabGoToTrendingClicked(null);
+                break;
+        }
+
+    }
+
     public void searchButtonClicked(View v){
         startActivityForResult(new Intent(MainActivity.this,SearchActivity.class), REQUEST_CODE_SEARCH);
     }
@@ -571,6 +598,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE)
+            recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
+        else
+            recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        //remove cached recycled views because feed_item layout needs to change for orientation
+        recyclerView.getRecycledViewPool().clear();
+        if (feedAdapter!=null)
+            feedAdapter.notifyDataSetChanged();
+        super.onConfigurationChanged(newConfig);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Pass the event to ActionBarDrawerToggle, if it returns
         // true, then it has handled the app icon touch event
@@ -580,6 +621,65 @@ public class MainActivity extends AppCompatActivity {
         // Handle your other action bar items...
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+
+        switch (keyCode) {
+            case KeyEvent.KEYCODE_DPAD_LEFT:
+            case KeyEvent.KEYCODE_DPAD_RIGHT:
+                if (!drawerLayout.isDrawerOpen(navigationView)){
+
+                    int feedItem = -1;
+                    if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT)
+                        feedItem = -2;
+                    else if (feedAdapter.getItemCount()!=0) {
+                        try {
+                            feedItem = Integer.parseInt(getCurrentFocus().getTag().toString());
+                        } catch (Exception ignored) {}
+                    }else
+                        feedItem = -2;
+
+                    if (feedItem!=-1) {
+                        //pressing left on the very left item
+                        if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT && ((feedItem%2 == 0) || feedItem ==-2)){
+                            if (selectedTab == 0) {
+                                drawerLayout.openDrawer(navigationView);
+                                drawerLayout.findViewById(R.id.header_icon).requestFocus();
+                            }else
+                                goToTab(selectedTab - 1);
+
+                        }
+
+                        //pressing right on the very right item
+                        if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT && ((feedItem%2 != 0)|| feedItem ==-2)){
+                            if (selectedTab == 4)
+                                goToTab(0);
+                            else
+                                goToTab(selectedTab + 1);
+
+                        }
+
+
+                        Log.d("dtube", feedItem%2 == 0 ? "left item" : "right item");
+                    }
+                }else if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT)
+                    drawerLayout.closeDrawers();
+                break;
+            default:
+                break;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+
+    @Override
+    public void onBackPressed() {
+        if (drawerLayout.isDrawerOpen(navigationView))
+            drawerLayout.closeDrawers();
+        else
+            super.onBackPressed();
     }
 
 

@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/video_content_holder"
+    android:layout_height="match_parent"
+    android:layout_width="match_parent"
+    >
+
+    <LinearLayout
+        android:id="@+id/player_holder"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/black"
+        android:orientation="vertical"></LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/video_content"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:id="@+id/videoplay_content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="1000dp">
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="10dp"
+                    android:background="#e6ffffff">
+
+                    <TextView
+                        android:id="@+id/item_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingBottom="5dp"
+                        android:text="TextView"
+                        android:textAppearance="@style/Base.TextAppearance.AppCompat.Large" />
+
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center|left"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:id="@+id/item_profileimage"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:layout_marginRight="5dp"
+                            android:adjustViewBounds="true"
+                            android:focusableInTouchMode="true"
+                            android:focusable="true"
+                            android:onClick="goToChannelClicked"
+                            app:srcCompat="@drawable/ic_account_circle" />
+
+                        <TextView
+                            android:id="@+id/item_user"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Michael"
+                            android:onClick="goToChannelClicked"
+                            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                            android:textStyle="bold" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center|right"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/subscribers"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="TextView"
+                                android:textStyle="bold" />
+
+                            <Button
+                                android:id="@+id/item_subscribe"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginLeft="5dp"
+                                android:layout_marginRight="5dp"
+                                android:background="?attr/selectableItemBackgroundBorderless"
+                                android:clickable="true"
+                                android:drawableLeft="@drawable/ic_play_arrow"
+                                android:gravity="right|center"
+                                android:onClick="subscribeButtonClicked"
+                                android:text="@string/subscribe" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/item_value"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+
+                            android:text="$10"
+                            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                            android:textStyle="bold" />
+
+                        <com.github.curioustechizen.ago.RelativeTimeTextView
+                            android:id="@+id/item_time"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:padding="5dp"
+                            android:text="1 hour ago"
+                            android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="right|center"
+                            android:orientation="horizontal">
+
+
+                            <ImageView
+                                android:id="@+id/video_like"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:background="?attr/selectableItemBackgroundBorderless"
+                                android:clickable="true"
+                                android:onClick="videoLikeClicked"
+                                app:srcCompat="@drawable/ic_thumb_up" />
+
+                            <TextView
+                                android:id="@+id/text_likes"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginRight="5dp"
+                                android:text="0" />
+
+                            <ImageView
+                                android:id="@+id/video_dislike"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:background="?attr/selectableItemBackgroundBorderless"
+                                android:clickable="true"
+                                android:onClick="videoDislikeClicked"
+                                app:srcCompat="@drawable/ic_thumb_down" />
+
+                            <TextView
+                                android:id="@+id/text_dislikes"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginRight="5dp"
+                                android:text="0" />
+
+                        </LinearLayout>
+
+
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/item_description" />
+
+                    <com.powerpoint45.dtube.ExpandedListView
+                        android:id="@+id/suggestions_lv"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                    <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="65dp">
+
+                        <com.powerpoint45.dtube.BackableEditText
+                            android:id="@+id/item_comment_edittext"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_gravity="bottom"
+                            android:drawablePadding="5dp"
+                            android:ems="10"
+                            android:hint="@string/comment_placeholder"
+                            android:inputType="textPersonName"
+                            android:focusableInTouchMode="true"
+                            android:imeOptions="actionSend"
+                            android:paddingLeft="50dp" />
+
+                        <ImageView
+                            android:id="@+id/item_account_comment_image"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:layout_gravity="center|left"
+                            android:layout_marginBottom="5dp"
+                            android:layout_marginLeft="5dp"
+                            android:layout_marginTop="4dp"
+                            android:focusable="true"
+                            android:focusableInTouchMode="true"
+                            app:srcCompat="@drawable/ic_account_circle" />
+
+                    </FrameLayout>
+
+                    <com.powerpoint45.dtube.ExpandedListView
+                        android:id="@+id/comments_lv"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+
+            </LinearLayout>
+        </ScrollView>
+
+    </LinearLayout>
+
+</FrameLayout>

@@ -5,6 +5,8 @@
     android:layout_height="match_parent"
     android:weightSum="5"
     android:padding="5dp"
+    android:focusable="true"
+    android:background="?android:attr/selectableItemBackground"
     android:gravity="center_vertical">
 
     <ImageView

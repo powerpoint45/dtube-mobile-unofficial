@@ -58,10 +58,11 @@
                 android:layout_height="match_parent"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentTop="true"
-                android:padding="5dp"
-                android:onClick="copyAddress"
-                android:clickable="true"
                 android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
+                android:onClick="copyAddress"
+                android:padding="5dp"
                 app:srcCompat="?android:attr/actionModeCopyDrawable" />
 
         </RelativeLayout>
@@ -112,10 +113,11 @@
                 android:layout_height="match_parent"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentTop="true"
-                android:padding="5dp"
-                android:onClick="copyAddress"
-                android:clickable="true"
                 android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
+                android:onClick="copyAddress"
+                android:padding="5dp"
                 app:srcCompat="?android:attr/actionModeCopyDrawable" />
 
         </RelativeLayout>
@@ -166,10 +168,11 @@
                 android:layout_height="match_parent"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentTop="true"
-                android:padding="5dp"
-                android:onClick="copyAddress"
-                android:clickable="true"
                 android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
+                android:onClick="copyAddress"
+                android:padding="5dp"
                 app:srcCompat="?android:attr/actionModeCopyDrawable" />
 
         </RelativeLayout>
@@ -219,13 +222,14 @@
                 android:id="@+id/sendpp"
                 android:layout_width="45dp"
                 android:layout_height="match_parent"
-                android:padding="5dp"
-                android:onClick="sendMoney"
-                android:clickable="true"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                app:srcCompat="@drawable/ic_send"
+                android:layout_alignParentEnd="true"
                 android:layout_alignParentTop="true"
-                android:layout_alignParentEnd="true" />
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
+                android:onClick="sendMoney"
+                android:padding="5dp"
+                app:srcCompat="@drawable/ic_send" />
 
         </RelativeLayout>
     </LinearLayout>

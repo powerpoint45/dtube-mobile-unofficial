@@ -45,6 +45,8 @@
             android:padding="1dp"
             android:layout_marginRight="6dp"
             android:layout_weight="1"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:focusable="true"
             android:onClick="qrButtonClicked"
             android:clickable="true"
             app:srcCompat="@drawable/qr" />
@@ -62,6 +64,7 @@
         android:background="?attr/selectableItemBackgroundBorderless"
         android:clickable="true"
         android:onClick="loginButtonClicked"
+        android:focusable="true"
         android:gravity="center">
 
         <TextView

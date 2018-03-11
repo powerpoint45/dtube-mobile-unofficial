@@ -1,14 +1,17 @@
 package com.powerpoint45.dtube;
 
 import android.annotation.SuppressLint;
+import android.app.UiModeManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.method.LinkMovementMethod;
+import android.util.Config;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -69,7 +72,12 @@ public class VideoPlayActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         overridePendingTransition(R.anim.slide_up, android.R.anim.fade_out);
-        setContentView(R.layout.activity_videoplay);
+        UiModeManager uiModeManager = (UiModeManager) getSystemService(UI_MODE_SERVICE);
+        if (uiModeManager.getCurrentModeType()== Configuration.UI_MODE_TYPE_TELEVISION) {
+            setContentView(R.layout.activity_videoplay_tv);
+            Log.d("dtube","RUNNING APP ON TV");
+        }else
+            setContentView(R.layout.activity_videoplay);
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
 
         Bundle videoBundle = getIntent().getBundleExtra("video");
@@ -463,6 +471,10 @@ public class VideoPlayActivity extends AppCompatActivity {
             Log.d("dtube4","To load "+videoToPlay.getVideoFrameUrl());
 
             webViewVideoView.loadUrl(videoToPlay.getVideoFrameUrl());
+
+//            if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+//                webViewVideoView.makeFullscreen();
+//            }
 
             if (videoLayoutHolder.findViewById(R.id.embeded_video_view)==null)
                 videoLayoutHolder.addView(webViewVideoView);

@@ -3,9 +3,11 @@ package com.powerpoint45.dtube;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.os.Build;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 
 /**
@@ -13,6 +15,9 @@ import android.widget.FrameLayout;
  */
 
 public class WebViewVideoView extends WebView {
+    boolean loadedPage;
+
+
     @SuppressLint("SetJavaScriptEnabled")
     public WebViewVideoView(Activity context) {
         super(context);
@@ -46,6 +51,11 @@ public class WebViewVideoView extends WebView {
         }
         setId(R.id.embeded_video_view);
 
+        setWebViewClient(new WebViewClient() {
+            public void onPageFinished(WebView view, String url) {
+                loadedPage = true;
+            }
+        });
 
         VideoEnabledWebChromeClient webChromeClient = new VideoEnabledWebChromeClient(context.findViewById(R.id.video_content),
                 (FrameLayout)context.findViewById(R.id.video_content_holder));
@@ -81,6 +91,52 @@ public class WebViewVideoView extends WebView {
 
     public void pauseVideo(){
         loadUrl("javascript:document.getElementsByTagName('video')[0].pause();");
+    }
+
+    public void makeFullscreen(){
+        queURL("javascript:document.getElementsByTagName('video')[0].webkitRequestFullscreen();");
+    }
+
+    public void queURL(String url){
+        if (loadedPage) {
+            loadUrl(url);
+            Log.d("dtube4", "open url");
+        }else {
+            class LoadRunner implements Runnable{
+
+                private String url;
+                private LoadRunner(String url){
+                    this.url = url;
+                }
+
+                @Override
+                public void run() {
+                    do{
+                        Log.d("dtube4","waiting to run url");
+                        try {
+                            Thread.sleep(100);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }while (!loadedPage);
+
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    ((Activity)getContext()).runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            loadUrl(url);
+                        }
+                    });
+                }
+            }
+
+            new Thread(new LoadRunner(url)).start();
+
+        }
     }
 
     public void killWebView(){

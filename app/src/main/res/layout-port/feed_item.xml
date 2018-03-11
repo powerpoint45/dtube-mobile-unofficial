@@ -4,7 +4,8 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="10dp"
-    android:background="?android:selectableItemBackground">
+    android:focusable="true"
+    android:background="?android:attr/selectableItemBackground">
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -14,7 +15,8 @@
             android:id="@+id/item_image"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:scaleType="fitStart"
+            android:maxHeight="250dp"
+            android:scaleType="fitCenter"
             android:adjustViewBounds="true"/>
 
         <ImageView
@@ -24,6 +26,7 @@
             android:layout_gravity="right"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:clickable="true"
+            android:focusable="true"
             android:onClick="removeRecentClicked"
             app:srcCompat="@drawable/ic_cancel" />
 
