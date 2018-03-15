@@ -1,8 +1,12 @@
 package com.powerpoint45.dtube;
 
+import android.app.Activity;
+import android.content.res.Resources;
 import android.os.Build;
 import android.text.Html;
 import android.text.Spanned;
+import android.util.DisplayMetrics;
+import android.util.TypedValue;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -20,6 +24,19 @@ public class Tools {
         } else {
             return Html.fromHtml(source);
         }
+    }
+
+    public static int numtodp(int in, Activity activity) {
+        int out = (int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, in, activity.getResources()
+                        .getDisplayMetrics());
+        return out;
+    }
+
+    public static float dptopx(float dp){
+        DisplayMetrics metrics = Resources.getSystem().getDisplayMetrics();
+        float px = dp * (metrics.densityDpi / 160f);
+        return Math.round(px);
     }
 
 //    static String getFormattedText(String unformatted){

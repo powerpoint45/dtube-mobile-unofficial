@@ -11,7 +11,6 @@ import android.media.AudioManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.method.LinkMovementMethod;
-import android.util.Config;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -24,6 +23,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.github.curioustechizen.ago.RelativeTimeTextView;
@@ -72,12 +72,27 @@ public class VideoPlayActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         overridePendingTransition(R.anim.slide_up, android.R.anim.fade_out);
+
         UiModeManager uiModeManager = (UiModeManager) getSystemService(UI_MODE_SERVICE);
         if (uiModeManager.getCurrentModeType()== Configuration.UI_MODE_TYPE_TELEVISION) {
             setContentView(R.layout.activity_videoplay_tv);
             Log.d("dtube","RUNNING APP ON TV");
-        }else
+        }else {
             setContentView(R.layout.activity_videoplay);
+
+            //set height of comments section
+            findViewById(R.id.undervideo_contents).addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+                @Override
+                public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                    if (bottom!=oldBottom)
+                        findViewById(R.id.comments_lv).setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT
+                                ,bottom-top-(int)Tools.dptopx(75)));
+                }
+            });
+        }
+
+
+
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
 
         Bundle videoBundle = getIntent().getBundleExtra("video");
@@ -550,6 +565,27 @@ public class VideoPlayActivity extends AppCompatActivity {
                     steemWebView.getVideoInfo(v.user, v.permlink, DtubeAPI.getAccountName(this));
                 }
         }
-
     }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        Log.d("d", "key");
+
+        switch (keyCode) {
+            case KeyEvent.KEYCODE_DPAD_LEFT:
+                break;
+            case KeyEvent.KEYCODE_DPAD_RIGHT:
+                break;
+            case KeyEvent.KEYCODE_DPAD_UP:
+                if (((ScrollView)findViewById(R.id.undervideo_contents)).getScrollY()==0) {
+                    webViewVideoView.requestFocus();
+
+                }
+                break;
+            default:
+                break;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
 }

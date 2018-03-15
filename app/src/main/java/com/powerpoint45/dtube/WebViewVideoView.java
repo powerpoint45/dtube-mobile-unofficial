@@ -4,11 +4,16 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.os.Build;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.inputmethod.BaseInputConnection;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputConnection;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
+import android.widget.ScrollView;
 
 /**
  * Created by michael on 22/11/17.
@@ -93,6 +98,10 @@ public class WebViewVideoView extends WebView {
         loadUrl("javascript:document.getElementsByTagName('video')[0].pause();");
     }
 
+    public void playVideo(){
+        loadUrl("javascript:document.getElementsByTagName('video')[0].play();");
+    }
+
     public void makeFullscreen(){
         queURL("javascript:document.getElementsByTagName('video')[0].webkitRequestFullscreen();");
     }
@@ -138,6 +147,27 @@ public class WebViewVideoView extends WebView {
 
         }
     }
+
+    @Override
+    public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
+        return new BaseInputConnection(this, false); //this is needed for #dispatchKeyEvent() to be notified.
+    }
+
+    boolean paused = false;
+
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        Log.d("d", "key in video player");
+        switch (event.getKeyCode()) {
+            case KeyEvent.KEYCODE_DPAD_DOWN:
+                clearFocus();
+                break;
+            default:
+                break;
+        }
+        return super.dispatchKeyEvent(event);
+    }
+
 
     public void killWebView(){
         loadUrl("about:blank");

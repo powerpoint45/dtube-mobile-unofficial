@@ -20,6 +20,7 @@
         </LinearLayout>
 
         <ScrollView
+            android:id="@+id/undervideo_contents"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
@@ -203,7 +204,7 @@
 
                 </FrameLayout>
 
-                <com.powerpoint45.dtube.ExpandedListView
+                <com.powerpoint45.dtube.CommentsListView
                     android:id="@+id/comments_lv"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
