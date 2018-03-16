@@ -28,7 +28,7 @@ public class BackableEditText extends AppCompatEditText {
             ((VideoPlayActivity)getContext()).editTextBacked();
             return true;
         }
-        return super.dispatchKeyEvent(event);
+        return false;
     }
 
 

@@ -11,6 +11,7 @@ import android.media.AudioManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.method.LinkMovementMethod;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -33,6 +34,7 @@ import com.squareup.picasso.Transformation;
 
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Random;
 
 import cn.jzvd.JZVideoPlayerStandard;
 
@@ -76,6 +78,11 @@ public class VideoPlayActivity extends AppCompatActivity {
         UiModeManager uiModeManager = (UiModeManager) getSystemService(UI_MODE_SERVICE);
         if (uiModeManager.getCurrentModeType()== Configuration.UI_MODE_TYPE_TELEVISION) {
             setContentView(R.layout.activity_videoplay_tv);
+            DisplayMetrics displayMetrics = new DisplayMetrics();
+            getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+            int height = displayMetrics.heightPixels;
+            findViewById(R.id.undervideo_padding).setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                    height));
             Log.d("dtube","RUNNING APP ON TV");
         }else {
             setContentView(R.layout.activity_videoplay);
@@ -140,7 +147,9 @@ public class VideoPlayActivity extends AppCompatActivity {
     EditText.OnEditorActionListener editorActionListener = new EditText.OnEditorActionListener() {
         @Override
         public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+            Log.d("d","KEY EVENT");
             if (actionId == EditorInfo.IME_ACTION_SEND) {
+                Log.d("d","IME_ACTION_SEND");
                 //replace ' in order to prevent syntax error when running javascript
                 String comment = v.getText().toString().replaceAll("'","’");
                 String permlink = null;
@@ -171,6 +180,10 @@ public class VideoPlayActivity extends AppCompatActivity {
                     imm.hideSoftInputFromWindow(replyBox.getWindowToken(), 0);
 
                 v.clearFocus();
+
+                //Only on TV
+                if (findViewById(R.id.comment_et_holder)!=null)
+                    findViewById(R.id.comment_et_holder).requestFocus();
 
                 if (commentsAdapter!=null)
                     commentsAdapter.notifyDataSetChanged();
@@ -351,6 +364,7 @@ public class VideoPlayActivity extends AppCompatActivity {
             replyBox.setFocusableInTouchMode(false);
         }else {
             replyBox.setFocusableInTouchMode(true);
+            replyBox.setFocusable(true);
             findViewById(R.id.item_subscribe).setClickable(true);
             findViewById(R.id.video_like).setClickable(true);
             findViewById(R.id.video_dislike).setClickable(true);
@@ -581,6 +595,25 @@ public class VideoPlayActivity extends AppCompatActivity {
                     webViewVideoView.requestFocus();
 
                 }
+                break;
+            case KeyEvent.KEYCODE_DPAD_CENTER:
+                if (getCurrentFocus()!=null){
+                    switch (getCurrentFocus().getId()){
+                        case R.id.comment_et_holder:
+                            replyBox.setEnabled(true);
+                            replyBox.requestFocus();
+                            break;
+
+                        default:
+
+                            break;
+
+
+                    }
+
+
+                }
+
                 break;
             default:
                 break;

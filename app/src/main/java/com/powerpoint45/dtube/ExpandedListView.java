@@ -22,16 +22,16 @@ public class ExpandedListView extends ListView{
 		// TODO Auto-generated constructor stub
 	}
 	
-	@Override 
+	@Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 		super.onMeasure(widthMeasureSpec, MeasureSpec.makeMeasureSpec(Integer.MAX_VALUE >> 2, MeasureSpec.AT_MOST));
     }
 	
 	float startY;
- 
-    @Override 
+
+    @Override
     public boolean onInterceptTouchEvent(MotionEvent e)
-    { 
+    {
         onTouchEvent(e);
         if (e.getAction() == MotionEvent.ACTION_DOWN) startY = e.getY();
         return (e.getAction() == MotionEvent.ACTION_MOVE) && (Math.abs(startY - e.getY()) > 50);

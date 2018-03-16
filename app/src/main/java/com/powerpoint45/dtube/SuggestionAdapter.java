@@ -82,6 +82,8 @@ class SuggestionAdapter extends BaseAdapter {
             holder = new ViewHolder(v);
         }
 
+
+
         if (!(holder.thumbView.getTag()!=null && holder.thumbView.getTag().equals(videos.get(position).permlink))) {
             holder.thumbView.setTag(videos.get(position).permlink);
             holder.titleView.setTag(position);

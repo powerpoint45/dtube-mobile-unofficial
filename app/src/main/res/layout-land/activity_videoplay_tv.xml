@@ -24,7 +24,8 @@
         <ScrollView
             android:id="@+id/undervideo_contents"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:fillViewport="true">
 
             <LinearLayout
                 android:id="@+id/videoplay_content"
@@ -32,11 +33,12 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <LinearLayout
+                <View
+                    android:id="@+id/undervideo_padding"
                     android:layout_width="match_parent"
-                    android:layout_height="1000dp">
+                    android:layout_height="match_parent">
 
-                </LinearLayout>
+                </View>
 
                 <LinearLayout
                     android:orientation="vertical"
@@ -68,6 +70,7 @@
                             android:adjustViewBounds="true"
                             android:focusableInTouchMode="true"
                             android:focusable="true"
+                            android:background="?attr/selectableItemBackgroundBorderless"
                             android:onClick="goToChannelClicked"
                             app:srcCompat="@drawable/ic_account_circle" />
 
@@ -190,7 +193,10 @@
 
                     <FrameLayout
                         android:layout_width="match_parent"
-                        android:layout_height="65dp">
+                        android:layout_height="65dp"
+                        android:background="?attr/selectableItemBackground"
+                        android:id="@+id/comment_et_holder"
+                        android:focusable="true">
 
                         <com.powerpoint45.dtube.BackableEditText
                             android:id="@+id/item_comment_edittext"
@@ -201,7 +207,8 @@
                             android:ems="10"
                             android:hint="@string/comment_placeholder"
                             android:inputType="textPersonName"
-                            android:focusableInTouchMode="true"
+
+                            android:focusable="true"
                             android:imeOptions="actionSend"
                             android:paddingLeft="50dp" />
 
