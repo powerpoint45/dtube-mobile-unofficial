@@ -26,6 +26,7 @@ public class ChannelActivity extends AppCompatActivity {
     ChannelAdapter adapter;
     SteemitWebView steemitWebView;
     Toolbar toolbar;
+    Toolbar tb;
     RecyclerView recyclerView;
     VideoArrayList videos;
     boolean gotAllItems = false;
@@ -57,9 +58,10 @@ public class ChannelActivity extends AppCompatActivity {
 
         layoutManager = new LinearLayoutManager(this);
         toolbar = (Toolbar)findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        tb = (Toolbar)findViewById(R.id.toolbar_smal);
+        setSupportActionBar(tb);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+        tb.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 finish();
@@ -82,8 +84,8 @@ public class ChannelActivity extends AppCompatActivity {
                     if (toolbar.getVisibility() == View.GONE)
                         toolbar.setVisibility(View.VISIBLE);
 
-                    if (toolbar.getHeight()-dy>getResources().getDimension(R.dimen.toolbar_size_large))
-                        toolbar.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int)getResources().getDimension(R.dimen.toolbar_size_large)));
+                    if (toolbar.getHeight()-dy>getResources().getDimension(R.dimen.toolbar_size_mixed))
+                        toolbar.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int)getResources().getDimension(R.dimen.toolbar_size_mixed)));
                     else
                         toolbar.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, toolbar.getHeight() - dy));
                 }
