@@ -57,6 +57,14 @@ public class ChannelActivity extends AppCompatActivity {
 
         layoutManager = new LinearLayoutManager(this);
         toolbar = (Toolbar)findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
         recyclerView = ((RecyclerView) findViewById(R.id.channel_video_list));
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(layoutManager);
@@ -90,6 +98,8 @@ public class ChannelActivity extends AppCompatActivity {
 
             }
         });
+
+
 
         ((TextView)findViewById(R.id.item_user)).setText(getResources().getString(R.string.videos_by)+" " + channelName);
 
