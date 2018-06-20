@@ -24,7 +24,6 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.github.curioustechizen.ago.RelativeTimeTextView;
@@ -34,7 +33,6 @@ import com.squareup.picasso.Transformation;
 
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Random;
 
 import cn.jzvd.JZVideoPlayerStandard;
 
@@ -76,6 +74,7 @@ public class VideoPlayActivity extends AppCompatActivity {
         overridePendingTransition(R.anim.slide_up, android.R.anim.fade_out);
 
         UiModeManager uiModeManager = (UiModeManager) getSystemService(UI_MODE_SERVICE);
+        assert uiModeManager != null;
         if (uiModeManager.getCurrentModeType()== Configuration.UI_MODE_TYPE_TELEVISION) {
             setContentView(R.layout.activity_videoplay_tv);
             DisplayMetrics displayMetrics = new DisplayMetrics();
@@ -115,9 +114,9 @@ public class VideoPlayActivity extends AppCompatActivity {
         steemWebView.getSubscriberCount(videoToPlay.user);
         Log.d("dtube","PLAYING ON PLAYER:"+videoToPlay.getVideoStreamURL());
 
-        replyBox = ((EditText)findViewById(R.id.item_comment_edittext));
-        videoLayoutHolder = (LinearLayout) findViewById(R.id.player_holder);
-        descriptionBox = (TextView) findViewById(R.id.item_description);
+        replyBox = findViewById(R.id.item_comment_edittext);
+        videoLayoutHolder = findViewById(R.id.player_holder);
+        descriptionBox = findViewById(R.id.item_description);
         descriptionBox.setBackgroundColor(Color.TRANSPARENT);
 
         transformation = new RoundedTransformationBuilder()
@@ -174,10 +173,14 @@ public class VideoPlayActivity extends AppCompatActivity {
 
                 v.setText("");
                 InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
-                if (commentReplyBox!=null)
+                if (commentReplyBox!=null) {
+                    assert imm != null;
                     imm.hideSoftInputFromWindow(commentReplyBox.getWindowToken(), 0);
-                else
+                }
+                else {
+                    assert imm != null;
                     imm.hideSoftInputFromWindow(replyBox.getWindowToken(), 0);
+                }
 
                 v.clearFocus();
 
@@ -205,10 +208,14 @@ public class VideoPlayActivity extends AppCompatActivity {
             commentsAdapter.notifyDataSetChanged();
 
         InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
-        if (commentReplyBox!=null)
+        if (commentReplyBox!=null) {
+            assert imm != null;
             imm.hideSoftInputFromWindow(commentReplyBox.getWindowToken(), 0);
-        else
+        }
+        else {
+            assert imm != null;
             imm.hideSoftInputFromWindow(replyBox.getWindowToken(), 0);
+        }
     }
 
     @Override
@@ -463,7 +470,7 @@ public class VideoPlayActivity extends AppCompatActivity {
     }
 
     public void replyToCommentButtonClicked(View v){
-        FrameLayout replyHolder = (FrameLayout)((LinearLayout)v.getParent().getParent()).findViewById(R.id.comment_reply_holder);
+        FrameLayout replyHolder = ((LinearLayout)v.getParent().getParent()).findViewById(R.id.comment_reply_holder);
 
         replyHolder.setVisibility(View.VISIBLE);
 
@@ -472,7 +479,7 @@ public class VideoPlayActivity extends AppCompatActivity {
                     .into(((ImageView) replyHolder.findViewById(R.id.item_account_comment_image)));
         }
 
-        commentReplyBox = (EditText)  replyHolder.findViewById(R.id.item_comment_reply_edittext);
+        commentReplyBox = replyHolder.findViewById(R.id.item_comment_reply_edittext);
         commentReplyBox.setTag(v.getTag());
         commentReplyBox.setOnEditorActionListener(editorActionListener);
         commentReplyBox.requestFocus();
@@ -576,7 +583,8 @@ public class VideoPlayActivity extends AppCompatActivity {
             case REQUEST_CHANNEL:
                 if (resultCode == RESULT_OK){
                     Video v = (Video)data.getBundleExtra("video").getSerializable("video");
-                    steemWebView.getVideoInfo(v.user, v.permlink, DtubeAPI.getAccountName(this));
+                    if (v!=null)
+                        steemWebView.getVideoInfo(v.user, v.permlink, DtubeAPI.getAccountName(this));
                 }
         }
     }
@@ -591,7 +599,7 @@ public class VideoPlayActivity extends AppCompatActivity {
             case KeyEvent.KEYCODE_DPAD_RIGHT:
                 break;
             case KeyEvent.KEYCODE_DPAD_UP:
-                if (((ScrollView)findViewById(R.id.undervideo_contents)).getScrollY()==0) {
+                if (findViewById(R.id.undervideo_contents).getScrollY()==0) {
                     webViewVideoView.requestFocus();
 
                 }

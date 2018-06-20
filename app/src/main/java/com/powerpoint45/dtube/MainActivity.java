@@ -21,7 +21,9 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SubMenu;
@@ -119,7 +121,8 @@ public class MainActivity extends AppCompatActivity {
                         startActivity(new Intent(MainActivity.this, DonateActivity.class));
                         break;
                     case R.id.menu_about:
-                        Intent aboutIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://steemit.com/utopian-io/@immawake/introducing-the-dtube-mobile-app-unofficial-android-app"));
+                        //Intent aboutIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://steemit.com/utopian-io/@immawake/introducing-the-dtube-mobile-app-unofficial-android-app"));
+                        Intent aboutIntent = new Intent(MainActivity.this,AboutActivity.class);
                         startActivity(aboutIntent);
                         break;
                     case R.id.subscription_id:
@@ -151,6 +154,7 @@ public class MainActivity extends AppCompatActivity {
         };
 
         drawerToggle.setDrawerIndicatorEnabled(true);
+        //noinspection deprecation
         drawerLayout.setDrawerListener(drawerToggle);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -164,7 +168,7 @@ public class MainActivity extends AppCompatActivity {
         bottomBar = findViewById(R.id.bottom_bar);
         toolbar = findViewById(R.id.toolbar);
 
-        recyclerView = ((RecyclerView) findViewById(R.id.feed_rv));
+        recyclerView = findViewById(R.id.feed_rv);
 
         //set recyclerView either landscape or portrait
         onConfigurationChanged(getResources().getConfiguration());
@@ -302,6 +306,7 @@ public class MainActivity extends AppCompatActivity {
                 steemWebView.getHotVideosFeed();
                 steemWebView.getTrendingVideosFeed();
                 steemWebView.getNewVideosFeed();
+                initFeed();
                 break;
             case REQUEST_CODE_PROFILE:
                 if (resultCode == RESULT_OK){
@@ -403,6 +408,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @SuppressLint("InflateParams")
     public void initFeed(){
         Log.d("dtube","UI:initFeed");
         new Thread(new Runnable() {
@@ -415,11 +421,7 @@ public class MainActivity extends AppCompatActivity {
                     // roll number
                     public int compare(Video a, Video b)
                     {
-                        if (a.getDate() > b.getDate()) {
-                            return  -1;
-                        } else {
-                            return 1;
-                        }
+                        return Long.compare(b.getDate(), a.getDate());
                     }
                 }
                 Collections.sort(videos, new SortVideos());
@@ -432,6 +434,28 @@ public class MainActivity extends AppCompatActivity {
                 });
             }
         }).start();
+
+        //Show button to login if user clicked on subscription feed and not logged in
+        if (selectedTab == DtubeAPI.CAT_SUBSCRIBED) {
+            if (accountInfo == null) {
+                if (findViewById(R.id.login_for_subs) == null) {
+                    FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                    lp.gravity = Gravity.CENTER;
+                    View v = LayoutInflater.from(this).inflate(R.layout.login_for_subs_btn, null);
+                    v.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            loginButtonClicked(null);
+                        }
+                    });
+                    ((FrameLayout) findViewById(R.id.mainframe)).addView(v, lp);
+                }
+            }else if (findViewById(R.id.login_for_subs) != null) {
+                ((FrameLayout) findViewById(R.id.mainframe)).removeView(findViewById(R.id.login_for_subs));
+            }
+        }else if (findViewById(R.id.login_for_subs) != null) {
+            ((FrameLayout) findViewById(R.id.mainframe)).removeView(findViewById(R.id.login_for_subs));
+        }
 
 
         updateBottomBar();
@@ -636,7 +660,8 @@ public class MainActivity extends AppCompatActivity {
                         feedItem = -2;
                     else if (feedAdapter.getItemCount()!=0) {
                         try {
-                            feedItem = Integer.parseInt(getCurrentFocus().getTag().toString());
+                            if (getCurrentFocus()!=null)
+                                feedItem = Integer.parseInt(getCurrentFocus().getTag().toString());
                         } catch (Exception ignored) {}
                     }else
                         feedItem = -2;

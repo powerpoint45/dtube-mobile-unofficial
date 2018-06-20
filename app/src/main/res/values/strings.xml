@@ -43,4 +43,5 @@
     <string name="no_data_qr_code">No data found</string>
 
     <string name="replies">View Replies</string>
+    <string name="login_for_subs">Please login to see your subscription feed</string>
 </resources>

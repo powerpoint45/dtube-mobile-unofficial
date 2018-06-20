@@ -26,7 +26,7 @@ public class ExpandedListView extends ListView{
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 		super.onMeasure(widthMeasureSpec, MeasureSpec.makeMeasureSpec(Integer.MAX_VALUE >> 2, MeasureSpec.AT_MOST));
     }
-	
+
 	float startY;
 
     @Override

@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -27,8 +28,8 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        userNameEditText = ((EditText)findViewById(R.id.username));
-        passwordEditText = ((EditText)findViewById(R.id.password));
+        userNameEditText = findViewById(R.id.username);
+        passwordEditText = findViewById(R.id.password);
         steemitWebView = new SteemitWebView(this);
     }
 
@@ -76,7 +77,8 @@ public class LoginActivity extends AppCompatActivity {
 
         if (requestCode == RESULT_QR_CODE){
             if (resultCode == RESULT_OK){
-                passwordEditText.setText(data.getExtras().getString("password"));
+                if (data.getExtras()!=null)
+                    passwordEditText.setText(data.getExtras().getString("password"));
                 if (userNameEditText.getText().toString().length()>0)
                     loginButtonClicked(new View(this));
             }
@@ -84,7 +86,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode,String permissions[], int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
         switch (requestCode) {
             case CAMERA_REQUEST_PERMISSION: {
                 // If request is cancelled, the result arrays are empty.
