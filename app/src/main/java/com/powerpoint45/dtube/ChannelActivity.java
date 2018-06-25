@@ -26,6 +26,7 @@ public class ChannelActivity extends AppCompatActivity {
     ChannelAdapter adapter;
     SteemitWebView steemitWebView;
     Toolbar toolbar;
+    Toolbar tb;
     RecyclerView recyclerView;
     VideoArrayList videos;
     boolean gotAllItems = false;
@@ -57,6 +58,15 @@ public class ChannelActivity extends AppCompatActivity {
 
         layoutManager = new LinearLayoutManager(this);
         toolbar = (Toolbar)findViewById(R.id.toolbar);
+        tb = (Toolbar)findViewById(R.id.toolbar_smal);
+        setSupportActionBar(tb);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        tb.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
         recyclerView = ((RecyclerView) findViewById(R.id.channel_video_list));
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(layoutManager);
@@ -74,8 +84,8 @@ public class ChannelActivity extends AppCompatActivity {
                     if (toolbar.getVisibility() == View.GONE)
                         toolbar.setVisibility(View.VISIBLE);
 
-                    if (toolbar.getHeight()-dy>getResources().getDimension(R.dimen.toolbar_size_large))
-                        toolbar.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int)getResources().getDimension(R.dimen.toolbar_size_large)));
+                    if (toolbar.getHeight()-dy>getResources().getDimension(R.dimen.toolbar_size_mixed))
+                        toolbar.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int)getResources().getDimension(R.dimen.toolbar_size_mixed)));
                     else
                         toolbar.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, toolbar.getHeight() - dy));
                 }
@@ -90,6 +100,8 @@ public class ChannelActivity extends AppCompatActivity {
 
             }
         });
+
+
 
         ((TextView)findViewById(R.id.item_user)).setText(getResources().getString(R.string.videos_by)+" " + channelName);
 

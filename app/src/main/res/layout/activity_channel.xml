@@ -9,64 +9,85 @@
         android:id="@+id/channel_video_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingTop="@dimen/toolbar_size_large"
+        android:paddingTop="@dimen/toolbar_size_mixed"
         android:clipToPadding="false"/>
+
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/toolbar_size_large"
+        android:layout_height="@dimen/toolbar_size_mixed"
         android:background="?attr/colorPrimary"
-        app:contentInsetLeft="0dp"
-        app:contentInsetStart="0dp"
+        android:minHeight="?attr/actionBarSize"
         android:theme="?attr/actionBarTheme" >
 
-        <LinearLayout
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar_smal"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center|left"
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp"
-            android:orientation="horizontal">
+            android:layout_height="@dimen/toolbar_size"
+            android:background="?attr/colorPrimary"
+            android:minHeight="?attr/actionBarSize"
+            android:theme="?attr/actionBarTheme" />
 
-            <ImageView
-                android:id="@+id/item_profileimage"
-                android:layout_width="90dp"
-                android:layout_height="wrap_content"
-                android:layout_marginRight="5dp"
-                android:adjustViewBounds="true"
-                android:focusableInTouchMode="true"
-                android:scaleType="fitCenter"
-                android:focusable="true"
-                android:padding="5dp"
-                app:srcCompat="@drawable/ic_account_circle" />
-
-            <TextView
-                android:id="@+id/item_user"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Michael"
-                android:layout_marginLeft="10dp"
-                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                android:textStyle="bold" />
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar_large"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/toolbar_size_large"
+            android:background="?attr/colorPrimary"
+            android:theme="?attr/actionBarTheme"
+            app:contentInsetLeft="0dp"
+            app:contentInsetStart="0dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center|right"
-                android:orientation="horizontal">
+                android:layout_height="wrap_content"
+                android:gravity="center|left"
+                android:orientation="horizontal"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp">
+
+                <ImageView
+                    android:id="@+id/item_profileimage"
+                    android:layout_width="90dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="5dp"
+                    android:adjustViewBounds="true"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:padding="5dp"
+                    android:scaleType="fitCenter"
+                    app:srcCompat="@drawable/ic_account_circle" />
+
+                <TextView
+                    android:id="@+id/item_user"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="10dp"
+                    android:text="Michael"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center|right"
+                    android:orientation="horizontal">
+
+                </LinearLayout>
+
 
             </LinearLayout>
 
+        </android.support.v7.widget.Toolbar>
+    </LinearLayout>
 
-
-        </LinearLayout>
-
-    </android.support.v7.widget.Toolbar>
-
-
-
-
-
+</android.support.v7.widget.Toolbar>
 
 </FrameLayout>
