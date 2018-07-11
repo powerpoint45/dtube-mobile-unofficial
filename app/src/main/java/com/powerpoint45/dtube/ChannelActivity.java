@@ -64,7 +64,22 @@ public class ChannelActivity extends AppCompatActivity {
         subscribeLoader = findViewById(R.id.subscribe_loader);
         subscribeButton = findViewById(R.id.item_subscribe);
         layoutManager = new LinearLayoutManager(this);
-        toolbar = (Toolbar)findViewById(R.id.toolbar);
+        toolbar = findViewById(R.id.toolbar_small);
+
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
+
+        toolbar.setTitle(channelName);
+
+        toolbar = findViewById(R.id.toolbar);
+
+
         recyclerView = ((RecyclerView) findViewById(R.id.channel_video_list));
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(layoutManager);
@@ -73,17 +88,13 @@ public class ChannelActivity extends AppCompatActivity {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
-                if (toolbar.getHeight()-dy<=0){
-                    if (toolbar.getVisibility()==View.VISIBLE)
-                        toolbar.setVisibility(View.GONE);
-                    if (toolbar.getHeight()!=0)
-                        toolbar.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,0));
+                if (toolbar.getHeight()-dy<=(int)getResources().getDimension(R.dimen.toolbar_size)){
+                    if (toolbar.getHeight()!=(int)getResources().getDimension(R.dimen.toolbar_size))
+                        toolbar.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,(int)getResources().getDimension(R.dimen.toolbar_size)));
                 }else {
-                    if (toolbar.getVisibility() == View.GONE)
-                        toolbar.setVisibility(View.VISIBLE);
 
-                    if (toolbar.getHeight()-dy>getResources().getDimension(R.dimen.toolbar_size_large))
-                        toolbar.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int)getResources().getDimension(R.dimen.toolbar_size_large)));
+                    if (toolbar.getHeight()-dy>getResources().getDimension(R.dimen.toolbar_size_mixed))
+                        toolbar.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int)getResources().getDimension(R.dimen.toolbar_size_mixed)));
                     else
                         toolbar.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, toolbar.getHeight() - dy));
                 }

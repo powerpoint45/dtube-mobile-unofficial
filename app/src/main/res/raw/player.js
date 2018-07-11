@@ -184,7 +184,7 @@ function createPlayer(posterHash, autoplay, branding, qualities, sprite, duratio
     	player.on('error', function(e) {
         e.stopImmediatePropagation();
         var error = this.player().error();
-        
+
         if (attemptNumber==0 && error.code == 4){
           removePlayer()
           player.dispose();

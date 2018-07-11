@@ -109,6 +109,13 @@
                                 android:onClick="subscribeButtonClicked"
                                 android:text="@string/subscribe" />
 
+                            <ProgressBar
+                                android:id="@+id/subscribe_loader"
+                                style="?android:attr/progressBarStyle"
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:visibility="gone"/>
+
                         </LinearLayout>
 
                     </LinearLayout>
