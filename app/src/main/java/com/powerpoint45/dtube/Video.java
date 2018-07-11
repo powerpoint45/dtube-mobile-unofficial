@@ -42,7 +42,7 @@ class Video implements Serializable{
 
     //replace AUTHOR,PERMLINK,and GATEWAY with actual values
     //https://skzap.github.io/embedtube/#!/AUTHOR/PERMLINK/true/true/GATEWAY
-    private static String VIDEO_FRAME_URL = "file:///android_res/raw/embed.html#!/AUTHOR/PERMLINK/true/true/GATEWAY";
+    private static String VIDEO_FRAME_URL = "file:///android_res/raw/embed.html#!/AUTHOR/PERMLINK/true/true";
     //private static String VIDEO_FRAME_URL = "https://skzap.github.io/embedtube/#!/AUTHOR/PERMLINK/true/true/GATEWAY";
 
     private final String[] GATEWAYS = new String[]{
@@ -67,7 +67,7 @@ class Video implements Serializable{
     }
 
     String getVideoFrameUrl(){
-        return VIDEO_FRAME_URL.replace("AUTHOR",user).replace("PERMLINK",permlink).replace("GATEWAY",getGateway());
+        return VIDEO_FRAME_URL.replace("AUTHOR",user).replace("PERMLINK",permlink);
     }
 
     String getVideoStreamURL() {
