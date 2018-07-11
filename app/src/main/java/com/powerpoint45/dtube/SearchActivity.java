@@ -212,4 +212,9 @@ public class SearchActivity extends AppCompatActivity {
         setResult(RESULT_OK, data);
         finish();
     }
+
+
+    public void subscribeButtonClicked(View v){
+
+    }
 }

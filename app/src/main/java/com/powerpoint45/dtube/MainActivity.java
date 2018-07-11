@@ -371,7 +371,7 @@ public class MainActivity extends AppCompatActivity {
             accountInfo = new Person();
             accountInfo.userName = accountName;
 
-            steemWebView.login(DtubeAPI.getAccountName(MainActivity.this),DtubeAPI.getUserPrivateKey(MainActivity.this));
+            steemWebView.login(DtubeAPI.getAccountName(MainActivity.this),DtubeAPI.getUserPrivateKey(MainActivity.this),false);
         }
 
         if (accountInfo!=null) {

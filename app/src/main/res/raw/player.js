@@ -182,14 +182,16 @@ function createPlayer(posterHash, autoplay, branding, qualities, sprite, duratio
 
 
     	player.on('error', function(e) {
-    		console.log("ERROR FOUND:");
-        if (attemptNumber==0){
+        e.stopImmediatePropagation();
+        var error = this.player().error();
+        
+        if (attemptNumber==0 && error.code == 4){
           removePlayer()
           player.dispose();
           cb()
-
+          attemptNumber++;
         }
-        attemptNumber++;
+
         console.log(e);
     	});
 

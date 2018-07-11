@@ -141,6 +141,13 @@ class AppJavaScriptProxy {
                     ((VideoPlayActivity)activity).setIsFollowing(following);
                 }
             });
+        }else if (activity instanceof ChannelActivity){
+            activity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    ((ChannelActivity)activity).setIsFollowing(following);
+                }
+            });
         }
 
     }
@@ -250,6 +257,13 @@ class AppJavaScriptProxy {
                 @Override
                 public void run() {
                     ((VideoPlayActivity)activity).setNumberOfSubscribers(count);
+                }
+            });
+        }else if (activity instanceof ChannelActivity){
+            activity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    ((ChannelActivity)activity).setNumberOfSubscribers(count);
                 }
             });
         }

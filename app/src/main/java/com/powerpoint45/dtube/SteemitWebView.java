@@ -55,9 +55,10 @@ public class SteemitWebView extends WebView {
         queURL("javascript:getIsFollowing('"+author+"','"+accountName+"');");
     }
 
-    public void login(String username, String password){
-        queURL("javascript:login('"+username+"','"+password+"');");
+    public void login(String username, String password, boolean upvote){
+        queURL("javascript:login('"+username+"','"+password+"',"+upvote+");");
     }
+
 
     public void getSubscriberCount(String userName){
         queURL("javascript:getSubscriberCount('"+userName+"');");

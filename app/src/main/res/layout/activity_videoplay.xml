@@ -77,7 +77,7 @@
                             android:id="@+id/subscribers"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="TextView"
+                            android:text="0"
                             android:textStyle="bold" />
 
                         <Button
@@ -92,6 +92,13 @@
                             android:gravity="right|center"
                             android:onClick="subscribeButtonClicked"
                             android:text="@string/subscribe" />
+
+                        <ProgressBar
+                            android:id="@+id/subscribe_loader"
+                            style="?android:attr/progressBarStyle"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:visibility="gone"/>
 
                     </LinearLayout>
 

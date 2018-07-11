@@ -44,4 +44,6 @@
 
     <string name="replies">View Replies</string>
     <string name="login_for_subs">Please login to see your subscription feed</string>
+
+    <string name="upvote_us">Upvote our app <a href="https://steemit.com/utopian-io/@immawake/introducing-the-dtube-mobile-app-unofficial-android-app">post on Steemit</a> upon login to help support our app! </string>
 </resources>

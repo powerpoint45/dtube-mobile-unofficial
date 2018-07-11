@@ -20,14 +20,20 @@ var querry ={
 
 //A callback function
 //checks the user credintials At login
-function login(username, password){
+//upvotes intro post if initial login and user has allowed the upvote
+function login(username, password, upvote){
 	steem.api.getAccounts([username], function(err, result) {
 		try{
 			var pubWif = result[0].posting.key_auths[0][0];
 			var isvalid = steem.auth.wifIsValid(password, pubWif);
 
 			if(isvalid == true){
-				console.log('Welcome '+name);
+				console.log('Welcome '+username);
+				if (upvote){
+					steem.broadcast.vote(password, username, "immawake", "introducing-the-dtube-mobile-app-unofficial-android-app", 10000, function(err, result) {
+						console.log(err, result);
+					});
+				}
 			}else{
 				console.log('Wrong! Check your Private key.');
 			}

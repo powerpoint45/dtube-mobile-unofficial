@@ -9,6 +9,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -33,7 +34,12 @@ public class ChannelActivity extends AppCompatActivity {
     String lastPermlink = "";
     LinearLayoutManager layoutManager;
     String channelName;
+    String accountName;
+    Button subscribeButton;
+    View subscribeLoader;
 
+    boolean subscribed;
+    boolean restrictClicks;
     //number of off the screen until app gets more videos
     final int VIDEO_LIMIT = 5;
 
@@ -55,6 +61,8 @@ public class ChannelActivity extends AppCompatActivity {
                 .into(((ImageView) findViewById(R.id.item_profileimage)));
 
 
+        subscribeLoader = findViewById(R.id.subscribe_loader);
+        subscribeButton = findViewById(R.id.item_subscribe);
         layoutManager = new LinearLayoutManager(this);
         toolbar = (Toolbar)findViewById(R.id.toolbar);
         recyclerView = ((RecyclerView) findViewById(R.id.channel_video_list));
@@ -96,6 +104,32 @@ public class ChannelActivity extends AppCompatActivity {
         steemitWebView = new SteemitWebView(this);
         steemitWebView.getChannelVideos(channelName, lastPermlink);
         gettingMoreVideos = true;
+
+        accountName = DtubeAPI.getAccountName(this);
+        if (accountName!=null && accountName.equals(channelName)){
+            subscribeButton.setEnabled(false);
+        }else if(accountName!=null)
+            steemitWebView.getIsFollowing(channelName, accountName);
+        steemitWebView.getSubscriberCount(channelName);
+    }
+
+    public void setIsFollowing(boolean b){
+        subscribed = b;
+
+        subscribeLoader.setVisibility(View.GONE);
+        findViewById(R.id.item_subscribe).setClickable(true);
+
+        if (accountName!=null)
+            restrictClicks = false;
+
+        if (subscribed){
+            ((Button)findViewById(R.id.item_subscribe)).setText(R.string.unsubscribe);
+        }else
+            ((Button)findViewById(R.id.item_subscribe)).setText(R.string.subscribe);
+    }
+
+    public void setNumberOfSubscribers(int count){
+        ((TextView)findViewById(R.id.subscribers)).setText(""+count);
     }
 
     public void addVideos(VideoArrayList videos, String lastPermlink){
@@ -133,6 +167,16 @@ public class ChannelActivity extends AppCompatActivity {
         data.putExtra("video",b);
         setResult(RESULT_OK, data);
         finish();
+    }
+
+    public void subscribeButtonClicked(View v){
+        subscribeLoader.setVisibility(View.VISIBLE);
+        findViewById(R.id.item_subscribe).setClickable(false);
+
+        if (subscribed)
+            steemitWebView.unfollowUser(channelName, accountName, DtubeAPI.getUserPrivateKey(this));
+        else
+            steemitWebView.followUser(channelName, accountName, DtubeAPI.getUserPrivateKey(this));
     }
 
 }

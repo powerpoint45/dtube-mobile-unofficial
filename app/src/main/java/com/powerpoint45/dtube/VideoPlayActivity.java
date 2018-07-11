@@ -51,6 +51,7 @@ public class VideoPlayActivity extends AppCompatActivity {
     EditText replyBox;
     EditText commentReplyBox;
     TextView descriptionBox;
+    View subscribeLoader;
 
     VideoArrayList suggestedVideos;
     Video videoToPlay;
@@ -114,6 +115,7 @@ public class VideoPlayActivity extends AppCompatActivity {
         steemWebView.getSubscriberCount(videoToPlay.user);
         Log.d("dtube","PLAYING ON PLAYER:"+videoToPlay.getVideoStreamURL());
 
+        subscribeLoader = findViewById(R.id.subscribe_loader);
         replyBox = findViewById(R.id.item_comment_edittext);
         videoLayoutHolder = findViewById(R.id.player_holder);
         descriptionBox = findViewById(R.id.item_description);
@@ -136,6 +138,7 @@ public class VideoPlayActivity extends AppCompatActivity {
             replyBox.setOnEditorActionListener(editorActionListener);
         else
             replyBox.setText(R.string.login_comment);
+
 
         updateUI();
         setupVideoView();
@@ -336,6 +339,7 @@ public class VideoPlayActivity extends AppCompatActivity {
 
     //called from proxy
     public void setIsFollowing(boolean following){
+        subscribeLoader.setVisibility(View.GONE);
         subscribed = following;
         if (accountName!=null)
             restrictClicks = false;
@@ -363,6 +367,11 @@ public class VideoPlayActivity extends AppCompatActivity {
         ((TextView)findViewById(R.id.item_user)).setText(videoToPlay.user);
         ((RelativeTimeTextView)findViewById(R.id.item_time)).setReferenceTime(videoToPlay.getDate());
 
+
+        if (accountName!=null && accountName.equals(videoToPlay.user)){
+            findViewById(R.id.item_subscribe).setEnabled(false);
+        }else
+            findViewById(R.id.item_subscribe).setEnabled(true);
 
         if (restrictClicks){
             findViewById(R.id.item_subscribe).setClickable(false);
@@ -409,6 +418,9 @@ public class VideoPlayActivity extends AppCompatActivity {
     }
 
     public void subscribeButtonClicked(View v){
+        subscribeLoader.setVisibility(View.VISIBLE);
+        findViewById(R.id.item_subscribe).setClickable(false);
+
         if (subscribed)
             steemWebView.unfollowUser(videoToPlay.user, DtubeAPI.getAccountName(this), DtubeAPI.getUserPrivateKey(this));
         else

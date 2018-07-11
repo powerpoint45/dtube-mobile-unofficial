@@ -9,9 +9,12 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Switch;
+import android.widget.TextView;
 
 /**
  * Created by michael on 18/11/17.
@@ -21,6 +24,7 @@ public class LoginActivity extends AppCompatActivity {
     SteemitWebView steemitWebView;
     EditText userNameEditText;
     EditText passwordEditText;
+    Switch upvoteSwitch;
 
     final int RESULT_QR_CODE = 0;
 
@@ -30,7 +34,11 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
         userNameEditText = findViewById(R.id.username);
         passwordEditText = findViewById(R.id.password);
+        upvoteSwitch = findViewById(R.id.upvote_switch);
         steemitWebView = new SteemitWebView(this);
+
+        //enable link clicks
+        ((TextView)findViewById(R.id.upvote_text)).setMovementMethod(LinkMovementMethod.getInstance());
     }
 
     public void gotLoginResult(final boolean sucess){
@@ -42,6 +50,7 @@ public class LoginActivity extends AppCompatActivity {
             public void run() {
                 userNameEditText.setEnabled(true);
                 passwordEditText.setEnabled(true);
+                upvoteSwitch.setEnabled(true);
                 Log.d("dtube4", sucess ? "logged in":"login failed");
                 if (sucess){
                     finish();
@@ -103,8 +112,9 @@ public class LoginActivity extends AppCompatActivity {
         String password = passwordEditText.getText().toString();
         Log.d("dtube4","U:"+username);
         Log.d("dtube4","P:"+password);
-        steemitWebView.login(username,password);
+        steemitWebView.login(username, password, upvoteSwitch.isChecked());
         userNameEditText.setEnabled(false);
         passwordEditText.setEnabled(false);
+        upvoteSwitch.setEnabled(false);
     }
 }
