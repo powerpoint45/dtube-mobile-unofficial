@@ -62,8 +62,8 @@
                         android:id="@+id/item_user"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Michael"
                         android:onClick="goToChannelClicked"
+                        android:text="Michael"
                         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                         android:textStyle="bold" />
 
@@ -88,6 +88,7 @@
                             android:layout_marginRight="5dp"
                             android:background="?attr/selectableItemBackgroundBorderless"
                             android:clickable="true"
+                            android:drawablePadding="10dp"
                             android:drawableLeft="@drawable/ic_play_arrow"
                             android:gravity="right|center"
                             android:onClick="subscribeButtonClicked"
@@ -132,6 +133,14 @@
                         android:gravity="right|center"
                         android:orientation="horizontal">
 
+
+                        <ProgressBar
+                            android:id="@+id/likedislike_loader"
+                            style="?android:attr/progressBarStyle"
+                            android:layout_width="20dp"
+                            android:layout_marginRight="10dp"
+                            android:layout_height="20dp"
+                            android:visibility="gone"/>
 
                         <ImageView
                             android:id="@+id/video_like"

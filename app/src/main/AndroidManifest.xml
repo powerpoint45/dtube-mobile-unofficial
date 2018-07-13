@@ -36,7 +36,7 @@
             android:name="com.powerpoint45.dtube.VideoPlayActivity"
             android:label="@string/app_name"
             android:theme="@style/VideoPlayTheme"
-            android:windowSoftInputMode="stateHidden|adjustResize"
+            android:windowSoftInputMode="stateHidden|adjustPan"
             android:configChanges="orientation|screenLayout|keyboard|keyboardHidden|navigation|fontScale|mcc|mnc|locale|touchscreen|screenSize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

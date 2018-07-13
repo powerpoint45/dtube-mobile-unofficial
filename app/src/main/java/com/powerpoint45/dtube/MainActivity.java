@@ -157,11 +157,11 @@ public class MainActivity extends AppCompatActivity {
         //noinspection deprecation
         drawerLayout.setDrawerListener(drawerToggle);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            drawerToggle.getDrawerArrowDrawable().setColor(getColor(R.color.colorAccent));
-        } else {
-            drawerToggle.getDrawerArrowDrawable().setColor(getResources().getColor(R.color.colorAccent));
-        }
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+//            drawerToggle.getDrawerArrowDrawable().setColor(getColor(R.color.colorAccent));
+//        } else {
+//            drawerToggle.getDrawerArrowDrawable().setColor(getResources().getColor(R.color.colorAccent));
+//        }
 
         steemWebView = new SteemitWebView(this);
 
@@ -221,6 +221,27 @@ public class MainActivity extends AppCompatActivity {
     public void onItemClick(int pos){
         if (!activityPaused)
             steemWebView.getVideoInfo(videos.get(pos).user, videos.get(pos).permlink, DtubeAPI.getAccountName(this));
+    }
+
+    public void onItemLongClick(final int pos){
+        if (selectedTab == DtubeAPI.CAT_HISTORY) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+            builder.setTitle(R.string.remove_history);
+            builder.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    String permLink = videos.get(pos).permlink;
+                    Video.removeVideoFromRecents(permLink, MainActivity.this);
+                    Video videoToRemove = allVideos.findVideo(permLink, DtubeAPI.CAT_HISTORY);
+                    allVideos.remove(videoToRemove);
+                    initFeed();
+                }
+            });
+            builder.setNegativeButton(android.R.string.cancel, null);
+
+            AlertDialog dialog = builder.create();
+            dialog.show();
+        }
     }
 
 
@@ -371,7 +392,7 @@ public class MainActivity extends AppCompatActivity {
             accountInfo = new Person();
             accountInfo.userName = accountName;
 
-            steemWebView.login(DtubeAPI.getAccountName(MainActivity.this),DtubeAPI.getUserPrivateKey(MainActivity.this),false);
+            steemWebView.login(DtubeAPI.getAccountName(MainActivity.this),DtubeAPI.getUserPrivateKey(MainActivity.this),false, false);
         }
 
         if (accountInfo!=null) {

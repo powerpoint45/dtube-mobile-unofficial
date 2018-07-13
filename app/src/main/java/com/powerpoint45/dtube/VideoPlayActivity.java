@@ -52,6 +52,7 @@ public class VideoPlayActivity extends AppCompatActivity {
     EditText commentReplyBox;
     TextView descriptionBox;
     View subscribeLoader;
+    View likedislikeLoader;
 
     VideoArrayList suggestedVideos;
     Video videoToPlay;
@@ -98,8 +99,6 @@ public class VideoPlayActivity extends AppCompatActivity {
             });
         }
 
-
-
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
 
         Bundle videoBundle = getIntent().getBundleExtra("video");
@@ -116,6 +115,7 @@ public class VideoPlayActivity extends AppCompatActivity {
         Log.d("dtube","PLAYING ON PLAYER:"+videoToPlay.getVideoStreamURL());
 
         subscribeLoader = findViewById(R.id.subscribe_loader);
+        likedislikeLoader = findViewById(R.id.likedislike_loader);
         replyBox = findViewById(R.id.item_comment_edittext);
         videoLayoutHolder = findViewById(R.id.player_holder);
         descriptionBox = findViewById(R.id.item_description);
@@ -429,6 +429,8 @@ public class VideoPlayActivity extends AppCompatActivity {
 
     //Called from proxy
     public void setVote(int weight, String permlink){
+        likedislikeLoader.setVisibility(View.GONE);
+
         if (videoToPlay.permlink.equals(permlink)){
             if (weight>0){
                 videoToPlay.voteType = 1;
@@ -460,11 +462,13 @@ public class VideoPlayActivity extends AppCompatActivity {
     }
 
     public void videoDislikeClicked(View v){
+        likedislikeLoader.setVisibility(View.VISIBLE);
         steemWebView.votePost(videoToPlay.user, videoToPlay.permlink, DtubeAPI.getAccountName(this),
                 DtubeAPI.getUserPrivateKey(this),-10000);
     }
 
     public void videoLikeClicked(View v){
+        likedislikeLoader.setVisibility(View.VISIBLE);
         steemWebView.votePost(videoToPlay.user, videoToPlay.permlink, DtubeAPI.getAccountName(this),
                 DtubeAPI.getUserPrivateKey(this),10000);
     }

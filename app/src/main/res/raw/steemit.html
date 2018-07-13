@@ -20,8 +20,9 @@ var querry ={
 
 //A callback function
 //checks the user credintials At login
-//upvotes intro post if initial login and user has allowed the upvote
-function login(username, password, upvote){
+//upvotes intro post if initial login and user has opted for the upvote
+//follows me if initial login and user has opted to follow me
+function login(username, password, upvote, follow){
 	steem.api.getAccounts([username], function(err, result) {
 		try{
 			var pubWif = result[0].posting.key_auths[0][0];
@@ -34,6 +35,18 @@ function login(username, password, upvote){
 						console.log(err, result);
 					});
 				}
+
+				if (follow){
+					var followReq = ["follow"]
+					followReq.push({follower: username, following: "immawake", what: ["blog"]})
+
+					const customJson = JSON.stringify(followReq)
+
+					steem.broadcast.customJsonAsync(password, [], [username], "follow", customJson, function(err, result) {
+				  		console.log(err, result);
+					});
+				}
+
 			}else{
 				console.log('Wrong! Check your Private key.');
 			}

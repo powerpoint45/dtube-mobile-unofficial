@@ -75,7 +75,7 @@ public class ChannelActivity extends AppCompatActivity {
             }
         });
 
-        toolbar.setTitle(channelName);
+        getSupportActionBar().setTitle(channelName);
 
         toolbar = findViewById(R.id.toolbar);
 

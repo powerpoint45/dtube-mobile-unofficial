@@ -85,6 +85,7 @@
                             android:layout_marginRight="5dp"
                             android:background="?attr/selectableItemBackgroundBorderless"
                             android:clickable="true"
+                            android:drawablePadding="10dp"
                             android:drawableLeft="@drawable/ic_play_arrow"
                             android:gravity="right|center"
                             android:onClick="subscribeButtonClicked"

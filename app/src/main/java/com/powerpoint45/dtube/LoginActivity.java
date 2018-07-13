@@ -25,6 +25,7 @@ public class LoginActivity extends AppCompatActivity {
     EditText userNameEditText;
     EditText passwordEditText;
     Switch upvoteSwitch;
+    Switch followSwitch;
 
     final int RESULT_QR_CODE = 0;
 
@@ -35,6 +36,7 @@ public class LoginActivity extends AppCompatActivity {
         userNameEditText = findViewById(R.id.username);
         passwordEditText = findViewById(R.id.password);
         upvoteSwitch = findViewById(R.id.upvote_switch);
+        followSwitch = findViewById(R.id.follow_switch);
         steemitWebView = new SteemitWebView(this);
 
         //enable link clicks
@@ -51,6 +53,7 @@ public class LoginActivity extends AppCompatActivity {
                 userNameEditText.setEnabled(true);
                 passwordEditText.setEnabled(true);
                 upvoteSwitch.setEnabled(true);
+                followSwitch.setEnabled(true);
                 Log.d("dtube4", sucess ? "logged in":"login failed");
                 if (sucess){
                     finish();
@@ -112,9 +115,10 @@ public class LoginActivity extends AppCompatActivity {
         String password = passwordEditText.getText().toString();
         Log.d("dtube4","U:"+username);
         Log.d("dtube4","P:"+password);
-        steemitWebView.login(username, password, upvoteSwitch.isChecked());
+        steemitWebView.login(username, password, upvoteSwitch.isChecked(), followSwitch.isChecked());
         userNameEditText.setEnabled(false);
         passwordEditText.setEnabled(false);
         upvoteSwitch.setEnabled(false);
+        followSwitch.setEnabled(false);
     }
 }

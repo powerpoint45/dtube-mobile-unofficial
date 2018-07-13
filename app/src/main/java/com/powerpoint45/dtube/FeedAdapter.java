@@ -24,7 +24,7 @@ class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
 
     private VideoArrayList videos;
     MainActivity c;
-    Drawable placeholderDrawable;
+    private Drawable placeholderDrawable;
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         // each data item is just a string in this case
@@ -81,6 +81,14 @@ class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
             @Override
             public void onClick(View v) {
                 c.onItemClick((Integer)v.getTag());
+            }
+        });
+
+        holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                c.onItemLongClick((Integer)v.getTag());
+                return true;
             }
         });
 

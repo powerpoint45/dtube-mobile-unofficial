@@ -139,9 +139,11 @@ class CommentsAdapter extends BaseAdapter {
                     .into(viewHolder.profileView);
         }
 
-        viewHolder.commentReplyHolder.setVisibility(View.GONE);
-        viewHolder.replyEditText.setOnEditorActionListener(null);
-        viewHolder.replyEditText.setOnKeyListener(null);
+        if (!viewHolder.replyEditText.hasFocus()) {
+            viewHolder.commentReplyHolder.setVisibility(View.GONE);
+            viewHolder.replyEditText.setOnEditorActionListener(null);
+            viewHolder.replyEditText.setOnKeyListener(null);
+        }
 
         if (currentComment.children>0 && currentComment.childComments==null){
             viewHolder.viewReplies.setVisibility(View.VISIBLE);
