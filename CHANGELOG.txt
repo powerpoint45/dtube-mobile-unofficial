@@ -1,3 +1,8 @@
+07-14-18
+*Many Many changes
+*UI Revamp
+*Android TV full support
+*Embedded video player updated from official dtube github
 01-23-18
 *All nested comments do not load all at once (press view replies on specific comments)
 *More efficient fetching requests for steemit content (more efficiency to come)
