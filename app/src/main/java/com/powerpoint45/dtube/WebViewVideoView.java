@@ -14,7 +14,6 @@ import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
-import android.widget.ScrollView;
 
 /**
  * Created by michael on 22/11/17.

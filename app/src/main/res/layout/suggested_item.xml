@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:weightSum="5"
     android:padding="5dp"
-    android:focusable="true"
+
     android:background="?android:attr/selectableItemBackground"
     android:id="@+id/suggested_item"
     android:gravity="center_vertical">

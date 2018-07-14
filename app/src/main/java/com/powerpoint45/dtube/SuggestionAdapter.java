@@ -59,11 +59,11 @@ class SuggestionAdapter extends BaseAdapter {
 
         ViewHolder(LinearLayout v) {
             itemView = v;
-            thumbView = ((ImageView)v.findViewById(R.id.item_image));
-            titleView = ((TextView)v.findViewById(R.id.item_title));
-            timeView = ((RelativeTimeTextView)v.findViewById(R.id.item_time));
-            priceView = ((TextView)v.findViewById(R.id.item_value));
-            userView = ((TextView)v.findViewById(R.id.item_user));
+            thumbView = v.findViewById(R.id.item_image);
+            titleView = v.findViewById(R.id.item_title);
+            timeView = v.findViewById(R.id.item_time);
+            priceView = v.findViewById(R.id.item_value);
+            userView = v.findViewById(R.id.item_user);
         }
     }
 

@@ -1,11 +1,7 @@
 package com.powerpoint45.dtube;
 
-import android.graphics.Color;
-import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.ScaleDrawable;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,6 +21,7 @@ class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
     private VideoArrayList videos;
     MainActivity c;
     private Drawable placeholderDrawable;
+    boolean tvMode;
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         // each data item is just a string in this case
@@ -49,8 +46,9 @@ class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
     }
 
     // Provide a suitable constructor (depends on the kind of dataset)
-    FeedAdapter(MainActivity c) {
+    FeedAdapter(MainActivity c, boolean tvMode) {
         this.c = c;
+        this.tvMode = tvMode;
 
         placeholderDrawable = c.getResources().getDrawable(R.drawable.ic_ondemand_video);
     }
@@ -98,7 +96,7 @@ class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
         else
             holder.priceView.setVisibility(View.VISIBLE);
 
-        if (videos.get(position).categoryId == DtubeAPI.CAT_HISTORY){
+        if (!tvMode && videos.get(position).categoryId == DtubeAPI.CAT_HISTORY){
             holder.removeButton.setVisibility(View.VISIBLE);
             holder.removeButton.setTag(videos.get(position).permlink);
         }else

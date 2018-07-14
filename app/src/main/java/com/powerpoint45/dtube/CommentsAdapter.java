@@ -22,7 +22,6 @@ import com.makeramen.roundedimageview.RoundedTransformationBuilder;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Transformation;
 
-import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -35,11 +34,13 @@ class CommentsAdapter extends BaseAdapter {
     Context c;
     private Transformation transformation;
     boolean loggedIn;
+    boolean tvMode;
 
-    CommentsAdapter(CommentsList comments, Context c, boolean loggedIn){
+    CommentsAdapter(CommentsList comments, Context c, boolean loggedIn, boolean tvMode){
         this.comments = comments;
         this.c = c;
         this.loggedIn = loggedIn;
+        this.tvMode = tvMode;
 
         transformation = new RoundedTransformationBuilder()
                 .cornerRadiusDp(30)
@@ -103,20 +104,21 @@ class CommentsAdapter extends BaseAdapter {
                     .inflate(R.layout.comment_item, parent, false);
 
             viewHolder = new ViewHolder();
-            viewHolder.commentView = (TextView) v.findViewById(R.id.comment_comment);
-            viewHolder.dateView = (RelativeTimeTextView) v.findViewById(R.id.comment_date);
-            viewHolder.priceView = (TextView) v.findViewById(R.id.comment_price);
-            viewHolder.usernameView = (TextView) v.findViewById(R.id.comment_username);
-            viewHolder.profileView = (ImageView) v.findViewById(R.id.comment_image);
-            viewHolder.likesView = (TextView) v.findViewById(R.id.text_likes);
-            viewHolder.dislikesView = (TextView) v.findViewById(R.id.text_dislikes);
+            viewHolder.commentView = v.findViewById(R.id.comment_comment);
+            viewHolder.dateView = v.findViewById(R.id.comment_date);
+            viewHolder.priceView = v.findViewById(R.id.comment_price);
+            viewHolder.usernameView = v.findViewById(R.id.comment_username);
+            viewHolder.profileView = v.findViewById(R.id.comment_image);
+            viewHolder.likesView = v.findViewById(R.id.text_likes);
+            viewHolder.dislikesView = v.findViewById(R.id.text_dislikes);
             viewHolder.indentView = v.findViewById(R.id.comment_indent);
-            viewHolder.likeView = (ImageView) v.findViewById(R.id.comment_like);
-            viewHolder.dislikeView = (ImageView) v.findViewById(R.id.comment_dislike);
-            viewHolder.replyButton = (TextView) v.findViewById(R.id.comment_reply);
-            viewHolder.commentReplyHolder = (FrameLayout) v.findViewById(R.id.comment_reply_holder);
-            viewHolder.replyEditText = (EditText)v.findViewById(R.id.item_comment_reply_edittext);
-            viewHolder.viewReplies = (Button)v.findViewById(R.id.view_replies);
+            viewHolder.likeView = v.findViewById(R.id.comment_like);
+            viewHolder.dislikeView = v.findViewById(R.id.comment_dislike);
+            viewHolder.replyButton = v.findViewById(R.id.comment_reply);
+            viewHolder.commentReplyHolder = v.findViewById(R.id.comment_reply_holder);
+            viewHolder.replyEditText = v.findViewById(R.id.item_comment_reply_edittext);
+            viewHolder.viewReplies = v.findViewById(R.id.view_replies);
+
         }
 
         if (!(viewHolder.likeView.getTag()!=null && currentComment.permlink!=null && viewHolder.likeView.getTag().equals(currentComment.permlink))){
@@ -169,6 +171,11 @@ class CommentsAdapter extends BaseAdapter {
             viewHolder.replyButton.setEnabled(false);
             viewHolder.likeView.setEnabled(false);
             viewHolder.dislikeView.setEnabled(false);
+        }
+
+        if (tvMode) {
+            viewHolder.replyButton.setVisibility(View.INVISIBLE);
+            viewHolder.replyButton.setEnabled(false);
         }
 
         if (currentComment.voteType == 1){

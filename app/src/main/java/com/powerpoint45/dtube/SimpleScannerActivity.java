@@ -7,12 +7,6 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.google.zxing.Result;
-import com.google.zxing.ResultMetadataType;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
 import me.dm7.barcodescanner.zxing.ZXingScannerView;
 

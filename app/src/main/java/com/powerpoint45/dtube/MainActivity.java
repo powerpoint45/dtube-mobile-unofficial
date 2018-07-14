@@ -1,6 +1,7 @@
 package com.powerpoint45.dtube;
 
 import android.annotation.SuppressLint;
+import android.app.UiModeManager;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -8,7 +9,6 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.media.AudioManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
@@ -73,12 +73,21 @@ public class MainActivity extends AppCompatActivity {
 
     Person accountInfo;
 
+    boolean runningOnTV;
+
     @SuppressWarnings("ConstantConditions")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
+
+        UiModeManager uiModeManager = (UiModeManager) getSystemService(UI_MODE_SERVICE);
+        assert uiModeManager != null;
+
+        //Customize layout if in TV Mode
+        if (uiModeManager.getCurrentModeType()== Configuration.UI_MODE_TYPE_TELEVISION)
+            runningOnTV = true;
 
 
         setSupportActionBar((Toolbar)findViewById(R.id.toolbar));
@@ -197,7 +206,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        feedAdapter = new FeedAdapter(this);
+        feedAdapter = new FeedAdapter(this, runningOnTV);
         recyclerView.setAdapter(feedAdapter);
 
         updateBottomBar();

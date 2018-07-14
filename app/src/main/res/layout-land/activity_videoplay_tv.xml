@@ -248,6 +248,7 @@
 
                     <com.powerpoint45.dtube.ExpandedListView
                         android:id="@+id/suggestions_lv"
+                        android:descendantFocusability="blocksDescendants"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content" />
 
@@ -288,6 +289,7 @@
 
                     <com.powerpoint45.dtube.ExpandedListView
                         android:id="@+id/comments_lv"
+                        android:descendantFocusability="blocksDescendants"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content" />
                 </LinearLayout>

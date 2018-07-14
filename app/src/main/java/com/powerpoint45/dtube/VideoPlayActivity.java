@@ -3,12 +3,14 @@ package com.powerpoint45.dtube;
 import android.annotation.SuppressLint;
 import android.app.UiModeManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.media.AudioManager;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.method.LinkMovementMethod;
 import android.util.DisplayMetrics;
@@ -18,6 +20,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
@@ -54,6 +57,9 @@ public class VideoPlayActivity extends AppCompatActivity {
     TextView descriptionBox;
     View subscribeLoader;
     View likedislikeLoader;
+
+    ListView commentsListView;
+    ListView suggestedVideosListView;
 
     LinearLayout playerControls;
     ImageButton pausePlayButton;
@@ -114,6 +120,8 @@ public class VideoPlayActivity extends AppCompatActivity {
             });
         }
 
+        commentsListView = findViewById(R.id.comments_lv);
+
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
 
         Bundle videoBundle = getIntent().getBundleExtra("video");
@@ -153,6 +161,8 @@ public class VideoPlayActivity extends AppCompatActivity {
             replyBox.setOnEditorActionListener(editorActionListener);
         else
             replyBox.setText(R.string.login_comment);
+
+
 
 
         updateUI();
@@ -305,8 +315,8 @@ public class VideoPlayActivity extends AppCompatActivity {
     public void addReply(Comment comment){
 
         if (commentsAdapter == null) {
-            commentsAdapter = new CommentsAdapter(commentsList, this, accountName != null);
-            ((ListView) findViewById(R.id.comments_lv)).setAdapter(commentsAdapter);
+            commentsAdapter = new CommentsAdapter(commentsList, this, accountName != null, runningOnTV);
+            commentsListView.setAdapter(commentsAdapter);
         }
 
         if (commentsList == null)
@@ -369,7 +379,8 @@ public class VideoPlayActivity extends AppCompatActivity {
 
         if (suggestionAdapter == null) {
             suggestionAdapter = new SuggestionAdapter(suggestedVideos, this);
-            ((ListView) findViewById(R.id.suggestions_lv)).setAdapter(suggestionAdapter);
+            suggestedVideosListView = findViewById(R.id.suggestions_lv);
+            suggestedVideosListView.setAdapter(suggestionAdapter);
         }else
             suggestionAdapter.setVideos(suggestedVideos);
     }
@@ -548,7 +559,13 @@ public class VideoPlayActivity extends AppCompatActivity {
         commentReplyBox = replyHolder.findViewById(R.id.item_comment_reply_edittext);
         commentReplyBox.setTag(v.getTag());
         commentReplyBox.setOnEditorActionListener(editorActionListener);
-        commentReplyBox.requestFocus();
+
+        commentReplyBox.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                commentReplyBox.requestFocus();
+            }
+        },100);
     }
 
 
@@ -560,7 +577,6 @@ public class VideoPlayActivity extends AppCompatActivity {
     public final boolean useEmbeded = true;
     public void setupVideoView(){
         if (useEmbeded){
-
             if (webViewVideoView != null) {
                 videoLayoutHolder.removeView(webViewVideoView);
                 webViewVideoView.killWebView();
@@ -655,16 +671,15 @@ public class VideoPlayActivity extends AppCompatActivity {
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        Log.d("d", "key");
+        Log.d("dtube", "key");
 
         switch (keyCode) {
             case KeyEvent.KEYCODE_DPAD_LEFT:
                 if (runningOnTV) {
                     if (findViewById(R.id.undervideo_contents).getScrollY() == 0) {
                         if (playerControls.getVisibility()==View.INVISIBLE) {
-                            playerControls.setVisibility(View.VISIBLE);
+                            wakeMediaControls();
                             findViewById(R.id.rewindButton).requestFocus();
-                            playerControls.postDelayed(playerControlsBeGoneRunner,5100);
                         }
                     }
                 }
@@ -673,35 +688,37 @@ public class VideoPlayActivity extends AppCompatActivity {
                 if (runningOnTV) {
                     if (findViewById(R.id.undervideo_contents).getScrollY() == 0) {
                         if (playerControls.getVisibility()==View.INVISIBLE) {
-                            playerControls.setVisibility(View.VISIBLE);
+                            wakeMediaControls();
                             findViewById(R.id.ffButton).requestFocus();
-                            playerControls.postDelayed(playerControlsBeGoneRunner,5100);
                         }
                     }
                 }
                 break;
             case KeyEvent.KEYCODE_DPAD_UP:
+
                 if (runningOnTV) {
                     if (findViewById(R.id.undervideo_contents).getScrollY() == 0) {
                         if (playerControls.getVisibility()==View.INVISIBLE) {
-                            playerControls.setVisibility(View.VISIBLE);
+                            wakeMediaControls();
                             findViewById(R.id.pausePlayButton).requestFocus();
-                            playerControls.postDelayed(playerControlsBeGoneRunner,5100);
                         }
                     }
                 }
                 break;
+            case KeyEvent.KEYCODE_ENTER:
             case KeyEvent.KEYCODE_DPAD_CENTER:
 
                 if (runningOnTV) {
                     if (findViewById(R.id.undervideo_contents).getScrollY() == 0) {
-                        playerControls.setVisibility(View.VISIBLE);
-                        findViewById(R.id.pausePlayButton).requestFocus();
-                        playerControls.postDelayed(playerControlsBeGoneRunner,5100);
+                        if (playerControls.getVisibility()==View.INVISIBLE) {
+                            wakeMediaControls();
+                            findViewById(R.id.pausePlayButton).requestFocus();
+                        }
                     }
                 }
 
                 if (getCurrentFocus()!=null){
+
                     switch (getCurrentFocus().getId()){
                         case R.id.comment_et_holder:
                             replyBox.setEnabled(true);
@@ -720,7 +737,93 @@ public class VideoPlayActivity extends AppCompatActivity {
         return super.onKeyDown(keyCode, event);
     }
 
+    public void wakeMediaControls(){
+        if (playerControls.getVisibility()==View.INVISIBLE) {
+            playerControls.setVisibility(View.VISIBLE);
+            playerControls.postDelayed(playerControlsBeGoneRunner,5100);
+        }
+    }
 
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
 
+        if (event.getAction() == KeyEvent.ACTION_DOWN) {
+            Log.d("dtube","Key event "+event.getKeyCode()+"VS"+KeyEvent.KEYCODE_MEDIA_REWIND);
+            switch (event.getKeyCode()) {
+                case KeyEvent.KEYCODE_ENTER:
+                case KeyEvent.KEYCODE_DPAD_CENTER:
+                    if (getCurrentFocus() != null && getCurrentFocus() instanceof  ViewGroup) {
+                        //Open a dialog for options on a comment
+                        if (getCurrentFocus().getId() == R.id.comments_lv) {
+
+                            final View commentView = commentsListView.getSelectedView();
+                            final AlertDialog.Builder builderSingle = new AlertDialog.Builder(VideoPlayActivity.this);
+
+                            ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(VideoPlayActivity.this, android.R.layout.select_dialog_item);
+                            arrayAdapter.add(getResources().getString(R.string.like_comment));
+                            arrayAdapter.add(getResources().getString(R.string.dislike_comment));
+
+                            builderSingle.setNegativeButton("cancel", null);
+
+                            builderSingle.setAdapter(arrayAdapter, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    switch (which) {
+                                        case 0:
+                                        commentView.findViewById(R.id.comment_like).performClick();
+                                        break;
+
+                                        case 1:
+                                            commentView.findViewById(R.id.comment_dislike).performClick();
+                                            break;
+
+                                        case 2:
+                                            commentView.findViewById(R.id.comment_reply).performClick();
+                                            break;
+                                    }
+                                }
+                            });
+
+                            //dialog display is delayed to prevent misfocus
+                            commentView.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    builderSingle.show();
+                                }
+                            },10);
+
+                            Log.d("dtube", "dispatch" + ((ViewGroup) getCurrentFocus()).getChildAt(0).getId() + "VS" + R.id.comment_item);
+                        }else if (getCurrentFocus().getId() == R.id.suggestions_lv) {
+                            //select the suggested video
+                            onItemClick(suggestedVideosListView.getSelectedItemPosition());
+                        }
+                    }
+                    break;
+                case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
+                    pauseplayButtonPressed(null);
+                    wakeMediaControls();
+                    findViewById(R.id.pausePlayButton).requestFocus();
+                    break;
+
+                case KeyEvent.KEYCODE_MEDIA_REWIND:
+                case KeyEvent.KEYCODE_MEDIA_STEP_BACKWARD:
+                case KeyEvent.KEYCODE_MEDIA_SKIP_BACKWARD:
+                case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
+                    wakeMediaControls();
+                    rewindButtonPressed(null);
+                    break;
+
+                case KeyEvent.KEYCODE_MEDIA_FAST_FORWARD:
+                case KeyEvent.KEYCODE_MEDIA_SKIP_FORWARD:
+                case KeyEvent.KEYCODE_MEDIA_STEP_FORWARD:
+                case KeyEvent.KEYCODE_MEDIA_NEXT:
+                    wakeMediaControls();
+                    ffButtonPressed(null);
+                    break;
+
+            }
+        }
+        return super.dispatchKeyEvent(event);
+    }
 
 }

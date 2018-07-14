@@ -8,9 +8,6 @@ import android.text.Spanned;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 /**
  * Created by michael on 20/11/17.
  */
