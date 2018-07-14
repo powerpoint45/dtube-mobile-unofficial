@@ -22,13 +22,14 @@ var qualities;
 
 findVideo()
 
+//if settings menu is open then make sure it doesn't get closed by autohide of controls
 function checkSettings() {
     if (document.getElementsByClassName("vjs-settings-menu")[0].getAttribute("aria-expanded") == "true"){
         player.reportUserActivity();
     }
 }
 
-setInterval(checkSettings, 300);
+var checkSettingsInterval = checksetInterval(checkSettings, 300);
 
 
 function findVideo(retries = 3) {
@@ -195,9 +196,14 @@ function createPlayer(posterHash, autoplay, branding, qualities, sprite, duratio
         console.log(e);
     	});
 
-	player.on('play', function() {
+	   player.on('play', function() {
     		console.log("PLAY CLICKED:");
-        //player.userActive(false);
+        androidAppProxy.isPlaying(true);
+    	});
+
+     player.on('pause', function() {
+    		console.log("PAUSE CLICKED:");
+        androidAppProxy.isPlaying(false);
     	});
 
     player.brand({
@@ -206,6 +212,26 @@ function createPlayer(posterHash, autoplay, branding, qualities, sprite, duratio
         destination: "http://d.tube/#!/v/" + videoAuthor + '/' + videoPermlink,
         destinationTarget: "_blank"
     })
+}
+
+
+var removeControlBarChildrenInterval;
+function removeControlBarChildrenOnInterval(){
+  if (player){
+    player.controlBar.removeChild("playToggle");
+    player.controlBar.removeChild("muteToggle");
+    player.controlBar.removeChild("volumeControl");
+    player.controlBar.removeChild("fullscreenToggle");
+    player.controlBar.removeChild("settingsMenuButton");
+    clearInterval(removeControlBarChildrenInterval);
+  }
+}
+
+function removeControlBarChildren(){
+  clearInterval(checkSettingsInterval);
+  if (!player) {
+    removeControlBarChildrenInterval = setInterval(removeControlBarChildrenOnInterval,300);
+  }
 }
 
 

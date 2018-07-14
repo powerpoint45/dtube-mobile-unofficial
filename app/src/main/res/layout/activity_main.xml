@@ -175,6 +175,8 @@
     </FrameLayout>
 
     <android.support.design.widget.NavigationView
+        android:focusable="true"
+        android:focusableInTouchMode="true"
         android:id="@+id/navigation_view"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"

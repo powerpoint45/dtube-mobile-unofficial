@@ -692,7 +692,11 @@ public class MainActivity extends AppCompatActivity {
                         if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT && ((feedItem%2 == 0) || feedItem ==-2)){
                             if (selectedTab == 0) {
                                 drawerLayout.openDrawer(navigationView);
-                                drawerLayout.findViewById(R.id.header_icon).requestFocus();
+                                if (drawerLayout.findViewById(R.id.header_icon)!=null)
+                                    drawerLayout.findViewById(R.id.header_icon).requestFocus();
+                                else
+                                    navigationView.requestFocus();
+
                             }else
                                 goToTab(selectedTab - 1);
 

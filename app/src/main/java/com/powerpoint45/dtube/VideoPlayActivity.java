@@ -21,6 +21,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -45,7 +46,7 @@ public class VideoPlayActivity extends AppCompatActivity {
 
     JZVideoPlayerStandard videoView;
     WebViewVideoView webViewVideoView;
-    LinearLayout videoLayoutHolder;
+    FrameLayout videoLayoutHolder;
 
     SteemitWebView steemWebView;
     EditText replyBox;
@@ -53,6 +54,10 @@ public class VideoPlayActivity extends AppCompatActivity {
     TextView descriptionBox;
     View subscribeLoader;
     View likedislikeLoader;
+
+    LinearLayout playerControls;
+    ImageButton pausePlayButton;
+    long lastTimeUsingPlayerControls;
 
     VideoArrayList suggestedVideos;
     Video videoToPlay;
@@ -70,6 +75,8 @@ public class VideoPlayActivity extends AppCompatActivity {
     boolean setFullDescription;
     String accountName;
 
+    boolean runningOnTV;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -77,6 +84,8 @@ public class VideoPlayActivity extends AppCompatActivity {
 
         UiModeManager uiModeManager = (UiModeManager) getSystemService(UI_MODE_SERVICE);
         assert uiModeManager != null;
+
+        //Customize layout if in TV Mode
         if (uiModeManager.getCurrentModeType()== Configuration.UI_MODE_TYPE_TELEVISION) {
             setContentView(R.layout.activity_videoplay_tv);
             DisplayMetrics displayMetrics = new DisplayMetrics();
@@ -84,7 +93,13 @@ public class VideoPlayActivity extends AppCompatActivity {
             int height = displayMetrics.heightPixels;
             findViewById(R.id.undervideo_padding).setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                     height));
-            Log.d("dtube","RUNNING APP ON TV");
+            runningOnTV = true;
+
+            lastTimeUsingPlayerControls = System.currentTimeMillis();
+            playerControls = findViewById(R.id.playerControls);
+            pausePlayButton = findViewById(R.id.pausePlayButton);
+            pausePlayButton.requestFocus();
+            playerControls.postDelayed(playerControlsBeGoneRunner,5100);
         }else {
             setContentView(R.layout.activity_videoplay);
 
@@ -251,6 +266,7 @@ public class VideoPlayActivity extends AppCompatActivity {
             videoView = null;
         }
         if (webViewVideoView!=null){
+            webViewVideoView.removeJavascriptInterface("androidAppProxy");
             webViewVideoView.killWebView();
             webViewVideoView = null;
         }
@@ -454,6 +470,40 @@ public class VideoPlayActivity extends AppCompatActivity {
 
     }
 
+    Runnable playerControlsBeGoneRunner = new Runnable() {
+        @Override
+        public void run() {
+            if (System.currentTimeMillis()-lastTimeUsingPlayerControls > 5000){
+                playerControls.setVisibility(View.INVISIBLE);
+            }
+        }
+    };
+
+    public void rewindButtonPressed(View v){
+        webViewVideoView.rewind();
+        lastTimeUsingPlayerControls = System.currentTimeMillis();
+        playerControls.postDelayed(playerControlsBeGoneRunner,5100);
+    }
+
+    public void ffButtonPressed(View v){
+        webViewVideoView.fastForward();
+        lastTimeUsingPlayerControls = System.currentTimeMillis();
+        playerControls.postDelayed(playerControlsBeGoneRunner,5100);
+    }
+
+    public void pauseplayButtonPressed(View v){
+        if (webViewVideoView.isPlaying()) {
+            webViewVideoView.pauseVideo();
+            pausePlayButton.setImageResource(android.R.drawable.ic_media_play);
+        }else {
+            webViewVideoView.playVideo();
+            pausePlayButton.setImageResource(android.R.drawable.ic_media_pause);
+        }
+        lastTimeUsingPlayerControls = System.currentTimeMillis();
+        playerControls.postDelayed(playerControlsBeGoneRunner,5100);
+    }
+
+
     public void viewRepliesButtonClicked(View v){
         String permlink = v.getTag().toString();
         Comment c = commentsList.getCommentByID(permlink);
@@ -516,7 +566,7 @@ public class VideoPlayActivity extends AppCompatActivity {
                 webViewVideoView.killWebView();
             }
 
-            webViewVideoView = new WebViewVideoView(this);
+            webViewVideoView = new WebViewVideoView(this, runningOnTV);
 
             webViewVideoView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
             webViewVideoView.setBackgroundColor(Color.BLACK);
@@ -529,7 +579,7 @@ public class VideoPlayActivity extends AppCompatActivity {
 //            }
 
             if (videoLayoutHolder.findViewById(R.id.embeded_video_view)==null)
-                videoLayoutHolder.addView(webViewVideoView);
+                videoLayoutHolder.addView(webViewVideoView,0);
         }else {
             Log.d("dtube4","setupVideoView");
             if (videoView == null){
@@ -554,8 +604,6 @@ public class VideoPlayActivity extends AppCompatActivity {
         channelIntent.putExtra("userurl", "/c/"+videoToPlay.user);
         channelIntent.putExtra("profileimage", profileImageURL);
         startActivityForResult(channelIntent, REQUEST_CHANNEL);
-
-
     }
 
 
@@ -611,16 +659,48 @@ public class VideoPlayActivity extends AppCompatActivity {
 
         switch (keyCode) {
             case KeyEvent.KEYCODE_DPAD_LEFT:
+                if (runningOnTV) {
+                    if (findViewById(R.id.undervideo_contents).getScrollY() == 0) {
+                        if (playerControls.getVisibility()==View.INVISIBLE) {
+                            playerControls.setVisibility(View.VISIBLE);
+                            findViewById(R.id.rewindButton).requestFocus();
+                            playerControls.postDelayed(playerControlsBeGoneRunner,5100);
+                        }
+                    }
+                }
                 break;
             case KeyEvent.KEYCODE_DPAD_RIGHT:
+                if (runningOnTV) {
+                    if (findViewById(R.id.undervideo_contents).getScrollY() == 0) {
+                        if (playerControls.getVisibility()==View.INVISIBLE) {
+                            playerControls.setVisibility(View.VISIBLE);
+                            findViewById(R.id.ffButton).requestFocus();
+                            playerControls.postDelayed(playerControlsBeGoneRunner,5100);
+                        }
+                    }
+                }
                 break;
             case KeyEvent.KEYCODE_DPAD_UP:
-                if (findViewById(R.id.undervideo_contents).getScrollY()==0) {
-                    webViewVideoView.requestFocus();
-
+                if (runningOnTV) {
+                    if (findViewById(R.id.undervideo_contents).getScrollY() == 0) {
+                        if (playerControls.getVisibility()==View.INVISIBLE) {
+                            playerControls.setVisibility(View.VISIBLE);
+                            findViewById(R.id.pausePlayButton).requestFocus();
+                            playerControls.postDelayed(playerControlsBeGoneRunner,5100);
+                        }
+                    }
                 }
                 break;
             case KeyEvent.KEYCODE_DPAD_CENTER:
+
+                if (runningOnTV) {
+                    if (findViewById(R.id.undervideo_contents).getScrollY() == 0) {
+                        playerControls.setVisibility(View.VISIBLE);
+                        findViewById(R.id.pausePlayButton).requestFocus();
+                        playerControls.postDelayed(playerControlsBeGoneRunner,5100);
+                    }
+                }
+
                 if (getCurrentFocus()!=null){
                     switch (getCurrentFocus().getId()){
                         case R.id.comment_et_holder:
@@ -629,13 +709,8 @@ public class VideoPlayActivity extends AppCompatActivity {
                             break;
 
                         default:
-
                             break;
-
-
                     }
-
-
                 }
 
                 break;
@@ -644,5 +719,8 @@ public class VideoPlayActivity extends AppCompatActivity {
         }
         return super.onKeyDown(keyCode, event);
     }
+
+
+
 
 }

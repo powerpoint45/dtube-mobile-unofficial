@@ -6,12 +6,57 @@
     android:layout_width="match_parent"
     >
 
-    <LinearLayout
+
+
+    <FrameLayout
         android:id="@+id/player_holder"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@android:color/black"
-        android:orientation="vertical"></LinearLayout>
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:id="@+id/playerControls"
+            android:layout_width="match_parent"
+            android:layout_height="45dp"
+            android:layout_gravity="bottom"
+            android:weightSum="1">
+
+
+            <ImageButton
+                android:id="@+id/rewindButton"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight=".4"
+                android:background="?android:attr/selectableItemBackground"
+                android:focusable="true"
+                android:onClick="rewindButtonPressed"
+                app:srcCompat="@android:drawable/ic_media_rew" />
+
+            <ImageButton
+                android:id="@+id/pausePlayButton"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight=".2"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:onClick="pauseplayButtonPressed"
+                android:background="?android:attr/selectableItemBackground"
+                app:srcCompat="@android:drawable/ic_media_pause" />
+
+            <ImageButton
+                android:id="@+id/ffButton"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight=".4"
+                android:focusable="true"
+                android:onClick="ffButtonPressed"
+                android:background="?android:attr/selectableItemBackground"
+                app:srcCompat="@android:drawable/ic_media_ff" />
+        </LinearLayout>
+
+
+    </FrameLayout>
 
     <LinearLayout
         android:id="@+id/video_content"
@@ -147,6 +192,14 @@
                             android:layout_height="match_parent"
                             android:gravity="right|center"
                             android:orientation="horizontal">
+
+                            <ProgressBar
+                                android:id="@+id/likedislike_loader"
+                                style="?android:attr/progressBarStyle"
+                                android:layout_width="20dp"
+                                android:layout_marginRight="10dp"
+                                android:layout_height="20dp"
+                                android:visibility="gone"/>
 
 
                             <ImageView

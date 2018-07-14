@@ -11,13 +11,13 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <LinearLayout
+        <FrameLayout
             android:id="@+id/player_holder"
             android:layout_width="match_parent"
             android:orientation="vertical"
             android:background="@android:color/black"
             android:layout_height="200dp">
-        </LinearLayout>
+        </FrameLayout>
 
         <ScrollView
             android:id="@+id/undervideo_contents"

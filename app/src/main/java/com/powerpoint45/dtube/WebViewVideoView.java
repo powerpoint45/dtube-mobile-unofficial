@@ -10,6 +10,7 @@ import android.view.WindowManager;
 import android.view.inputmethod.BaseInputConnection;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
+import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
@@ -20,12 +21,21 @@ import android.widget.ScrollView;
  */
 
 public class WebViewVideoView extends WebView {
-    boolean loadedPage;
-
+    private boolean loadedPage;
+    private boolean isPlaying;
+    private boolean runningTVMode;
 
     @SuppressLint("SetJavaScriptEnabled")
-    public WebViewVideoView(Activity context) {
+    public WebViewVideoView(Activity context, boolean tvMode) {
         super(context);
+        runningTVMode = tvMode;
+
+        if (tvMode) {
+            setFocusable(false);
+            setClickable(false);
+            getSettings().setNeedInitialFocus(false);
+        }
+
         WebView.setWebContentsDebuggingEnabled(true);
         getSettings().setJavaScriptEnabled(true);
         getSettings().setAppCacheEnabled(true);
@@ -36,6 +46,7 @@ public class WebViewVideoView extends WebView {
         getSettings().setAllowFileAccessFromFileURLs(true);
         getSettings().setDomStorageEnabled(true);
         getSettings().setMediaPlaybackRequiresUserGesture(false);
+
         setLongClickable(false);
         // Below line prevent vibration on Long click
         setHapticFeedbackEnabled(false);
@@ -59,6 +70,8 @@ public class WebViewVideoView extends WebView {
         setWebViewClient(new WebViewClient() {
             public void onPageFinished(WebView view, String url) {
                 loadedPage = true;
+                if (runningTVMode)
+                    removeControlBarChildren();
             }
         });
 
@@ -92,6 +105,26 @@ public class WebViewVideoView extends WebView {
         });
 
         setWebChromeClient(webChromeClient);
+
+        addJavascriptInterface(new VideoJavascriptClient(), "androidAppProxy");
+    }
+
+    class VideoJavascriptClient{
+
+        @JavascriptInterface
+        public void isPlaying(boolean playing){
+            isPlaying = playing;
+        }
+
+    }
+
+    public boolean isPlaying(){
+        return isPlaying;
+    }
+
+    //For Android TV mode we do not need the controlbar controls
+    private void removeControlBarChildren(){
+        loadUrl("javascript:removeControlBarChildren();");
     }
 
     public void pauseVideo(){
@@ -104,6 +137,14 @@ public class WebViewVideoView extends WebView {
 
     public void makeFullscreen(){
         queURL("javascript:document.getElementsByTagName('video')[0].webkitRequestFullscreen();");
+    }
+
+    public void fastForward(){
+        loadUrl("javascript:player.currentTime(player.currentTime() + 10);");
+    }
+
+    public void rewind(){
+        loadUrl("javascript:player.currentTime(player.currentTime() - 10);");
     }
 
     public void queURL(String url){
