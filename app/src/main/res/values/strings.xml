@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">D.tube</string>
+    <string name="app_name">DTube</string>
     <string name="subscribe">Subscribe</string>
     <string name="unsubscribe">Unsubscribe</string>
     <string name="video_error">Error loading video</string>

@@ -162,6 +162,12 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
+        //remove donation options to comply with Play Store policy
+        if (getResources().getBoolean(R.bool.on_play_store)){
+            Menu m = navigationView.getMenu();
+            m.findItem(R.id.menu_donate).setVisible(false);
+        }
+
         drawerToggle.setDrawerIndicatorEnabled(true);
         //noinspection deprecation
         drawerLayout.setDrawerListener(drawerToggle);
@@ -224,7 +230,10 @@ public class MainActivity extends AppCompatActivity {
         Menu m = navigationView.getMenu();
         m.findItem(R.id.menu_update).setVisible(false);
 
-        updateCheck();
+        //only check for updates on GitHub if app was not downloaded from PlayStore
+        if (getResources().getBoolean(R.bool.on_play_store)) {
+            updateCheck();
+        }
     }
 
     public void onItemClick(int pos){
