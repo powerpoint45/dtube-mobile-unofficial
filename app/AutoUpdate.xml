@@ -1,14 +1,13 @@
 <AppUpdater>
   <update>
-    <latestVersion>1.1</latestVersion>
-    <latestVersionCode>2</latestVersionCode>
+    <latestVersion>2.0</latestVersion>
+    <latestVersionCode>3</latestVersionCode>
     <url>https://github.com/powerpoint45/dtube-mobile-unofficial/releases</url>
     <releaseNotes>
-	*All nested comments do not load all at once (press view replies on specific comments)
-	*More efficient fetching requests for steemit content (more efficiency to come)
+	*Many Many changes
+	*UI Revamp
+	*Android TV full support
 	*Embedded video player updated from official dtube github
-	*QR code login
-	*Fixed app not working due to steemit updates
     </releaseNotes>
   </update>
 </AppUpdater>
