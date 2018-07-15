@@ -43,11 +43,11 @@ public class ChannelAdapter extends RecyclerView.Adapter<ChannelAdapter.ViewHold
         ViewHolder(LinearLayout v) {
             super(v);
             itemView = v;
-            thumbView = ((ImageView)v.findViewById(R.id.item_image));
-            titleView = ((TextView)v.findViewById(R.id.item_title));
-            timeView = ((RelativeTimeTextView)v.findViewById(R.id.item_time));
-            priceView = ((TextView)v.findViewById(R.id.item_value));
-            userView = ((TextView)v.findViewById(R.id.item_user));
+            thumbView = v.findViewById(R.id.item_image);
+            titleView = v.findViewById(R.id.item_title);
+            timeView =  v.findViewById(R.id.item_time);
+            priceView = v.findViewById(R.id.item_value);
+            userView =  v.findViewById(R.id.item_user);
         }
     }
 
@@ -59,6 +59,8 @@ public class ChannelAdapter extends RecyclerView.Adapter<ChannelAdapter.ViewHold
         // create a new view
         LinearLayout v = (LinearLayout) LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.suggested_item, parent, false);
+        v.setFocusable(true);
+        v.setFocusableInTouchMode(true);
         v.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         ViewHolder vh = new ViewHolder(v);
         return vh;
