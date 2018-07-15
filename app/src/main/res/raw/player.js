@@ -29,7 +29,7 @@ function checkSettings() {
     }
 }
 
-var checkSettingsInterval = checksetInterval(checkSettings, 300);
+var checkSettingsInterval = setInterval(checkSettings, 300);
 
 
 function findVideo(retries = 3) {
