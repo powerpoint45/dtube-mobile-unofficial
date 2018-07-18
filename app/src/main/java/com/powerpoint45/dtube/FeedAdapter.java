@@ -2,6 +2,7 @@ package com.powerpoint45.dtube;
 
 import android.graphics.drawable.Drawable;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,7 +22,12 @@ class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
     private VideoArrayList videos;
     MainActivity c;
     private Drawable placeholderDrawable;
-    boolean tvMode;
+    private boolean tvMode;
+    private int focusedItem;
+
+    public int getFocusedItem() {
+        return focusedItem;
+    }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         // each data item is just a string in this case
@@ -32,16 +38,18 @@ class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
         TextView userView;
         LinearLayout itemView;
         ImageView removeButton;
+        TextView durationText;
 
         ViewHolder(LinearLayout v) {
             super(v);
             itemView = v;
-            thumbView = (ImageView) v.findViewById(R.id.item_image);
-            titleView = (TextView) v.findViewById(R.id.item_title);
-            timeView = (RelativeTimeTextView) v.findViewById(R.id.item_time);
-            priceView = (TextView) v.findViewById(R.id.item_value);
-            userView = (TextView) v.findViewById(R.id.item_user);
-            removeButton = (ImageView) v.findViewById(R.id.item_remove);
+            thumbView = v.findViewById(R.id.item_image);
+            titleView = v.findViewById(R.id.item_title);
+            timeView = v.findViewById(R.id.item_time);
+            priceView = v.findViewById(R.id.item_value);
+            userView = v.findViewById(R.id.item_user);
+            removeButton = v.findViewById(R.id.item_remove);
+            durationText = v.findViewById(R.id.duration_text);
         }
     }
 
@@ -61,13 +69,25 @@ class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
     @Override
     public FeedAdapter.ViewHolder onCreateViewHolder(ViewGroup parent,
                                                    int viewType) {
+        int layoutid = tvMode ? R.layout.feed_item_tv : R.layout.feed_item;
+
         // create a new view
         LinearLayout v = (LinearLayout) LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.feed_item, parent, false);
-        v.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                .inflate(layoutid, parent, false);
+        if (tvMode)
+            v.setLayoutParams(new LinearLayout.LayoutParams(Tools.numtodp(400,c), ViewGroup.LayoutParams.WRAP_CONTENT));
+        else
+            v.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         // set the view's size, margins, paddings and layout parameters
         return new ViewHolder(v);
     }
+
+    View.OnFocusChangeListener onFocusChangeListener = new View.OnFocusChangeListener() {
+        @Override
+        public void onFocusChange(View v, boolean hasFocus) {
+            focusedItem = (int)v.getTag();
+        }
+    };
 
     // Replace the contents of a view (invoked by the layout manager)
     @Override
@@ -90,6 +110,11 @@ class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
             }
         });
 
+        if (tvMode)
+            holder.itemView.setFocusableInTouchMode(true);
+
+        holder.itemView.setOnFocusChangeListener(onFocusChangeListener);
+
 
         if (videos.get(position).price == null)
             holder.priceView.setVisibility(View.GONE);
@@ -106,6 +131,12 @@ class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
         holder.timeView.setReferenceTime(videos.get(position).getDate());
         holder.priceView.setText(videos.get(position).price);
         holder.userView.setText(videos.get(position).user);
+
+        if (videos.get(position).getDuration()!=null) {
+            holder.durationText.setVisibility(View.VISIBLE);
+            holder.durationText.setText(videos.get(position).getDuration());
+        }else
+            holder.durationText.setVisibility(View.INVISIBLE);
 
 
 

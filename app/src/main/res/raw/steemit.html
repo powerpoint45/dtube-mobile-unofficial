@@ -455,11 +455,15 @@ function getNewVideosFeed(){
 		});
 }
 
+getNewVideosFeed();
+
 
 
 //turns a video object from steemit API into something more workable
 function getSimpleVideoObject(r){
+
 	var metadata = JSON.parse(r.json_metadata);
+
 
 	var video = new Object();
 	video.username = r.author;
@@ -482,9 +486,20 @@ function getSimpleVideoObject(r){
 	if (metadata && metadata.video && metadata.video.content && metadata.video.info){
 		video.snaphash = metadata.video.info.snaphash;
 		video.hash = metadata.video.content.videohash;
+
+		var duration = metadata.video.info.duration;
+		if (duration){
+			var date = new Date(null);
+			date.setSeconds(metadata.video.info.duration); // specify value for SECONDS here
+			var timeString = date.toISOString().substr(11, 8);
+			video.duration = timeString;
+		}
+
 	}
 	return(video);
 }
+
+
 
 
 

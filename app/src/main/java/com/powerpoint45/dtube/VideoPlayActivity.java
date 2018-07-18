@@ -155,7 +155,10 @@ public class VideoPlayActivity extends AppCompatActivity {
         }
 
         descriptionBox.setText(Tools.fromHtml(videoToPlay.longDescriptionHTML));
-        descriptionBox.setMovementMethod(LinkMovementMethod.getInstance());
+
+        //disable links if running on TV
+        if (!runningOnTV)
+            descriptionBox.setMovementMethod(LinkMovementMethod.getInstance());
 
         if (accountName!=null)
             replyBox.setOnEditorActionListener(editorActionListener);
@@ -436,7 +439,9 @@ public class VideoPlayActivity extends AppCompatActivity {
 
         if (!setFullDescription) {
             ((TextView) findViewById(R.id.item_description)).setText(Tools.fromHtml(videoToPlay.longDescriptionHTML));
-            ((TextView) findViewById(R.id.item_description)).setMovementMethod(LinkMovementMethod.getInstance());
+            //disable links if running on TV
+            if (!runningOnTV)
+                ((TextView) findViewById(R.id.item_description)).setMovementMethod(LinkMovementMethod.getInstance());
             setFullDescription = true;
         }
 

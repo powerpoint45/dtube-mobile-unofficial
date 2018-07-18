@@ -1,8 +1,10 @@
 package com.powerpoint45.dtube;
 
 import android.Manifest;
+import android.app.UiModeManager;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -12,6 +14,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -29,6 +32,8 @@ public class LoginActivity extends AppCompatActivity {
 
     final int RESULT_QR_CODE = 0;
 
+    boolean runningOnTV;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,8 +44,23 @@ public class LoginActivity extends AppCompatActivity {
         followSwitch = findViewById(R.id.follow_switch);
         steemitWebView = new SteemitWebView(this);
 
-        //enable link clicks
-        ((TextView)findViewById(R.id.upvote_text)).setMovementMethod(LinkMovementMethod.getInstance());
+        //Remove QR button if system has no camera
+        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)){
+            ((ViewGroup)findViewById(R.id.password_holder)).removeView(findViewById(R.id.qr_button));
+        }
+
+        UiModeManager uiModeManager = (UiModeManager) getSystemService(UI_MODE_SERVICE);
+        assert uiModeManager != null;
+
+        //Customize layout if in TV Mode
+        if (uiModeManager.getCurrentModeType()== Configuration.UI_MODE_TYPE_TELEVISION)
+            runningOnTV = true;
+
+        //enable link clicks if not on TV
+        if (!runningOnTV) {
+            ((TextView) findViewById(R.id.upvote_text)).setMovementMethod(LinkMovementMethod.getInstance());
+            ((TextView) findViewById(R.id.follow_text)).setMovementMethod(LinkMovementMethod.getInstance());
+        }
     }
 
     public void gotLoginResult(final boolean sucess){

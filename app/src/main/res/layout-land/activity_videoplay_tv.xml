@@ -113,7 +113,6 @@
                             android:layout_height="40dp"
                             android:layout_marginRight="5dp"
                             android:adjustViewBounds="true"
-                            android:focusableInTouchMode="true"
                             android:focusable="true"
                             android:background="?attr/selectableItemBackgroundBorderless"
                             android:onClick="goToChannelClicked"

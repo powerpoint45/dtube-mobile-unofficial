@@ -5,6 +5,7 @@
     android:layout_height="match_parent"
     android:padding="10dp"
     android:focusable="true"
+    android:id="@+id/feed_item"
     android:background="?android:attr/selectableItemBackground">
 
     <FrameLayout
@@ -18,6 +19,17 @@
             android:maxHeight="250dp"
             android:scaleType="fitCenter"
             android:adjustViewBounds="true"/>
+
+        <TextView
+            android:id="@+id/duration_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:background="@android:color/black"
+            android:textColor="@android:color/white"
+            android:layout_margin="5dp"
+            android:padding="2dp"
+            android:text="00:30:00" />
 
         <ImageView
             android:id="@+id/item_remove"

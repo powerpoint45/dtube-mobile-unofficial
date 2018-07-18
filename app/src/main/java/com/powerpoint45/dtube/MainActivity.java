@@ -52,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
     DrawerLayout drawerLayout;
     FrameLayout navigationHeader;
     ActionBarDrawerToggle drawerToggle;
+    FrameLayout mainFrame;
 
     boolean activityPaused;
 
@@ -79,22 +80,38 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
 
         UiModeManager uiModeManager = (UiModeManager) getSystemService(UI_MODE_SERVICE);
         assert uiModeManager != null;
 
         //Customize layout if in TV Mode
-        if (uiModeManager.getCurrentModeType()== Configuration.UI_MODE_TYPE_TELEVISION)
+        if (uiModeManager.getCurrentModeType()== Configuration.UI_MODE_TYPE_TELEVISION) {
+            setContentView(R.layout.activity_main_tv);
             runningOnTV = true;
+            findViewById(R.id.search_btn).setFocusableInTouchMode(true);
+            findViewById(R.id.profile_image).setFocusableInTouchMode(true);
+        }else
+            setContentView(R.layout.activity_main);
+
+        mainFrame = findViewById(R.id.mainframe);
 
 
         setSupportActionBar((Toolbar)findViewById(R.id.toolbar));
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setHomeButtonEnabled(true);
+        if (!runningOnTV) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setHomeButtonEnabled(true);
+        }
 
         drawerLayout = findViewById(R.id.drawer_layout);
+
+
+//        drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_OPEN);
+        if (runningOnTV)
+            drawerLayout.setScrimColor(Color.TRANSPARENT);
+
+
         navigationView = findViewById(R.id.navigation_view);
         navigationView.setItemIconTintList(null);
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
@@ -134,6 +151,10 @@ public class MainActivity extends AppCompatActivity {
                         Intent aboutIntent = new Intent(MainActivity.this,AboutActivity.class);
                         startActivity(aboutIntent);
                         break;
+                    case R.id.menu_more_apps:
+                        Intent moreIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/dev?id=7725486445697122776"));
+                        startActivity(moreIntent);
+                        break;
                     case R.id.subscription_id:
                         String username = menuItem.getTitle().toString();
                         Intent i = new Intent(MainActivity.this, ChannelActivity.class);
@@ -162,10 +183,45 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
+
+        if (runningOnTV) {
+            drawerLayout.addDrawerListener(new DrawerLayout.DrawerListener() {
+                @Override
+                public void onDrawerSlide(@NonNull View drawerView, float slideOffset) {
+                    ((DrawerLayout.LayoutParams) mainFrame.getLayoutParams()).leftMargin = (int) (slideOffset * drawerView.getWidth());
+                    mainFrame.requestLayout();
+                }
+
+                @Override
+                public void onDrawerOpened(@NonNull View drawerView) {
+
+                }
+
+                @Override
+                public void onDrawerClosed(@NonNull View drawerView) {
+
+                }
+
+                @Override
+                public void onDrawerStateChanged(int newState) {
+
+                }
+            });
+        }
+
         //remove donation options to comply with Play Store policy
         if (getResources().getBoolean(R.bool.on_play_store)){
             Menu m = navigationView.getMenu();
             m.findItem(R.id.menu_donate).setVisible(false);
+        }
+
+        //remove more apps & about menu item if running on TV
+        //trying to comply with play store policy for Android TV
+        if (runningOnTV){
+            Menu m = navigationView.getMenu();
+            m.findItem(R.id.menu_more_apps).setVisible(false);
+            m.findItem(R.id.menu_about).setVisible(false);
+            m.findItem(R.id.sub_items).setVisible(false);
         }
 
         drawerToggle.setDrawerIndicatorEnabled(true);
@@ -188,29 +244,31 @@ public class MainActivity extends AppCompatActivity {
         //set recyclerView either landscape or portrait
         onConfigurationChanged(getResources().getConfiguration());
 
-        //Animate toolbar when scrolling feed
-        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+        //Animate toolbar when scrolling feed for non-TV Mode
+        if (!runningOnTV) {
+            recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
 
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-                if (toolbar.getHeight()-dy<=0){
-                    if (toolbar.getVisibility()==View.VISIBLE)
-                        toolbar.setVisibility(View.GONE);
-                    if (toolbar.getHeight()!=0)
-                        toolbar.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,0));
-                }else {
-                    if (toolbar.getVisibility() == View.GONE)
-                        toolbar.setVisibility(View.VISIBLE);
+                @Override
+                public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                    super.onScrolled(recyclerView, dx, dy);
+                    if (toolbar.getHeight() - dy <= 0) {
+                        if (toolbar.getVisibility() == View.VISIBLE)
+                            toolbar.setVisibility(View.GONE);
+                        if (toolbar.getHeight() != 0)
+                            toolbar.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0));
+                    } else {
+                        if (toolbar.getVisibility() == View.GONE)
+                            toolbar.setVisibility(View.VISIBLE);
 
-                    if (toolbar.getHeight()-dy>getResources().getDimension(R.dimen.toolbar_size))
-                        toolbar.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int)getResources().getDimension(R.dimen.toolbar_size)));
-                    else
-                        toolbar.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, toolbar.getHeight() - dy));
+                        if (toolbar.getHeight() - dy > getResources().getDimension(R.dimen.toolbar_size))
+                            toolbar.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int) getResources().getDimension(R.dimen.toolbar_size)));
+                        else
+                            toolbar.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, toolbar.getHeight() - dy));
+                    }
+
                 }
-
-            }
-        });
+            });
+        }
 
         feedAdapter = new FeedAdapter(this, runningOnTV);
         recyclerView.setAdapter(feedAdapter);
@@ -487,13 +545,16 @@ public class MainActivity extends AppCompatActivity {
                             loginButtonClicked(null);
                         }
                     });
-                    ((FrameLayout) findViewById(R.id.mainframe)).addView(v, lp);
+                    mainFrame.addView(v, lp);
+                    recyclerView.setFocusable(false);
                 }
             }else if (findViewById(R.id.login_for_subs) != null) {
-                ((FrameLayout) findViewById(R.id.mainframe)).removeView(findViewById(R.id.login_for_subs));
+                mainFrame.removeView(findViewById(R.id.login_for_subs));
+                recyclerView.setFocusable(true);
             }
         }else if (findViewById(R.id.login_for_subs) != null) {
-            ((FrameLayout) findViewById(R.id.mainframe)).removeView(findViewById(R.id.login_for_subs));
+            mainFrame.removeView(findViewById(R.id.login_for_subs));
+            recyclerView.setFocusable(true);
         }
 
 
@@ -582,6 +643,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void goToTab(int tab){
+        if (tab>4)
+            tab =0;
+        if (tab<0)
+            tab =4;
+
         switch (tab){
             case DtubeAPI.CAT_HISTORY:
                 tabGoToHistoryClicked(null);
@@ -599,6 +665,10 @@ public class MainActivity extends AppCompatActivity {
                 tabGoToTrendingClicked(null);
                 break;
         }
+
+        if (feedAdapter.getItemCount()>0)
+            recyclerView.requestFocus();
+
 
     }
 
@@ -662,9 +732,11 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
-        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE)
+        if (runningOnTV) {
+            recyclerView.setLayoutManager(new GridLayoutManager(recyclerView.getContext(), 2, GridLayoutManager.HORIZONTAL, false));
+        }else if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
             recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
-        else
+        }else
             recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         //remove cached recycled views because feed_item layout needs to change for orientation
@@ -692,49 +764,114 @@ public class MainActivity extends AppCompatActivity {
         switch (keyCode) {
             case KeyEvent.KEYCODE_DPAD_LEFT:
             case KeyEvent.KEYCODE_DPAD_RIGHT:
-                if (!drawerLayout.isDrawerOpen(navigationView)){
 
-                    int feedItem = -1;
-                    if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT)
-                        feedItem = -2;
-                    else if (feedAdapter.getItemCount()!=0) {
-                        try {
-                            if (getCurrentFocus()!=null)
-                                feedItem = Integer.parseInt(getCurrentFocus().getTag().toString());
-                        } catch (Exception ignored) {}
-                    }else
-                        feedItem = -2;
+                if (!runningOnTV) {
+                    if (!drawerLayout.isDrawerOpen(navigationView)) {
 
-                    if (feedItem!=-1) {
-                        //pressing left on the very left item
-                        if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT && ((feedItem%2 == 0) || feedItem ==-2)){
-                            if (selectedTab == 0) {
+                        int feedItem = -1;
+                        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT)
+                            feedItem = -2;
+                        else if (feedAdapter.getItemCount() != 0) {
+                            try {
+                                if (getCurrentFocus() != null)
+                                    feedItem = Integer.parseInt(getCurrentFocus().getTag().toString());
+                            } catch (Exception ignored) {
+                            }
+                        } else
+                            feedItem = -2;
+
+                        if (getCurrentFocus() != null && getCurrentFocus().getId() == R.id.search_btn) {
+                            if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
                                 drawerLayout.openDrawer(navigationView);
-                                if (drawerLayout.findViewById(R.id.header_icon)!=null)
+                                if (drawerLayout.findViewById(R.id.header_icon) != null)
                                     drawerLayout.findViewById(R.id.header_icon).requestFocus();
                                 else
                                     navigationView.requestFocus();
-
-                            }else
-                                goToTab(selectedTab - 1);
-
+                            }
                         }
 
-                        //pressing right on the very right item
-                        if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT && ((feedItem%2 != 0)|| feedItem ==-2)){
-                            if (selectedTab == 4)
-                                goToTab(0);
-                            else
-                                goToTab(selectedTab + 1);
+                        if (feedItem != -1 || (getCurrentFocus() != null && getCurrentFocus().getId() == R.id.search_btn)) {
+                            //pressing left on the very left item
+                            if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT && ((feedItem % 2 == 0) || feedItem == -2)) {
+                                if (selectedTab == 0) {
+                                    drawerLayout.openDrawer(navigationView);
+                                    if (drawerLayout.findViewById(R.id.header_icon) != null)
+                                        drawerLayout.findViewById(R.id.header_icon).requestFocus();
+                                    else
+                                        navigationView.requestFocus();
 
+                                } else
+                                    goToTab(selectedTab - 1);
+
+                            }
+
+                            //pressing right on the very right item
+                            if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT && ((feedItem % 2 != 0) || feedItem == -2)) {
+                                if (selectedTab == 4)
+                                    goToTab(0);
+                                else
+                                    goToTab(selectedTab + 1);
+
+                            }
+
+
+                            Log.d("dtube", feedItem % 2 == 0 ? "left item" : "right item");
                         }
+                    } else if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT)
+                        drawerLayout.closeDrawers();
+                }else {
+                    //TV MODE INPUT
+                    if (!drawerLayout.isDrawerOpen(navigationView)) {
+                        if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
+                            if (getCurrentFocus() != null &&
+                                    (getCurrentFocus().getId() == R.id.search_btn
+                                            || getCurrentFocus().getId() == R.id.tab_history)
+                                    || getCurrentFocus().getId() == R.id.tab_hot
+                                    || getCurrentFocus().getId() == R.id.tab_new
+                                    || getCurrentFocus().getId() == R.id.tab_subscribed
+                                    || getCurrentFocus().getId() == R.id.tab_trending) {
 
-
-                        Log.d("dtube", feedItem%2 == 0 ? "left item" : "right item");
+                                drawerLayout.openDrawer(navigationView);
+                                if (drawerLayout.findViewById(R.id.header_icon) != null)
+                                    drawerLayout.findViewById(R.id.header_icon).requestFocus();
+                                else
+                                    navigationView.requestFocus();
+                            }
+                        }
+                    }else if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
+                        drawerLayout.closeDrawers();
                     }
-                }else if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT)
-                    drawerLayout.closeDrawers();
+                }
                 break;
+
+                case KeyEvent.KEYCODE_DPAD_DOWN:
+                    if (!drawerLayout.isDrawerOpen(navigationView)) {
+                        if (getCurrentFocus() != null && (getCurrentFocus().getId() == R.id.search_btn
+                                || getCurrentFocus().getId() == R.id.profile_image)
+                                && !drawerLayout.isDrawerOpen(navigationView) && !recyclerView.isFocused()) {
+                            if (getCurrentFocus().getId() == R.id.search_btn) {
+                                findViewById(R.id.tab_subscribed).requestFocus();
+                                return true;
+                            }else
+                                recyclerView.requestFocus();
+                            Log.d("dtube", "focusing");
+                        }
+
+                        if (runningOnTV && feedAdapter.getFocusedItem() % 2 != 0
+                                && getCurrentFocus()!=null &&getCurrentFocus().getId()==R.id.feed_item) {
+                            goToTab(selectedTab + 1);
+                        }
+                    }
+                    return false;
+            case KeyEvent.KEYCODE_DPAD_UP:
+                if (!drawerLayout.isDrawerOpen(navigationView)) {
+                    if (selectedTab != 0 && runningOnTV && feedAdapter.getFocusedItem() % 2 == 0
+                            && getCurrentFocus()!=null &&getCurrentFocus().getId()==R.id.feed_item) {
+                        goToTab(selectedTab - 1);
+                        return true;
+                    }
+                }
+                return false;
             default:
                 break;
         }

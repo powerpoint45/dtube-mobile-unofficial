@@ -39,6 +39,7 @@ public class ChannelAdapter extends RecyclerView.Adapter<ChannelAdapter.ViewHold
         private RelativeTimeTextView timeView;
         private TextView userView;
         private LinearLayout itemView;
+        private TextView durationText;
 
         ViewHolder(LinearLayout v) {
             super(v);
@@ -48,6 +49,7 @@ public class ChannelAdapter extends RecyclerView.Adapter<ChannelAdapter.ViewHold
             timeView =  v.findViewById(R.id.item_time);
             priceView = v.findViewById(R.id.item_value);
             userView =  v.findViewById(R.id.item_user);
+            durationText = v.findViewById(R.id.duration_text);
         }
     }
 
@@ -60,7 +62,6 @@ public class ChannelAdapter extends RecyclerView.Adapter<ChannelAdapter.ViewHold
         LinearLayout v = (LinearLayout) LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.suggested_item, parent, false);
         v.setFocusable(true);
-        v.setFocusableInTouchMode(true);
         v.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         ViewHolder vh = new ViewHolder(v);
         return vh;
@@ -89,6 +90,12 @@ public class ChannelAdapter extends RecyclerView.Adapter<ChannelAdapter.ViewHold
         holder.priceView.setText(videos.get(position).price);
         holder.userView.setText(videos.get(position).user);
         holder.itemView.setTag(holder);
+
+        if (videos.get(position).getDuration()!=null) {
+            holder.durationText.setVisibility(View.VISIBLE);
+            holder.durationText.setText(videos.get(position).getDuration());
+        }else
+            holder.durationText.setVisibility(View.INVISIBLE);
 
 
         Picasso.with(c).load(videos.get(position).getImageURL()).placeholder(R.drawable.ic_ondemand_video).resize(400,400).centerInside().into(

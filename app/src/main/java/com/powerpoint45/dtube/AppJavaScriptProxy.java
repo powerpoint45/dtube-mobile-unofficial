@@ -321,6 +321,11 @@ class AppJavaScriptProxy {
             video.hash = jo.getString("hash");
             video.snapHash = jo.getString("snaphash");
             video.permlink = jo.getString("permlink");
+
+            if (jo.has("duration")){
+                video.setDuration(jo.getString("duration"));
+            }
+
             if (jo.has("gateway")){
                 video.setGateway(jo.getString("gateway"));
             }

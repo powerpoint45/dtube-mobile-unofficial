@@ -25,6 +25,7 @@ class Video implements Serializable{
     int categoryId;
     String hash;
     String snapHash;
+    String duration;
 
     String longDescriptionHTML;
     String subscribers;
@@ -72,6 +73,14 @@ class Video implements Serializable{
 
     String getVideoStreamURL() {
         return "https://" + getGateway() + "/ipfs/" + hash;
+    }
+
+    public String getDuration() {
+        return duration;
+    }
+
+    public void setDuration(String duration) {
+        this.duration = duration;
     }
 
     @SuppressLint("SimpleDateFormat")

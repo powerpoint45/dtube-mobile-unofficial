@@ -51,4 +51,6 @@
 
     <string name="like_comment">Like Comment</string>
     <string name="dislike_comment">Dislike Comment</string>
+
+    <string name="more_apps">More apps</string>
 </resources>

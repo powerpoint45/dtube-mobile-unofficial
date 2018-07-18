@@ -26,16 +26,17 @@
             android:layout_height="match_parent"
             android:paddingTop="50dp"
             android:clipToPadding="false"
-            android:layout_marginBottom="50dp"
+            android:layout_marginLeft="50dp"
              />
 
         <LinearLayout
             android:id="@+id/bottom_bar"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_gravity="bottom"
+            android:layout_width="50dp"
+            android:paddingTop="@dimen/toolbar_size"
+            android:layout_height="match_parent"
+            android:layout_gravity="left"
             android:background="@android:color/white"
-            android:orientation="horizontal"
+            android:orientation="vertical"
             android:visibility="visible"
             android:weightSum="5">
 
@@ -116,12 +117,22 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="center_vertical">
+                <ImageView
+                    android:id="@+id/search_btn"
+                    android:layout_width="40dp"
+                    android:layout_height="match_parent"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:onClick="searchButtonClicked"
+                    android:padding="7dp"
+                    android:layout_marginStart="10dp"
+                    app:srcCompat="@drawable/ic_search" />
 
                 <ImageView
                     android:id="@+id/imageView3"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:layout_marginLeft="-15dp"
                     android:padding="13dp"
                     app:srcCompat="@drawable/ic_play_arrow_large"
                     android:adjustViewBounds="true"/>
@@ -143,16 +154,7 @@
                     android:orientation="horizontal"
                     android:gravity="right">
 
-                    <ImageView
-                        android:id="@+id/search_btn"
-                        android:layout_width="40dp"
-                        android:layout_height="match_parent"
-                        android:background="?attr/selectableItemBackgroundBorderless"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:onClick="searchButtonClicked"
-                        android:padding="7dp"
-                        app:srcCompat="@drawable/ic_search" />
+
 
                     <ImageView
                         android:id="@+id/profile_image"

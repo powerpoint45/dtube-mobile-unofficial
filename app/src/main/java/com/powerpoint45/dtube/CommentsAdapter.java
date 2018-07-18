@@ -129,7 +129,11 @@ class CommentsAdapter extends BaseAdapter {
                 result = Html.fromHtml(currentComment.commentHTML);
             }
             viewHolder.commentView.setText(result);
-            viewHolder.commentView.setMovementMethod(LinkMovementMethod.getInstance());
+
+            //disable links if running on TV
+            if (!tvMode)
+                viewHolder.commentView.setMovementMethod(LinkMovementMethod.getInstance());
+
             viewHolder.usernameView.setText(currentComment.userName);
             viewHolder.dateView.setReferenceTime(currentComment.getDate());
             if (currentComment.indent>0)
