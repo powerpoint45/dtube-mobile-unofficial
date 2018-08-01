@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<preference-headers
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <header android:fragment="com.powerpoint45.dtube.PreferencesActivity$Prefs1Fragment"
+        android:id="@+id/ui_settings"
+        android:icon="@drawable/ic_color_lens"
+        android:title="@string/ui_settings"/>
+
+    <header android:icon="@drawable/ic_shop"
+        android:title="@string/more_apps">
+        <intent android:action="android.intent.action.VIEW"
+            android:data="https://play.google.com/store/apps/dev?id=7725486445697122776" />
+    </header>
+
+    <header android:icon="@drawable/ic_info_outline"
+        android:title="@string/about">
+        <intent android:action="android.intent.action.VIEW"
+            android:data="https://2314472.wixsite.com/adtubeclient" />
+    </header>
+</preference-headers>

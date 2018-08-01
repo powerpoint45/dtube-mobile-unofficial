@@ -46,9 +46,9 @@
     <item android:title="@string/sub_item"
         android:id="@+id/sub_items">
         <menu>
-            <!--<item-->
-                <!--android:id="@+id/menu_settings"-->
-                <!--android:title="@string/settings" />-->
+            <item
+                android:id="@+id/menu_settings"
+                android:title="@string/settings" />
 
             <item
                 android:id="@+id/menu_donate"

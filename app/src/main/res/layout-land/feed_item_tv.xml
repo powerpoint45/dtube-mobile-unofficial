@@ -45,6 +45,7 @@
             app:srcCompat="@drawable/ic_cancel" />
 
         <LinearLayout
+            android:id="@+id/feed_item_desc_holder"
             android:layout_gravity="bottom"
             android:layout_width="match_parent"
             android:layout_height="match_parent"

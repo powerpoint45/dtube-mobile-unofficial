@@ -16,6 +16,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.AppCompatImageView;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -29,6 +30,7 @@ import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -76,12 +78,21 @@ public class MainActivity extends AppCompatActivity {
 
     boolean runningOnTV;
 
+    //flag set from settings activity to let this activity know it needs to
+    //change theme
+    public static boolean changedDarkMode;
+
     @SuppressWarnings("ConstantConditions")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
+
+        Preferences.loadPreferences(this);
+
+        if (Preferences.darkMode)
+            setTheme(R.style.AppThemeDark);
 
         UiModeManager uiModeManager = (UiModeManager) getSystemService(UI_MODE_SERVICE);
         assert uiModeManager != null;
@@ -97,6 +108,20 @@ public class MainActivity extends AppCompatActivity {
 
         mainFrame = findViewById(R.id.mainframe);
 
+        findViewById(R.id.search_btn).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                searchButtonClicked(v);
+            }
+        });
+
+
+        if (Preferences.darkMode) {
+            ((AppCompatImageView) findViewById(R.id.logo)).setImageResource(R.drawable.logo_white);
+            ((AppCompatImageView) findViewById(R.id.search_btn)).setImageResource(R.drawable.ic_search_white);
+        }
+
+
 
         setSupportActionBar((Toolbar)findViewById(R.id.toolbar));
         if (!runningOnTV) {
@@ -105,6 +130,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         drawerLayout = findViewById(R.id.drawer_layout);
+
 
 
 //        drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_OPEN);
@@ -145,6 +171,9 @@ public class MainActivity extends AppCompatActivity {
                         break;
                     case R.id.menu_donate:
                         startActivity(new Intent(MainActivity.this, DonateActivity.class));
+                        break;
+                    case R.id.menu_settings:
+                        startActivity(new Intent(MainActivity.this, PreferencesActivity.class));
                         break;
                     case R.id.menu_about:
                         //Intent aboutIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://steemit.com/utopian-io/@immawake/introducing-the-dtube-mobile-app-unofficial-android-app"));
@@ -221,7 +250,7 @@ public class MainActivity extends AppCompatActivity {
             Menu m = navigationView.getMenu();
             m.findItem(R.id.menu_more_apps).setVisible(false);
             m.findItem(R.id.menu_about).setVisible(false);
-            m.findItem(R.id.sub_items).setVisible(false);
+            m.findItem(R.id.menu_donate).setVisible(false);
         }
 
         drawerToggle.setDrawerIndicatorEnabled(true);
@@ -538,7 +567,9 @@ public class MainActivity extends AppCompatActivity {
                 if (findViewById(R.id.login_for_subs) == null) {
                     FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
                     lp.gravity = Gravity.CENTER;
-                    View v = LayoutInflater.from(this).inflate(R.layout.login_for_subs_btn, null);
+                    Button v = (Button)LayoutInflater.from(this).inflate(R.layout.login_for_subs_btn, null);
+                    if (Preferences.darkMode)
+                        v.setTextColor(Color.WHITE);
                     v.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
@@ -562,12 +593,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void updateBottomBar(){
-        if (((ImageView)bottomBar.getChildAt(selectedTab)).getColorFilter()==null) {
             for (int i = 0; i < 5; i++) {
-                ((ImageView) bottomBar.getChildAt(i)).setColorFilter(null);
+                if (Preferences.darkMode)
+                    ((ImageView) bottomBar.getChildAt(i)).setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_ATOP);
+                else
+                    ((ImageView) bottomBar.getChildAt(i)).setColorFilter(null);
             }
             ((ImageView) bottomBar.getChildAt(selectedTab)).setColorFilter(Color.RED, PorterDuff.Mode.SRC_ATOP);
-        }
     }
 
 
@@ -910,5 +942,13 @@ public class MainActivity extends AppCompatActivity {
     public void onResume(){
         super.onResume();
         activityPaused = false;
+
+        if (changedDarkMode){
+            changedDarkMode = false;
+            finish();
+            startActivity(new Intent(MainActivity.this,MainActivity.class));
+        }
     }
+
+
 }

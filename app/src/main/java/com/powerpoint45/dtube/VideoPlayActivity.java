@@ -91,6 +91,9 @@ public class VideoPlayActivity extends AppCompatActivity {
         UiModeManager uiModeManager = (UiModeManager) getSystemService(UI_MODE_SERVICE);
         assert uiModeManager != null;
 
+        if (Preferences.darkMode)
+            setTheme(R.style.AppThemeDark);
+
         //Customize layout if in TV Mode
         if (uiModeManager.getCurrentModeType()== Configuration.UI_MODE_TYPE_TELEVISION) {
             setContentView(R.layout.activity_videoplay_tv);
@@ -100,6 +103,8 @@ public class VideoPlayActivity extends AppCompatActivity {
             findViewById(R.id.undervideo_padding).setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                     height));
             runningOnTV = true;
+            if (Preferences.darkMode)
+                findViewById(R.id.contents_bg).setBackgroundColor(getResources().getColor(R.color.transparentBlack));
 
             lastTimeUsingPlayerControls = System.currentTimeMillis();
             playerControls = findViewById(R.id.playerControls);
@@ -150,7 +155,7 @@ public class VideoPlayActivity extends AppCompatActivity {
                 .build();
 
         if (clientProfileImageURL!=null) {
-            Picasso.with(this).load(clientProfileImageURL).placeholder(R.drawable.ic_account_circle).transform(transformation)
+            Picasso.with(this).load(clientProfileImageURL).placeholder(R.drawable.login).transform(transformation)
                     .into(((ImageView) findViewById(R.id.item_account_comment_image)));
         }
 
@@ -424,8 +429,13 @@ public class VideoPlayActivity extends AppCompatActivity {
         ((TextView) findViewById(R.id.text_likes)).setText("" + videoToPlay.likes);
         ((TextView) findViewById(R.id.text_dislikes)).setText("" + videoToPlay.dislikes);
 
-        ((ImageView)findViewById(R.id.video_like)).setColorFilter(null);
-        ((ImageView)findViewById(R.id.video_dislike)).setColorFilter(null);
+        if (Preferences.darkMode){
+            ((ImageView) findViewById(R.id.video_like)).setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_ATOP);
+            ((ImageView) findViewById(R.id.video_dislike)).setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_ATOP);
+        }else {
+            ((ImageView) findViewById(R.id.video_like)).setColorFilter(null);
+            ((ImageView) findViewById(R.id.video_dislike)).setColorFilter(null);
+        }
 
         if (videoToPlay.voteType == 1){
             ((ImageView)findViewById(R.id.video_like)).setColorFilter(Color.RED, PorterDuff.Mode.SRC_ATOP);
@@ -433,7 +443,7 @@ public class VideoPlayActivity extends AppCompatActivity {
             ((ImageView)findViewById(R.id.video_dislike)).setColorFilter(Color.RED, PorterDuff.Mode.SRC_ATOP);
 
         if (videoToPlay.user!=null) {
-            Picasso.with(this).load(DtubeAPI.PROFILE_IMAGE_SMALL_URL.replace("username", videoToPlay.user)).placeholder(R.drawable.ic_account_circle).transform(transformation)
+            Picasso.with(this).load(DtubeAPI.PROFILE_IMAGE_SMALL_URL.replace("username", videoToPlay.user)).placeholder(R.drawable.login).transform(transformation)
                     .into((ImageView) findViewById(R.id.item_profileimage));
         }
 
@@ -557,7 +567,7 @@ public class VideoPlayActivity extends AppCompatActivity {
         replyHolder.setVisibility(View.VISIBLE);
 
         if (clientProfileImageURL!=null) {
-            Picasso.with(this).load(clientProfileImageURL).placeholder(R.drawable.ic_account_circle).transform(transformation)
+            Picasso.with(this).load(clientProfileImageURL).placeholder(R.drawable.login).transform(transformation)
                     .into(((ImageView) replyHolder.findViewById(R.id.item_account_comment_image)));
         }
 

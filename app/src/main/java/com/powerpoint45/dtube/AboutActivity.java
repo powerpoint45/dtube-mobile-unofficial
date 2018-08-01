@@ -14,11 +14,18 @@ public class AboutActivity extends AppCompatActivity {
     MarkdownView markdownView;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+        if (Preferences.darkMode)
+            setTheme(R.style.AppThemeDark);
+
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_about);
 
         markdownView = findViewById(R.id.markdown_view);
 
-        markdownView.loadMarkdownFile("https://raw.githubusercontent.com/powerpoint45/dtube-mobile-unofficial/master/README.md","file:///android_asset/paperwhite.css");
+        if (Preferences.darkMode)
+            markdownView.loadMarkdownFile("https://raw.githubusercontent.com/powerpoint45/dtube-mobile-unofficial/master/README.md","file:///android_asset/dark.css");
+        else
+            markdownView.loadMarkdownFile("https://raw.githubusercontent.com/powerpoint45/dtube-mobile-unofficial/master/README.md","file:///android_asset/paperwhite.css");
     }
 }

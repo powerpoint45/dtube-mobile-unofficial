@@ -2,7 +2,6 @@ package com.powerpoint45.dtube;
 
 import android.graphics.drawable.Drawable;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -74,9 +73,11 @@ class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
         // create a new view
         LinearLayout v = (LinearLayout) LayoutInflater.from(parent.getContext())
                 .inflate(layoutid, parent, false);
-        if (tvMode)
-            v.setLayoutParams(new LinearLayout.LayoutParams(Tools.numtodp(400,c), ViewGroup.LayoutParams.WRAP_CONTENT));
-        else
+        if (tvMode) {
+            if (Preferences.darkMode)
+                v.findViewById(R.id.feed_item_desc_holder).setBackgroundColor(c.getResources().getColor(R.color.transparentBlack));
+            v.setLayoutParams(new LinearLayout.LayoutParams(Tools.numtodp(400, c), ViewGroup.LayoutParams.WRAP_CONTENT));
+        }else
             v.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         // set the view's size, margins, paddings and layout parameters
         return new ViewHolder(v);
@@ -131,6 +132,7 @@ class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
         holder.timeView.setReferenceTime(videos.get(position).getDate());
         holder.priceView.setText(videos.get(position).price);
         holder.userView.setText(videos.get(position).user);
+
 
         if (videos.get(position).getDuration()!=null) {
             holder.durationText.setVisibility(View.VISIBLE);

@@ -90,6 +90,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:padding="10dp"
+                    android:id="@+id/contents_bg"
                     android:background="#e6ffffff">
 
                     <TextView
@@ -116,7 +117,7 @@
                             android:focusable="true"
                             android:background="?attr/selectableItemBackgroundBorderless"
                             android:onClick="goToChannelClicked"
-                            app:srcCompat="@drawable/ic_account_circle" />
+                            app:srcCompat="@drawable/login" />
 
                         <TextView
                             android:id="@+id/item_user"
@@ -282,7 +283,7 @@
                             android:layout_marginTop="4dp"
                             android:focusable="true"
                             android:focusableInTouchMode="true"
-                            app:srcCompat="@drawable/ic_account_circle" />
+                            app:srcCompat="@drawable/login" />
 
                     </FrameLayout>
 

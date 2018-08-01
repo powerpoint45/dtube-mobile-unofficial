@@ -34,7 +34,6 @@
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:layout_gravity="bottom"
-            android:background="@android:color/white"
             android:orientation="horizontal"
             android:visibility="visible"
             android:weightSum="5">
@@ -117,25 +116,15 @@
                 android:layout_height="match_parent"
                 android:gravity="center_vertical">
 
-                <ImageView
-                    android:id="@+id/imageView3"
+                <android.support.v7.widget.AppCompatImageView
+                    android:id="@+id/logo"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_marginLeft="-15dp"
                     android:padding="13dp"
-                    app:srcCompat="@drawable/ic_play_arrow_large"
+                    app:srcCompat="@drawable/logo_black"
                     android:adjustViewBounds="true"/>
 
-                <TextView
-                    android:id="@+id/textView2"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:textStyle="bold"
-                    android:layout_marginLeft="-10dp"
-                    android:textSize="20dp"
-                    android:textColor="@android:color/black"
-                    android:gravity="center"
-                    android:text="Tube" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -143,14 +132,13 @@
                     android:orientation="horizontal"
                     android:gravity="right">
 
-                    <ImageView
+                    <android.support.v7.widget.AppCompatImageView
                         android:id="@+id/search_btn"
                         android:layout_width="40dp"
                         android:layout_height="match_parent"
                         android:background="?attr/selectableItemBackgroundBorderless"
                         android:clickable="true"
                         android:focusable="true"
-                        android:onClick="searchButtonClicked"
                         android:padding="7dp"
                         app:srcCompat="@drawable/ic_search" />
 

@@ -19,6 +19,9 @@ public class DonateActivity extends AppCompatActivity{
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+        if (Preferences.darkMode)
+            setTheme(R.style.AppThemeDark);
+
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_donate);

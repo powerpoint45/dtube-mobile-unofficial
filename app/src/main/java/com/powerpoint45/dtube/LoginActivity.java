@@ -37,6 +37,10 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (Preferences.darkMode)
+            setTheme(R.style.AppThemeDark);
+
         setContentView(R.layout.activity_login);
         userNameEditText = findViewById(R.id.username);
         passwordEditText = findViewById(R.id.password);

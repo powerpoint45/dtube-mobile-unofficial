@@ -141,7 +141,7 @@ class CommentsAdapter extends BaseAdapter {
             else
                 viewHolder.indentView.setVisibility(View.GONE);
 
-            Picasso.with(c).load(currentComment.getImageURL()).placeholder(R.drawable.ic_account_circle).transform(transformation)
+            Picasso.with(c).load(currentComment.getImageURL()).placeholder(R.drawable.login).transform(transformation)
                     .into(viewHolder.profileView);
         }
 
@@ -163,8 +163,13 @@ class CommentsAdapter extends BaseAdapter {
         viewHolder.likesView.setText(""+currentComment.likes);
         viewHolder.dislikesView.setText(""+currentComment.dislikes);
 
-        viewHolder.likeView.setColorFilter(null);
-        viewHolder.dislikeView.setColorFilter(null);
+        if (Preferences.darkMode){
+            viewHolder.likeView.setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_ATOP);
+            viewHolder.dislikeView.setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_ATOP);
+        }else {
+            viewHolder.likeView.setColorFilter(null);
+            viewHolder.dislikeView.setColorFilter(null);
+        }
 
         viewHolder.replyButton.setTag(currentComment.permlink);
         viewHolder.likeView.setTag(currentComment.permlink);
