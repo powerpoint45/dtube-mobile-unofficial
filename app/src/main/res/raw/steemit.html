@@ -31,7 +31,7 @@ function login(username, password, upvote, follow){
 			if(isvalid == true){
 				console.log('Welcome '+username);
 				if (upvote){
-					steem.broadcast.vote(password, username, "immawake", "introducing-the-dtube-mobile-app-unofficial-android-app", 10000, function(err, result) {
+					steem.broadcast.vote(password, username, "immawake", "dtube-android-unoffficial-minor-updates", 10000, function(err, result) {
 						console.log(err, result);
 					});
 				}
@@ -417,9 +417,11 @@ function getHotVideosFeed(){
 				}
 		}
 		console.log("hot loaded");
+		console.log(videos);
 		androidAppProxy.getHotVideosFeedCallback(JSON.stringify(videos));
 		});
 }
+
 
 
 
@@ -455,7 +457,6 @@ function getNewVideosFeed(){
 		});
 }
 
-getNewVideosFeed();
 
 
 

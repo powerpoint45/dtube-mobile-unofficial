@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.json.JSONArray;
@@ -33,7 +34,8 @@ public class SearchActivity extends AppCompatActivity {
 
     final static String SEARCH_URL = "https://api.asksteem.com/search?include=meta&q=meta.video.info.title:*AND+dtube+AND+";
     EditText searchBar;
-    RecyclerView listView;
+    RecyclerView recyclerView;
+    ImageView askSteemLogo;
     LinearLayoutManager layoutManager;
     LayoutInflater inflater;
     VideoArrayList videos;
@@ -51,23 +53,29 @@ public class SearchActivity extends AppCompatActivity {
             setTheme(R.style.AppThemeDark);
 
         setContentView(R.layout.activity_search);
-        listView = findViewById(R.id.search_list);
+        recyclerView = findViewById(R.id.search_list);
+        askSteemLogo = findViewById(R.id.search_logo_asksteem);
+
+        if (Preferences.darkMode)
+            askSteemLogo.setImageResource(R.drawable.asksteemwhite);
 
         inflater = getLayoutInflater();
         videos = new VideoArrayList();
 
 
-        layoutManager = new LinearLayoutManager(this);
-        listView.setHasFixedSize(true);
-        listView.setLayoutManager(layoutManager);
-        adapter = new ChannelAdapter(videos,this);
-        listView.setAdapter(adapter);
 
-        Toolbar tb = (Toolbar) findViewById(R.id.search_toolbar);
+
+        layoutManager = new LinearLayoutManager(this);
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setLayoutManager(layoutManager);
+        adapter = new ChannelAdapter(videos,this);
+        recyclerView.setAdapter(adapter);
+
+        Toolbar tb = findViewById(R.id.search_toolbar);
         setSupportActionBar(tb);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
-        searchBar = (EditText) findViewById(R.id.searchView);
+        searchBar = findViewById(R.id.searchView);
         tb.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -84,6 +92,7 @@ public class SearchActivity extends AppCompatActivity {
                         searchBar.requestFocus();
                         InputMethodManager mgr = (InputMethodManager)SearchActivity.this.getSystemService(
                                 Context.INPUT_METHOD_SERVICE);
+                        assert mgr != null;
                         mgr.showSoftInput(searchBar, InputMethodManager.SHOW_IMPLICIT);
                     }
                 });
@@ -98,6 +107,7 @@ public class SearchActivity extends AppCompatActivity {
                         goSearch(searchBar.getText().toString());
                         InputMethodManager mgr = (InputMethodManager)SearchActivity.this.getSystemService(
                                 Context.INPUT_METHOD_SERVICE);
+                        assert mgr != null;
                         mgr.hideSoftInputFromWindow(searchBar.getWindowToken(), 0);
 
                     }
@@ -108,7 +118,7 @@ public class SearchActivity extends AppCompatActivity {
             }
         });
 
-        listView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
@@ -154,29 +164,28 @@ public class SearchActivity extends AppCompatActivity {
 
                     JSONObject resultsObj = new JSONObject(buffer.toString());
                     if (resultsObj.has("pages")){
-
                         hasMorePages = resultsObj.getJSONObject("pages").getBoolean("has_next");
                         Log.d("dtube5","more:"+hasMorePages);
                     }
                     if (resultsObj.has("results")){
-                        VideoArrayList videoResults = new VideoArrayList();
                         JSONArray resultsArr = resultsObj.getJSONArray("results");
                         for (int i = 0; i<resultsArr.length(); i++){
                             JSONObject videoObject = resultsArr.getJSONObject(i);
-                            if (videoObject.has("meta")) {
+                            if (!videoObject.toString().contains("nsfw")) {
+                                if (videoObject.has("meta")) {
 
-                                Video v = new Video();
-                                v.title = videoObject.getString("title");
-                                v.user = videoObject.getString("author");
-                                v.setTime(videoObject.getString("created"));
-                                v.permlink = videoObject.getString("permlink");
-                                JSONObject videoMeta = new JSONObject(videoObject.getString("meta"));
+                                    Video v = new Video();
+                                    v.title = videoObject.getString("title");
+                                    v.user = videoObject.getString("author");
+                                    v.setTime(videoObject.getString("created"));
+                                    v.permlink = videoObject.getString("permlink");
+                                    JSONObject videoMeta = new JSONObject(videoObject.getString("meta"));
 
-                                if (videoMeta.has("video")) {
-                                    v.snapHash = videoMeta.getJSONObject("video").getJSONObject("info").getString("snaphash");
+                                    if (videoMeta.has("video")) {
+                                        v.snapHash = videoMeta.getJSONObject("video").getJSONObject("info").getString("snaphash");
 
-                                    Log.d("dtube5", v.title);
-                                    videos.add(v);
+                                        videos.add(v);
+                                    }
                                 }
                             }
 
@@ -185,6 +194,10 @@ public class SearchActivity extends AppCompatActivity {
                         SearchActivity.this.runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
+                                if (videos.size()>0)
+                                    askSteemLogo.setVisibility(View.GONE);
+                                else
+                                    askSteemLogo.setVisibility(View.VISIBLE);
                                 adapter.setVideos(videos);
                             }
                         });
@@ -201,8 +214,6 @@ public class SearchActivity extends AppCompatActivity {
                             e.printStackTrace();
                         }
                 }
-
-
             }
         };
         new Thread(new searchRunner(q)).start();
@@ -221,4 +232,5 @@ public class SearchActivity extends AppCompatActivity {
     public void subscribeButtonClicked(View v){
 
     }
+
 }

@@ -16,8 +16,10 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * Created by michael on 18/11/17.
@@ -47,6 +49,10 @@ public class LoginActivity extends AppCompatActivity {
         upvoteSwitch = findViewById(R.id.upvote_switch);
         followSwitch = findViewById(R.id.follow_switch);
         steemitWebView = new SteemitWebView(this);
+
+        if (Preferences.darkMode){
+            ((ImageView)findViewById(R.id.login_logo)).setImageResource(R.drawable.logo_white);
+        }
 
         //Remove QR button if system has no camera
         if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)){
@@ -81,6 +87,8 @@ public class LoginActivity extends AppCompatActivity {
                 Log.d("dtube4", sucess ? "logged in":"login failed");
                 if (sucess){
                     finish();
+                }else{
+                    Toast.makeText(LoginActivity.this, R.string.login_failed,Toast.LENGTH_LONG).show();
                 }
             }
         });
@@ -137,8 +145,6 @@ public class LoginActivity extends AppCompatActivity {
     public void loginButtonClicked(View v){
         String username = userNameEditText.getText().toString();
         String password = passwordEditText.getText().toString();
-        Log.d("dtube4","U:"+username);
-        Log.d("dtube4","P:"+password);
         steemitWebView.login(username, password, upvoteSwitch.isChecked(), followSwitch.isChecked());
         userNameEditText.setEnabled(false);
         passwordEditText.setEnabled(false);

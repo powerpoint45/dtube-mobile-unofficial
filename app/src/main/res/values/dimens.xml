@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="toolbar_size">48dp</dimen>
+    <dimen name="toolbar_size_tv">54dp</dimen>
     <dimen name="toolbar_size_large">100dp</dimen>
     <dimen name="toolbar_size_mixed">148dp</dimen>
 </resources>

@@ -56,7 +56,7 @@ class Encryption {
         }
     }
 
-    public void encryptString(String alias, String data) {
+    void encryptString(String alias, String data) {
         try {
             KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
             keyStore.load(null);

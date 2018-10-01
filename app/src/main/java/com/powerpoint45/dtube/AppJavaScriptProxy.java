@@ -36,6 +36,7 @@ class AppJavaScriptProxy {
 
     @JavascriptInterface
     public void getHotVideosFeedCallback(String jsonVideos){
+        Log.d("dtube",jsonVideos);
         manageFeed(jsonVideos, DtubeAPI.CAT_HOT);
     }
 
@@ -318,7 +319,9 @@ class AppJavaScriptProxy {
             video.user = jo.getString("username");
             video.price = jo.getString("price");
             video.setTime(jo.getString("date"));
-            video.hash = jo.getString("hash");
+            if (jo.has("hash")) {
+                video.hash = jo.getString("hash");
+            }
             video.snapHash = jo.getString("snaphash");
             video.permlink = jo.getString("permlink");
 

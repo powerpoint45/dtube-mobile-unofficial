@@ -26,86 +26,98 @@
             android:layout_height="match_parent"
             android:paddingTop="50dp"
             android:clipToPadding="false"
-            android:layout_marginLeft="50dp"
+            android:layout_marginLeft="70dp"
              />
 
         <LinearLayout
             android:id="@+id/bottom_bar"
-            android:layout_width="50dp"
-            android:paddingTop="@dimen/toolbar_size"
+            android:layout_width="70dp"
             android:layout_height="match_parent"
             android:layout_gravity="left"
             android:orientation="vertical"
+            android:paddingTop="@dimen/toolbar_size_tv"
+            android:paddingRight="5dp"
             android:visibility="visible"
+            android:gravity="right"
             android:weightSum="5">
+
 
             <ImageView
                 android:id="@+id/tab_subscribed"
-                android:layout_width="wrap_content"
+                android:layout_width="50dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:onClick="tabGoToSubscribedClicked"
+                android:background="?attr/selectableItemBackgroundBorderless"
                 android:clickable="true"
                 android:focusable="true"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                app:srcCompat="@drawable/ic_subscriptions"
+                android:onClick="tabGoToSubscribedClicked"
                 android:padding="10dp"
-                />
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="20dp"
+                app:srcCompat="@drawable/ic_subscriptions" />
 
             <ImageView
                 android:id="@+id/tab_hot"
-                android:layout_width="wrap_content"
+                android:layout_width="50dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
                 android:focusable="true"
                 android:onClick="tabGoToHotClicked"
-                app:srcCompat="@drawable/ic_whatshot"
-                android:background="?attr/selectableItemBackgroundBorderless"
                 android:padding="10dp"
-                android:clickable="true" />
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="20dp"
+                app:srcCompat="@drawable/ic_whatshot" />
 
 
             <ImageView
                 android:id="@+id/tab_trending"
-                android:layout_width="wrap_content"
+                android:layout_width="50dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
                 android:focusable="true"
                 android:onClick="tabGoToTrendingClicked"
-                app:srcCompat="@drawable/ic_trending_up"
-                android:background="?attr/selectableItemBackgroundBorderless"
                 android:padding="10dp"
-                android:clickable="true"/>
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="20dp"
+                app:srcCompat="@drawable/ic_trending_up" />
 
             <ImageView
                 android:id="@+id/tab_new"
-                android:layout_width="wrap_content"
+                android:layout_width="50dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
                 android:focusable="true"
                 android:onClick="tabGoToNewClicked"
-                app:srcCompat="@drawable/ic_fiber_new"
-                android:background="?attr/selectableItemBackgroundBorderless"
                 android:padding="10dp"
-                android:clickable="true"/>
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="20dp"
+                app:srcCompat="@drawable/ic_fiber_new" />
 
             <ImageView
                 android:id="@+id/tab_history"
-                android:layout_width="wrap_content"
+                android:layout_width="50dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
                 android:focusable="true"
                 android:onClick="tabGoToHistoryClicked"
-                app:srcCompat="@drawable/ic_history"
-                android:background="?attr/selectableItemBackgroundBorderless"
                 android:padding="10dp"
-                android:clickable="true"/>
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="20dp"
+                app:srcCompat="@drawable/ic_history" />
         </LinearLayout>
 
         <android.support.v7.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/toolbar_size"
+            android:layout_height="@dimen/toolbar_size_tv"
             android:background="?attr/colorPrimary"
             app:contentInsetLeft="0dp"
             app:contentInsetStart="0dp"
@@ -118,13 +130,13 @@
                 android:gravity="center_vertical">
                 <android.support.v7.widget.AppCompatImageView
                     android:id="@+id/search_btn"
-                    android:layout_width="40dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:clickable="true"
                     android:focusable="true"
-                    android:padding="7dp"
-                    android:layout_marginStart="10dp"
+                    android:padding="10dp"
+                    android:layout_marginStart="15dp"
                     app:srcCompat="@drawable/ic_search" />
 
                 <android.support.v7.widget.AppCompatImageView
@@ -154,6 +166,7 @@
                         android:layout_marginRight="1dp"
                         android:padding="7dp"
                         android:focusable="true"
+                        android:layout_marginEnd="20dp"
                         app:srcCompat="@drawable/login" />
 
                 </LinearLayout>

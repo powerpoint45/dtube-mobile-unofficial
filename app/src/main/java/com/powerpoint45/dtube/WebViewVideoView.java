@@ -89,7 +89,8 @@ public class WebViewVideoView extends WebView {
                     attrs.flags |= WindowManager.LayoutParams.FLAG_FULLSCREEN;
                     attrs.flags |= WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON;
                     ((Activity)getContext()).getWindow().setAttributes(attrs);
-                    ((Activity)getContext()).getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE);
+                    int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+                    ((Activity)getContext()).getWindow().getDecorView().setSystemUiVisibility(uiOptions);
                 }
                 else
                 {

@@ -46,7 +46,7 @@
     <string name="login_for_subs">Please login to see your subscription feed</string>
 
     <string name="remove_history">Remove video from watch history?</string>
-    <string name="upvote_us">Upvote our app <a href="https://steemit.com/utopian-io/@immawake/introducing-the-dtube-mobile-app-unofficial-android-app">post on Steemit</a> upon login to help support our Android app! </string>
+    <string name="upvote_us">Upvote our app <a href="https://steemit.com/steemdev/@immawake/dtube-android-unoffficial-minor-updates">post on Steemit</a> upon login to help support our Android app! </string>
     <string name="follow_us">Follow our DTube/Steemit account <a href="https://steemit.com/@immawake">@immawake</a> upon login to see updates about our Android app! </string>
 
     <string name="like_comment">Like Comment</string>
@@ -55,4 +55,6 @@
     <string name="more_apps">More apps</string>
     <string name="dark_mode">Dark Mode</string>
     <string name="ui_settings">UI Settings</string>
+
+    <string name="login_failed">Login Failed. Please make sure your username and password are correct</string>
 </resources>
