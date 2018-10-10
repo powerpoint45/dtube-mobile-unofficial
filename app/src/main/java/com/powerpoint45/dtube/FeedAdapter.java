@@ -58,6 +58,7 @@ class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
         this.tvMode = tvMode;
 
         placeholderDrawable = c.getResources().getDrawable(R.drawable.ic_ondemand_video);
+        setHasStableIds(true);
     }
 
     public void setVideos(VideoArrayList videos){
@@ -161,5 +162,10 @@ class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
 
     }
 
-
+    @Override
+    public long getItemId(int position) {
+        if (videos!=null)
+            return videos.get(position).hashCode();
+        return super.getItemId(position);
+    }
 }

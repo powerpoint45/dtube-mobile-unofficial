@@ -229,6 +229,8 @@ public class SearchActivity extends AppCompatActivity {
     }
 
 
+
+
     public void subscribeButtonClicked(View v){
 
     }

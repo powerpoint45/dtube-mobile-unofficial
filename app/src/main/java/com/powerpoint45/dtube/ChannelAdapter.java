@@ -24,6 +24,7 @@ public class ChannelAdapter extends RecyclerView.Adapter<ChannelAdapter.ViewHold
     ChannelAdapter(VideoArrayList list, Activity activity){
         this.videos = list;
         c = activity;
+        setHasStableIds(true);
     }
 
     public void setVideos(VideoArrayList videos){
@@ -110,6 +111,12 @@ public class ChannelAdapter extends RecyclerView.Adapter<ChannelAdapter.ViewHold
         else {
             return videos.size();
         }
+    }
 
+    @Override
+    public long getItemId(int position) {
+        if (videos!=null)
+            return videos.get(position).hashCode();
+        return super.getItemId(position);
     }
 }
