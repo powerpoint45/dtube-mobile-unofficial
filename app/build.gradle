@@ -30,8 +30,11 @@ dependencies {
     implementation 'com.squareup.picasso:picasso:2.5.2'
     implementation 'com.github.javiersantos:AppUpdater:2.6.3'
     implementation 'com.makeramen:roundedimageview:2.3.0'
+//    implementation 'com.github.marvin-we.steem-java-api-wrapper:steemj-core:0.4.6-20180926-01PRE'
+
 
     implementation 'com.android.support:appcompat-v7:27.1.1'
     implementation 'com.android.support:design:27.1.1'
     implementation 'com.android.support:recyclerview-v7:27.1.1'
+
 }

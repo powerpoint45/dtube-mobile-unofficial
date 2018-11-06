@@ -71,6 +71,7 @@
             android:layout_centerVertical="true"
             android:layout_toStartOf="@+id/upvote_switch"
             android:padding="5dp"
+            android:textSize="10dp"
             android:text="@string/upvote_us" />
 
         <Switch
@@ -98,6 +99,7 @@
             android:layout_centerVertical="true"
             android:layout_toStartOf="@+id/follow_switch"
             android:padding="5dp"
+            android:textSize="10dp"
             android:text="@string/follow_us" />
 
         <Switch
@@ -119,11 +121,19 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:padding="10dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:clickable="true"
-        android:onClick="loginButtonClicked"
+
         android:focusable="true"
         android:gravity="center">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:onClick="loginButtonClicked">
 
         <TextView
             android:id="@+id/textView"
@@ -139,6 +149,34 @@
             android:padding="5dp"
             app:srcCompat="@drawable/ic_exit_to_app" />
 
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:onClick="helpButtonClicked">
+
+            <TextView
+                android:id="@+id/textViewHelp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="50dp"
+                android:textStyle="bold"
+                android:text="@string/help" />
+
+            <ImageView
+                android:id="@+id/imageView5Help"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:padding="5dp"
+                app:srcCompat="@drawable/ic_help_outline" />
+
+        </LinearLayout>
 
 
 

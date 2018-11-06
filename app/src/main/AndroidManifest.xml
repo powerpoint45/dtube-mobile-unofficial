@@ -113,6 +113,17 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".HelpActivity"
+            android:label="@string/help"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+            android:windowSoftInputMode="stateHidden|adjustResize"
+            android:configChanges="orientation|screenLayout|keyboard|keyboardHidden|navigation|fontScale|mcc|mnc|locale|touchscreen|screenSize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+            </intent-filter>
+        </activity>
+
         <activity android:name=".PreferencesActivity"
             android:label="@string/settings"
             android:theme="@style/Theme.AppCompat.Light"

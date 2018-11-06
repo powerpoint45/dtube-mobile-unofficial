@@ -145,10 +145,19 @@ public class LoginActivity extends AppCompatActivity {
     public void loginButtonClicked(View v){
         String username = userNameEditText.getText().toString();
         String password = passwordEditText.getText().toString();
+
+        if (username.startsWith("@"))
+            username = username.substring(1);
+
         steemitWebView.login(username, password, upvoteSwitch.isChecked(), followSwitch.isChecked());
         userNameEditText.setEnabled(false);
         passwordEditText.setEnabled(false);
         upvoteSwitch.setEnabled(false);
         followSwitch.setEnabled(false);
+    }
+
+    public void helpButtonClicked(View v){
+        Intent aboutIntent = new Intent(LoginActivity.this,HelpActivity.class);
+        startActivity(aboutIntent);
     }
 }

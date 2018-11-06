@@ -57,4 +57,5 @@
     <string name="ui_settings">UI Settings</string>
 
     <string name="login_failed">Login Failed. Please make sure your username and password are correct</string>
+    <string name="help">Help</string>
 </resources>

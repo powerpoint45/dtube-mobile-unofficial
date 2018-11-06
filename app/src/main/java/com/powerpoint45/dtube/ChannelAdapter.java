@@ -20,11 +20,21 @@ public class ChannelAdapter extends RecyclerView.Adapter<ChannelAdapter.ViewHold
 
     private VideoArrayList videos;
     Activity c;
+    View.OnClickListener clickListener;
 
     ChannelAdapter(VideoArrayList list, Activity activity){
         this.videos = list;
         c = activity;
         setHasStableIds(true);
+        clickListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (c instanceof ChannelActivity)
+                    ((ChannelActivity)c).onItemClick((Integer) ((ViewHolder) v.getTag()).titleView.getTag());
+                else if (c instanceof SearchActivity)
+                    ((SearchActivity)c).onItemClick((Integer) ((ViewHolder) v.getTag()).titleView.getTag());
+            }
+        };
     }
 
     public void setVideos(VideoArrayList videos){
@@ -72,15 +82,7 @@ public class ChannelAdapter extends RecyclerView.Adapter<ChannelAdapter.ViewHold
     @Override
     public void onBindViewHolder(ChannelAdapter.ViewHolder holder, int position) {
         holder.titleView.setTag(position);
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (c instanceof ChannelActivity)
-                    ((ChannelActivity)c).onItemClick((Integer) ((ViewHolder) v.getTag()).titleView.getTag());
-                else if (c instanceof SearchActivity)
-                    ((SearchActivity)c).onItemClick((Integer) ((ViewHolder) v.getTag()).titleView.getTag());
-            }
-        });
+        holder.itemView.setOnClickListener(clickListener);
 
         holder.titleView.setText(videos.get(position).title);
         holder.timeView.setReferenceTime(videos.get(position).getDate());
