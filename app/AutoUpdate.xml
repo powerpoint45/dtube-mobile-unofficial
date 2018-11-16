@@ -1,13 +1,11 @@
 <AppUpdater>
   <update>
-    <latestVersion>2.0</latestVersion>
-    <latestVersionCode>3</latestVersionCode>
+    <latestVersion>2.4</latestVersion>
+    <latestVersionCode>16</latestVersionCode>
     <url>https://github.com/powerpoint45/dtube-mobile-unofficial/releases</url>
     <releaseNotes>
-	*Many Many changes
-	*UI Revamp
-	*Android TV full support
-	*Embedded video player updated from official dtube github
+	*Ability to upload videos (Early Development)
+	*Added Help Button to Login
     </releaseNotes>
   </update>
 </AppUpdater>
