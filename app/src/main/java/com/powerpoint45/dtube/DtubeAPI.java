@@ -20,8 +20,12 @@ public class DtubeAPI {
     //public static String PROFILE_IMG_URL = "https://img.busy.org/@";//https://img.busy.org/@lukewearechange//too slow, useing steemitimages
     static String PROFILE_IMAGE_SMALL_URL = "https://steemitimages.com/u/username/avatar/small";//replace username with actual username
     static String PROFILE_IMAGE_MEDIUM_URL = "https://steemitimages.com/u/username/avatar/medium";//replace username with actual username
-    public static String PROFILE_IMAGE_LARGE_URL = "https://steemitimages.com/u/username/avatar/large";//replace username with actual username
+    public String PROFILE_IMAGE_LARGE_URL = "https://steemitimages.com/u/username/avatar/large";//replace username with actual username
     static String CONTENT_IMAGE_URL = "https://steemitimages.com/0x0/https://ipfs.io/ipfs/"; // hash at end
+    static String DTUBE_LOGIN_URL = "https://d.tube/#!/login";
+    static String DTUBE_HOME_URL = "https://d.tube/#!";
+    static String DTUBE_UPLOAD_URL = "https://d.tube/#!/upload";
+    static String DTUBE_VIDEO_URL = "https://d.tube/#!/v/";
 
 
     static String getUserPrivateKey(Context c){

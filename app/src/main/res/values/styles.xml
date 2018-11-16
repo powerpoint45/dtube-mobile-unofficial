@@ -28,4 +28,15 @@
         <item name="colorControlHighlight">@color/colorAccent</item>
     </style>
 
+    <style name="UploadStyle" parent="Theme.AppCompat.Light">
+        <!-- Customize your theme here. -->
+        <item name="windowActionBarOverlay">true</item>
+    </style>
+
+    <style name="UploadStyleDark" parent="Theme.AppCompat.DayNight.DarkActionBar">
+        <!-- Customize your theme here. -->
+        <item name="windowActionBarOverlay">true</item>
+    </style>
+
+
 </resources>

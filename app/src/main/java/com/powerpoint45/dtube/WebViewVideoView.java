@@ -35,7 +35,10 @@ public class WebViewVideoView extends WebView {
             getSettings().setNeedInitialFocus(false);
         }
 
-        WebView.setWebContentsDebuggingEnabled(true);
+        if (getResources().getBoolean(R.bool.debug)) {
+            WebView.setWebContentsDebuggingEnabled(true);
+        }
+
         getSettings().setJavaScriptEnabled(true);
         getSettings().setAppCacheEnabled(true);
         getSettings().setDatabaseEnabled(true);

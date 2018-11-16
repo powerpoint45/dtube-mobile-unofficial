@@ -1,9 +1,11 @@
 package com.powerpoint45.dtube;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.UiModeManager;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
@@ -12,6 +14,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
@@ -66,6 +70,9 @@ public class MainActivity extends AppCompatActivity {
     final int REQUEST_CODE_LOGIN = 1;
     final int REQUEST_CODE_PROFILE = 2;
     final int REQUEST_CODE_SEARCH = 3;
+    final int REQUEST_CODE_UPLOAD = 4;
+
+    final int FILES_REQUEST_PERMISSION = 10;
 
     RecyclerView recyclerView;
     private FeedAdapter feedAdapter;
@@ -115,10 +122,33 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        if (!runningOnTV)
+            findViewById(R.id.upload_btn).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (accountInfo!=null) {
+                        if (ContextCompat.checkSelfPermission(MainActivity.this,
+                                Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                                != PackageManager.PERMISSION_GRANTED) {
+
+                            ActivityCompat.requestPermissions(MainActivity.this,
+                                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                                    FILES_REQUEST_PERMISSION);
+                        }else {
+                            startActivityForResult(new Intent(MainActivity.this, UploadActivity.class), REQUEST_CODE_UPLOAD);
+                        }
+
+                    }else
+                        loginButtonClicked(v);
+                }
+            });
+
 
         if (Preferences.darkMode) {
             ((AppCompatImageView) findViewById(R.id.logo)).setImageResource(R.drawable.logo_white);
             ((AppCompatImageView) findViewById(R.id.search_btn)).setImageResource(R.drawable.ic_search_white);
+            if (!runningOnTV)
+                ((AppCompatImageView) findViewById(R.id.upload_btn)).setImageResource(R.drawable.ic_file_upload_white);
         }
 
 
@@ -323,6 +353,19 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case FILES_REQUEST_PERMISSION: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    startActivityForResult(new Intent(MainActivity.this,UploadActivity.class), REQUEST_CODE_UPLOAD);
+                }
+            }
+        }
+    }
+
     public void onItemClick(int pos){
         if (!activityPaused)
             steemWebView.getVideoInfo(videos.get(pos).user, videos.get(pos).permlink, DtubeAPI.getAccountName(this));
@@ -442,6 +485,13 @@ public class MainActivity extends AppCompatActivity {
                 }
                 break;
             case REQUEST_CODE_SEARCH:
+                if (resultCode == RESULT_OK){
+                    Video v = (Video)data.getBundleExtra("video").getSerializable("video");
+                    if (v!=null)
+                        steemWebView.getVideoInfo(v.user, v.permlink, DtubeAPI.getAccountName(this));
+                }
+                break;
+            case REQUEST_CODE_UPLOAD:
                 if (resultCode == RESULT_OK){
                     Video v = (Video)data.getBundleExtra("video").getSerializable("video");
                     if (v!=null)

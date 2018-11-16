@@ -19,7 +19,10 @@ public class SteemitWebView extends WebView {
     public SteemitWebView(Activity context) {
         super(context);
 
-        WebView.setWebContentsDebuggingEnabled(true);
+        if (getResources().getBoolean(R.bool.debug)) {
+            WebView.setWebContentsDebuggingEnabled(true);
+        }
+
         setWebViewClient(new WebViewClient() {
 
             public void onPageFinished(WebView view, String url) {

@@ -133,6 +133,16 @@
                     android:gravity="right">
 
                     <android.support.v7.widget.AppCompatImageView
+                        android:id="@+id/upload_btn"
+                        android:layout_width="40dp"
+                        android:layout_height="match_parent"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:padding="7dp"
+                        app:srcCompat="@drawable/ic_file_upload" />
+
+                    <android.support.v7.widget.AppCompatImageView
                         android:id="@+id/search_btn"
                         android:layout_width="40dp"
                         android:layout_height="match_parent"
