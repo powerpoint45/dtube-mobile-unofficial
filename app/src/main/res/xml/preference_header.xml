@@ -18,4 +18,9 @@
         <intent android:action="android.intent.action.VIEW"
             android:data="https://2314472.wixsite.com/adtubeclient" />
     </header>
+
+    <header android:icon="@drawable/ic_remove_circle_outline"
+        android:title="@string/logout"
+        android:id="@+id/logout"/>
+
 </preference-headers>

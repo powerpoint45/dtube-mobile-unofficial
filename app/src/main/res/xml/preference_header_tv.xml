@@ -6,4 +6,8 @@
         android:icon="@drawable/ic_color_lens"
         android:title="@string/ui_settings"/>
 
+    <header android:icon="@drawable/ic_remove_circle_outline"
+        android:title="@string/logout"
+        android:id="@+id/logout"/>
+
 </preference-headers>

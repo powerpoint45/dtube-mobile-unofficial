@@ -59,4 +59,7 @@
     <string name="login_failed">Login Failed. Please make sure your username and password are correct</string>
     <string name="help">Help</string>
     <string name="upload">Upload</string>
+
+    <string name="logout">Logout</string>
+    <string name="logout_confirm">Are you sure you want to logout?</string>
 </resources>

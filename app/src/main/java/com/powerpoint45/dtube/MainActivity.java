@@ -71,6 +71,7 @@ public class MainActivity extends AppCompatActivity {
     final int REQUEST_CODE_PROFILE = 2;
     final int REQUEST_CODE_SEARCH = 3;
     final int REQUEST_CODE_UPLOAD = 4;
+    final int REQUEST_CODE_SETTINGS = 5;
 
     final int FILES_REQUEST_PERMISSION = 10;
 
@@ -203,7 +204,7 @@ public class MainActivity extends AppCompatActivity {
                         startActivity(new Intent(MainActivity.this, DonateActivity.class));
                         break;
                     case R.id.menu_settings:
-                        startActivity(new Intent(MainActivity.this, PreferencesActivity.class));
+                        startActivityForResult(new Intent(MainActivity.this, PreferencesActivity.class), REQUEST_CODE_SETTINGS);
                         break;
                     case R.id.menu_about:
                         //Intent aboutIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://steemit.com/utopian-io/@immawake/introducing-the-dtube-mobile-app-unofficial-android-app"));
@@ -496,6 +497,16 @@ public class MainActivity extends AppCompatActivity {
                     Video v = (Video)data.getBundleExtra("video").getSerializable("video");
                     if (v!=null)
                         steemWebView.getVideoInfo(v.user, v.permlink, DtubeAPI.getAccountName(this));
+                }
+                break;
+            case REQUEST_CODE_SETTINGS:
+                if (resultCode == RESULT_OK){
+                    if (data.getBooleanExtra("logout",false)) {
+                        finish();
+                        startActivity(new Intent(MainActivity.this, MainActivity.class));
+                    }
+
+
                 }
                 break;
             default:

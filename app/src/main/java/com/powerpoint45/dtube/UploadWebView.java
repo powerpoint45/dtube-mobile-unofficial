@@ -4,16 +4,12 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.view.inputmethod.BaseInputConnection;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.webkit.JavascriptInterface;
-import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
@@ -21,6 +17,9 @@ import static android.app.Activity.RESULT_OK;
 
 public class UploadWebView extends WebView {
     private boolean loadedPage;
+
+    final String JS_PRE = "javascript: (function(){";
+    final String JS_POST = "})();";
 
     @SuppressLint("SetJavaScriptEnabled")
     public UploadWebView(Context context) {
@@ -48,13 +47,13 @@ public class UploadWebView extends WebView {
                     postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            removeTopBar();
+
                             if (Preferences.darkMode){
                                 setDarkMode();
                             }
+                            removeTopBar();
                             setUsername(DtubeAPI.getAccountName(getContext()));
                             setPassword(DtubeAPI.getUserPrivateKey(getContext()));
-                            //selectRememberMe();
                             clickLogin();
                         }
                     }, 101);
@@ -121,52 +120,23 @@ public class UploadWebView extends WebView {
     }
 
     public void setDarkMode(){
-        loadUrl("javascript:document.getElementsByClassName('nightMode nightmodetext')[0].click();");
-        loadUrl("javascript:document.getElementsByClassName('nightMode')[0].click();");
+        loadUrl(JS_PRE+"document.getElementsByClassName('nightMode nightmodetext')[0].click();"+JS_POST);
+        loadUrl(JS_PRE+"document.getElementsByClassName('nightMode')[0].click();"+JS_POST);
     }
 
     public void removeTopBar(){
-        loadUrl("javascript:document.getElementsByClassName(\"mobiletopbar\")[0].parentNode.removeChild(document.getElementsByClassName(\"mobiletopbar\")[0]);");
+        loadUrl(JS_PRE+"document.getElementsByClassName(\"mobiletopbar\")[0].parentNode.removeChild(document.getElementsByClassName(\"mobiletopbar\")[0]);"+JS_POST);
     }
     public void setUsername(String username){
-        loadUrl("javascript: (function(){document.getElementsByName('username')[0].value='" + username + "';})();");
+        loadUrl(JS_PRE+"document.getElementsByName('username')[0].value='" + username + "';"+JS_POST);
     }
 
     public void setPassword(String pwd){
-        loadUrl("javascript: (function(){document.getElementsByName('privatekey')[0].value='" + pwd + "';})();");
+        loadUrl(JS_PRE+"document.getElementsByName('privatekey')[0].value='" + pwd + "';"+JS_POST);
     }
 
     public void clickLogin(){
-        loadUrl("javascript:document.getElementsByName('button')[0].click();");
-    }
-
-    public void selectRememberMe(){
-        loadUrl("javascript:document.getElementsByName('rememberme')[0].checked = true;");
-    }
-
-    //For Android TV mode we do not need the controlbar controls
-    private void removeControlBarChildren(){
-        loadUrl("javascript:removeControlBarChildren();");
-    }
-
-    public void pauseVideo(){
-        loadUrl("javascript:document.getElementsByTagName('video')[0].pause();");
-    }
-
-    public void playVideo(){
-        loadUrl("javascript:document.getElementsByTagName('video')[0].play();");
-    }
-
-    public void makeFullscreen(){
-        queURL("javascript:document.getElementsByTagName('video')[0].webkitRequestFullscreen();");
-    }
-
-    public void fastForward(){
-        loadUrl("javascript:player.currentTime(player.currentTime() + 10);");
-    }
-
-    public void rewind(){
-        loadUrl("javascript:player.currentTime(player.currentTime() - 10);");
+        loadUrl(JS_PRE+"document.getElementsByName('button')[0].click();"+JS_POST);
     }
 
     public void queURL(String url){

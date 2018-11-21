@@ -46,5 +46,10 @@ public class DtubeAPI {
         Encryption encryption = new Encryption(c);
         encryption.encryptString("privateKeyWif", privateKey);
     }
+
+    static void logout(Context c){
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(c);
+        sharedPref.edit().remove("cypher").remove("username").apply();
+    }
     
 }

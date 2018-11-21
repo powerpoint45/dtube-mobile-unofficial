@@ -138,7 +138,7 @@
 
         <activity android:name=".PreferencesActivity"
             android:label="@string/settings"
-            android:theme="@style/Theme.AppCompat.Light"
+            android:theme="@style/AppThemeWAB"
             android:windowSoftInputMode="stateHidden|adjustResize"
             android:configChanges="orientation|screenLayout|keyboard|keyboardHidden|navigation|fontScale|mcc|mnc|locale|touchscreen|screenSize">
             <intent-filter>

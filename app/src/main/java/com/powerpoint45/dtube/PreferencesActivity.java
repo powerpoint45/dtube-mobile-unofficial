@@ -1,7 +1,9 @@
 package com.powerpoint45.dtube;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.UiModeManager;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
@@ -11,6 +13,7 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.view.MenuItem;
 
 import java.util.List;
 
@@ -28,7 +31,7 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         if (Preferences.darkMode)
-            setTheme(R.style.AppThemeDark);
+            setTheme(R.style.AppThemeDarkWAB);
         super.onCreate(savedInstanceState);
 
         Log.d("dtube","pref oncreate" +pref);
@@ -75,6 +78,32 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
             default:
                 break;
         }
+    }
+
+    @Override
+    public void onHeaderClick(Header header, int position) {
+        super.onHeaderClick(header, position);
+        if (header.id == R.id.logout) {
+            new AlertDialog.Builder(this, R.style.Theme_AppCompat_DayNight_Dialog_Alert)
+                    .setMessage(R.string.logout_confirm)
+                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+
+                        public void onClick(DialogInterface dialog, int whichButton) {
+                            DtubeAPI.logout(PreferencesActivity.this);
+                            Intent i = new Intent();
+                            i.putExtra("logout",true);
+                            setResult(RESULT_OK,i);
+                            PreferencesActivity.this.finish();
+                        }})
+                    .setNegativeButton(android.R.string.no, null).show();
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        Log.d("dtube","onOptionsItemSelected "+item.getItemId());
+        return super.onOptionsItemSelected(item);
+
     }
 
     /**
@@ -139,10 +168,6 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
         return super.isValidFragment(fragmentName);
     }
 
-    @Override
-    public void onHeaderClick(Header header, int position) {
-        super.onHeaderClick(header, position);
-    }
 
     @Override
     public void finish(){
