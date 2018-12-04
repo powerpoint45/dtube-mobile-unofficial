@@ -1,3 +1,6 @@
+11-16-18
+*Ability to upload videos (Early Development)
+*Added Help Button to Login
 07-14-18
 *Many Many changes
 *UI Revamp
