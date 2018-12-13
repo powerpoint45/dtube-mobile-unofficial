@@ -44,6 +44,8 @@ import com.github.javiersantos.appupdater.AppUpdaterUtils;
 import com.github.javiersantos.appupdater.enums.AppUpdaterError;
 import com.github.javiersantos.appupdater.enums.UpdateFrom;
 import com.github.javiersantos.appupdater.objects.Update;
+import com.hapramp.steemconnect4j.SteemConnect;
+import com.hapramp.steemconnect4j.SteemConnectException;
 import com.makeramen.roundedimageview.RoundedTransformationBuilder;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Transformation;
@@ -352,6 +354,29 @@ public class MainActivity extends AppCompatActivity {
         if (getResources().getBoolean(R.bool.on_play_store)) {
             updateCheck();
         }
+
+//        //init Builder
+//        SteemConnect.InstanceBuilder instanceBuilder = new SteemConnect.InstanceBuilder();
+//
+//        //set parameters
+//        instanceBuilder
+//                .setApp("powerpoint45")
+//                .setBaseUrl("https://v2.steemconnect.com")
+//                //.setAcessToken("accessToken")
+//                .setState("state")
+//                .setCallbackUrl("dtube://main/")
+//                .setScope(new String[]{"comment", "vote"});  //scopes of your application
+//
+//
+//
+//        // build the SteemConnect object.
+//        SteemConnect steemConnect = instanceBuilder.build();
+//
+//        try {
+//            Log.d("dt", steemConnect.getLoginUrl(true));
+//        } catch (SteemConnectException e) {
+//            e.printStackTrace();
+//        }
     }
 
     @Override

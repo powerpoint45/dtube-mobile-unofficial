@@ -1,3 +1,6 @@
+
+[![](https://img.shields.io/discord/384517931230298124.svg)](https://discord.gg/3h88GDb)
+
 ![](https://i.imgur.com/rWNRw1X.png)
 # Yes! A dtube Android app
 This is the first release of the Dtube unofficial app! I am confident that every dtube user will love this! 

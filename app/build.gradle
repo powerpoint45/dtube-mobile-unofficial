@@ -32,6 +32,8 @@ dependencies {
     implementation 'com.makeramen:roundedimageview:2.3.0'
 //    implementation 'com.github.marvin-we.steem-java-api-wrapper:steemj-core:0.4.6-20180926-01PRE'
 
+    implementation 'com.github.hapramp:steemconnect4j:v1.3.1'
+
 
     implementation 'com.android.support:appcompat-v7:27.1.1'
     implementation 'com.android.support:design:27.1.1'
