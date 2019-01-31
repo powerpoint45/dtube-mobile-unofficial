@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.view.inputmethod.BaseInputConnection;
 import android.view.inputmethod.EditorInfo;
@@ -21,9 +22,14 @@ public class UploadWebView extends WebView {
     final String JS_PRE = "javascript: (function(){";
     final String JS_POST = "})();";
 
-    @SuppressLint("SetJavaScriptEnabled")
+
     public UploadWebView(Context context) {
         super(context);
+    }
+
+    @SuppressLint("SetJavaScriptEnabled")
+    public UploadWebView(Context context, AttributeSet attrs) {
+        super(context, attrs);
 
         WebView.setWebContentsDebuggingEnabled(true);
         getSettings().setJavaScriptEnabled(true);
@@ -72,10 +78,16 @@ public class UploadWebView extends WebView {
                 view.loadUrl(url);
                 return true;
             }
+
+
         });
 
         addJavascriptInterface(new MyJavaScriptInterface(),
                 "android");
+    }
+
+    public UploadWebView(Context context, AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
     }
 
     class MyJavaScriptInterface {

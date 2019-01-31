@@ -1,6 +1,7 @@
 package com.powerpoint45.dtube;
 
 import android.app.Activity;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.os.Build;
 import android.text.Html;
@@ -23,17 +24,27 @@ public class Tools {
         }
     }
 
-    public static int numtodp(int in, Activity activity) {
+    static int numtodp(int in, Activity activity) {
         int out = (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, in, activity.getResources()
                         .getDisplayMetrics());
         return out;
     }
 
-    public static float dptopx(float dp){
+    static float dptopx(float dp){
         DisplayMetrics metrics = Resources.getSystem().getDisplayMetrics();
         float px = dp * (metrics.densityDpi / 160f);
         return Math.round(px);
+    }
+
+    static boolean isPackageInstalled(String packageName, PackageManager packageManager) {
+        boolean found = true;
+        try {
+            packageManager.getPackageInfo(packageName, 0);
+        } catch (PackageManager.NameNotFoundException e) {
+            found = false;
+        }
+        return found;
     }
 
 //    static String getFormattedText(String unformatted){

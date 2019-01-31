@@ -25,7 +25,7 @@ class Video implements Serializable{
     int categoryId;
     String hash;
     String snapHash;
-    String duration;
+    private String duration;
 
     String longDescriptionHTML;
     String subscribers;
@@ -112,7 +112,7 @@ class Video implements Serializable{
     }
 
 
-    public static void removeVideoFromRecents(String permlink, Context c){
+    static void removeVideoFromRecents(String permlink, Context c){
         VideoArrayList v = getRecentVideos(c);
         if (v!=null){
             v.remove(v.findVideo(permlink));
@@ -120,16 +120,13 @@ class Video implements Serializable{
         }
     }
 
-    public static void saveRecentsList(VideoArrayList videos, Context c){
+    private static void saveRecentsList(VideoArrayList videos, Context c){
         FileOutputStream fos;
         try {
             fos = c.openFileOutput("recentsVideos", Context.MODE_PRIVATE);
             ObjectOutputStream os = new ObjectOutputStream(fos);
             os.writeObject(videos);
             os.close();
-        } catch (FileNotFoundException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -137,7 +134,7 @@ class Video implements Serializable{
 
     }
 
-    public void saveVideoToRecents(Context c){
+    void saveVideoToRecents(Context c){
         VideoArrayList videos = getRecentVideos(c);
         if (videos==null)
             videos = new VideoArrayList();
@@ -148,7 +145,7 @@ class Video implements Serializable{
         }
     }
 
-    public static VideoArrayList getRecentVideos(Context context) {
+    static VideoArrayList getRecentVideos(Context context) {
         ObjectInputStream inputStream = null;
 
         try {
@@ -168,9 +165,7 @@ class Video implements Serializable{
             else
                 return null;
 
-        } catch (EOFException ex) { // This exception will be caught when EOF is
-            ex.printStackTrace();
-        } catch (ClassNotFoundException ex) {
+        } catch (EOFException | ClassNotFoundException ex) { // This exception will be caught when EOF is
             ex.printStackTrace();
         } catch (FileNotFoundException ignored) {
         } catch (IOException ex) {

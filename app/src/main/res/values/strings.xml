@@ -62,4 +62,7 @@
 
     <string name="logout">Logout</string>
     <string name="logout_confirm">Are you sure you want to logout?</string>
+
+    <string name="webview_alert">For proper functioning of this app, Android System Webview must be installed</string>
+    <string name="install">Install Now</string>
 </resources>

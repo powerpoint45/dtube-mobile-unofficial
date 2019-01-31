@@ -8,9 +8,11 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 public class UploadActivity extends AppCompatActivity {
@@ -19,6 +21,7 @@ public class UploadActivity extends AppCompatActivity {
     public static ValueCallback<Uri[]> mUploadMessageLol;
     private final static int FILECHOOSER_RESULTCODE=31;
     private final static int REQUEST_SELECT_FILE=3321;
+    private ProgressBar pbar;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -26,13 +29,28 @@ public class UploadActivity extends AppCompatActivity {
         if (Preferences.darkMode)
             setTheme(R.style.UploadStyleDark);
 
-       // setContentView(R.layout.activity_upload);
+         setContentView(R.layout.activity_upload);
 
-        uploadWebView = new UploadWebView(this);
+        pbar = findViewById(R.id.upload_pb);
+
+        uploadWebView = findViewById(R.id.upload_wv);
         uploadWebView.loadUrl(DtubeAPI.DTUBE_LOGIN_URL);
+
 
         uploadWebView.setWebChromeClient(new WebChromeClient()
         {
+
+            @Override
+            public void onProgressChanged(WebView view, int progress) {
+                if(progress < 100 && pbar.getVisibility() == ProgressBar.GONE){
+                    pbar.setVisibility(View.VISIBLE);
+                }
+
+                ProgressBarAnimation anim = new ProgressBarAnimation(pbar, pbar.getProgress(), progress);
+                anim.setDuration(1000);
+                pbar.startAnimation(anim);
+            }
+
             // For 3.0+ Devices (Start)
             // onActivityResult attached before constructor
             protected void openFileChooser(ValueCallback uploadMsg, String acceptType)
@@ -89,8 +107,6 @@ public class UploadActivity extends AppCompatActivity {
             }
         });
 
-
-        setContentView(uploadWebView);
 
     }
 

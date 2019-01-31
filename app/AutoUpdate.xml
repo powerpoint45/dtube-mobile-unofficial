@@ -1,11 +1,11 @@
 <AppUpdater>
   <update>
-    <latestVersion>2.4</latestVersion>
-    <latestVersionCode>16</latestVersionCode>
+    <latestVersion>2.6</latestVersion>
+    <latestVersionCode>18</latestVersionCode>
     <url>https://github.com/powerpoint45/dtube-mobile-unofficial/releases</url>
     <releaseNotes>
-	*Ability to upload videos (Early Development)
-	*Added Help Button to Login
+	*Search Fixed (esteem search now implemented to replace AskSteem)
+	*General Changes and improvements
     </releaseNotes>
   </update>
 </AppUpdater>

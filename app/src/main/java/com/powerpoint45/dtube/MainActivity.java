@@ -44,8 +44,6 @@ import com.github.javiersantos.appupdater.AppUpdaterUtils;
 import com.github.javiersantos.appupdater.enums.AppUpdaterError;
 import com.github.javiersantos.appupdater.enums.UpdateFrom;
 import com.github.javiersantos.appupdater.objects.Update;
-import com.hapramp.steemconnect4j.SteemConnect;
-import com.hapramp.steemconnect4j.SteemConnectException;
 import com.makeramen.roundedimageview.RoundedTransformationBuilder;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Transformation;
@@ -106,6 +104,23 @@ public class MainActivity extends AppCompatActivity {
 
         UiModeManager uiModeManager = (UiModeManager) getSystemService(UI_MODE_SERVICE);
         assert uiModeManager != null;
+
+
+
+        //For proper functioning of this app, Android System Webview must be installed
+        if (!Tools.isPackageInstalled("com.google.android.webview",getPackageManager())){
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setMessage(R.string.webview_alert)
+                    .setPositiveButton(R.string.install, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=com.google.android.webview")));
+                        }
+                    })
+                    .setNegativeButton(android.R.string.cancel, null);
+            // Create the AlertDialog object and return it
+            builder.create().show();
+        }
 
         //Customize layout if in TV Mode
         if (uiModeManager.getCurrentModeType()== Configuration.UI_MODE_TYPE_TELEVISION) {
@@ -636,7 +651,9 @@ public class MainActivity extends AppCompatActivity {
                         return Long.compare(b.getDate(), a.getDate());
                     }
                 }
-                Collections.sort(videos, new SortVideos());
+                synchronized (videos) {
+                    Collections.sort(videos, new SortVideos());
+                }
                 MainActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {

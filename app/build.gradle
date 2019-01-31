@@ -3,12 +3,15 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 27
     buildToolsVersion '28.0.2'
+
+    useLibrary 'org.apache.http.legacy'
+
     defaultConfig {
         applicationId "com.powerpoint45.dtube"
-        minSdkVersion 19
+        minSdkVersion 21
         targetSdkVersion 27
-        versionCode 17
-        versionName "2.5"
+        versionCode 18
+        versionName "2.6"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {

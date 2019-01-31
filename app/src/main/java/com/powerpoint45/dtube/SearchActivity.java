@@ -3,6 +3,7 @@ package com.powerpoint45.dtube;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Looper;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -18,13 +19,22 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Created by michael on 23/11/17.
@@ -32,7 +42,7 @@ import java.net.URL;
 
 public class SearchActivity extends AppCompatActivity {
 
-    final static String SEARCH_URL = "https://api.asksteem.com/search?include=meta&q=meta.video.info.title:*AND+dtube+AND+";
+    final static String SEARCH_URL = "https://search.esteem.app/api/search";
     EditText searchBar;
     RecyclerView recyclerView;
     ImageView askSteemLogo;
@@ -56,12 +66,11 @@ public class SearchActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.search_list);
         askSteemLogo = findViewById(R.id.search_logo_asksteem);
 
-        if (Preferences.darkMode)
-            askSteemLogo.setImageResource(R.drawable.asksteemwhite);
+//        if (Preferences.darkMode)
+//            askSteemLogo.setImageResource(R.drawable.asksteemwhite);
 
         inflater = getLayoutInflater();
         videos = new VideoArrayList();
-
 
 
 
@@ -73,7 +82,7 @@ public class SearchActivity extends AppCompatActivity {
 
         Toolbar tb = findViewById(R.id.search_toolbar);
         setSupportActionBar(tb);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         searchBar = findViewById(R.id.searchView);
         tb.setNavigationOnClickListener(new View.OnClickListener() {
@@ -104,7 +113,7 @@ public class SearchActivity extends AppCompatActivity {
             public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
                 if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                     if (searchBar.getText().toString().length()>0) {
-                        goSearch(searchBar.getText().toString());
+                        esteemSearch(searchBar.getText().toString());
                         InputMethodManager mgr = (InputMethodManager)SearchActivity.this.getSystemService(
                                 Context.INPUT_METHOD_SERVICE);
                         assert mgr != null;
@@ -125,7 +134,7 @@ public class SearchActivity extends AppCompatActivity {
 
                 if (hasMorePages && !gettingVideos) {
                     if (videos!=null && videos.size() - layoutManager.findLastVisibleItemPosition() < 5) {
-                        goSearch(querry);
+                        esteemSearch(querry);
                     }
                 }
 
@@ -134,90 +143,203 @@ public class SearchActivity extends AppCompatActivity {
 
     }
 
-    public void goSearch(String q){
+
+    protected void esteemSearch(final String q) {
+
         if (q!=null && querry!=null && !q.equals(querry)) {
             videos.clear();
             adapter.notifyDataSetChanged();
             pageNumber = 0;
         }
         querry = q;
-        class searchRunner implements Runnable{
-            private String q;
-            private searchRunner(String q){
-                this.q = q;
-            }
 
-            @Override
+        Thread t = new Thread() {
             public void run() {
-                Log.d("dtube5","to search for "+q);
-                BufferedReader reader = null;
+
+                gettingVideos = true;
+                pageNumber++;
+
+                Log.d("dtube", "Loading Page "+pageNumber);
+                Looper.prepare(); //For Preparing Message Pool for the childThread
+                HttpClient httpclient = new DefaultHttpClient();
+                HttpPost httppost = new HttpPost(SEARCH_URL);
+
                 try {
-                    gettingVideos = true;
-                    pageNumber++;
-                    URL url = new URL(SEARCH_URL+q.replace(" ","%20")+"&pg="+pageNumber);
-                    reader = new BufferedReader(new InputStreamReader(url.openStream()));
-                    StringBuilder buffer = new StringBuilder();
-                    int read;
-                    char[] chars = new char[1024];
-                    while ((read = reader.read(chars)) != -1)
-                        buffer.append(chars, 0, read);
+                    // Request parameters and other properties.
+                    List<NameValuePair> params = new ArrayList<>(3);
+                    params.add(new BasicNameValuePair("q", q+"\"▶️ DTube\""));
+                    params.add(new BasicNameValuePair("so", "popularity"));
+                    params.add(new BasicNameValuePair("pa", pageNumber+""));
+                    httppost.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
 
-                    JSONObject resultsObj = new JSONObject(buffer.toString());
-                    if (resultsObj.has("pages")){
-                        hasMorePages = resultsObj.getJSONObject("pages").getBoolean("has_next");
-                        Log.d("dtube5","more:"+hasMorePages);
-                    }
-                    if (resultsObj.has("results")){
-                        JSONArray resultsArr = resultsObj.getJSONArray("results");
-                        for (int i = 0; i<resultsArr.length(); i++){
-                            JSONObject videoObject = resultsArr.getJSONObject(i);
-                            if (!videoObject.toString().contains("nsfw")) {
-                                if (videoObject.has("meta")) {
+                    //Execute and get the response.
+                    HttpResponse response = httpclient.execute(httppost);
+                    HttpEntity entity = response.getEntity();
 
-                                    Video v = new Video();
-                                    v.title = videoObject.getString("title");
-                                    v.user = videoObject.getString("author");
-                                    v.setTime(videoObject.getString("created"));
-                                    v.permlink = videoObject.getString("permlink");
-                                    JSONObject videoMeta = new JSONObject(videoObject.getString("meta"));
+                    if (entity != null) {
+                        try (InputStream in = entity.getContent()) {
+                            InputStreamReader cin = new InputStreamReader(in);
+                            StringBuilder buffer = new StringBuilder();
+                            int c;
+                            do {
+                                c = cin.read();
+                                if (c!=-1) {
+                                    buffer.append((char) c);
+                                }
+                            } while(c !=-1);
 
-                                    if (videoMeta.has("video")) {
-                                        v.snapHash = videoMeta.getJSONObject("video").getJSONObject("info").getString("snaphash");
+                            JSONObject resultsObj = new JSONObject(buffer.toString());
 
-                                        videos.add(v);
+                            if (resultsObj.has("pages")){
+                                hasMorePages = pageNumber < resultsObj.getInt("pages");
+                            }
+
+
+                            if (resultsObj.has("results")){
+                                JSONArray resultsArr = resultsObj.getJSONArray("results");
+
+                                for (int i = 0; i<resultsArr.length(); i++) {
+                                    JSONObject videoObject = resultsArr.getJSONObject(i);
+
+                                    if (!videoObject.toString().contains("nsfw")) {
+                                        if (videoObject.toString().contains("dtube\\/0.")) {
+
+                                            Video v = new Video();
+                                            v.title = videoObject.getString("title");
+                                            v.user = videoObject.getString("author");
+                                            v.setTime(videoObject.getString("created_at"));
+                                            v.permlink = videoObject.getString("permlink");
+
+                                            String body = videoObject.getString("body");
+
+
+                                            //Extract img Hash from HTML such as <img src='https://ipfs.io/ipfs/QmQG6gPe6hnT8aTRvH3hskMiWbbn9HR6gVf2TH3vXYV71Q'>
+                                            int imgTagIndex = body.indexOf("<img src='");
+                                            int imgHashIndex = body.indexOf("/Qm",imgTagIndex)+1;
+                                            System.out.println();
+
+                                            v.snapHash = body.substring(imgHashIndex, body.indexOf("'>",imgHashIndex));
+                                            videos.add(v);
+
+                                            Log.d("dtube", v.snapHash);
+                                        }
                                     }
                                 }
                             }
 
+                            SearchActivity.this.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    if (videos.size()>0)
+                                        askSteemLogo.setVisibility(View.GONE);
+                                    else
+                                        askSteemLogo.setVisibility(View.VISIBLE);
+                                    adapter.setVideos(videos);
+                                }
+                            });
+
                         }
-
-                        SearchActivity.this.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (videos.size()>0)
-                                    askSteemLogo.setVisibility(View.GONE);
-                                else
-                                    askSteemLogo.setVisibility(View.VISIBLE);
-                                adapter.setVideos(videos);
-                            }
-                        });
                     }
-
                 }catch (Exception e){
                     e.printStackTrace();
-                }finally {
-                    gettingVideos = false;
-                    if (reader!=null)
-                        try {
-                            reader.close();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+                    Log.d("dtube",e.getMessage());
                 }
+                finally {
+                    gettingVideos = false;
+                }
+
+
+
+                Looper.loop(); //Loop in the message queue
             }
         };
-        new Thread(new searchRunner(q)).start();
+        t.start();
     }
+
+//    public void goSearch(String q){
+//        if (q!=null && querry!=null && !q.equals(querry)) {
+//            videos.clear();
+//            adapter.notifyDataSetChanged();
+//            pageNumber = 0;
+//        }
+//        querry = q;
+//        class searchRunner implements Runnable{
+//            private String q;
+//            private searchRunner(String q){
+//                this.q = q;
+//            }
+//
+//            @Override
+//            public void run() {
+//                Log.d("dtube5","to search for "+q);
+//                BufferedReader reader = null;
+//                try {
+//                    gettingVideos = true;
+//                    pageNumber++;
+//                    URL url = new URL(SEARCH_URL+q.replace(" ","%20")+"&pg="+pageNumber);
+//                    reader = new BufferedReader(new InputStreamReader(url.openStream()));
+//                    StringBuilder buffer = new StringBuilder();
+//                    int read;
+//                    char[] chars = new char[1024];
+//                    while ((read = reader.read(chars)) != -1)
+//                        buffer.append(chars, 0, read);
+//
+//                    JSONObject resultsObj = new JSONObject(buffer.toString());
+//                    if (resultsObj.has("pages")){
+//                        hasMorePages = resultsObj.getJSONObject("pages").getBoolean("has_next");
+//                        Log.d("dtube5","more:"+hasMorePages);
+//                    }
+//                    if (resultsObj.has("results")){
+//                        JSONArray resultsArr = resultsObj.getJSONArray("results");
+//                        for (int i = 0; i<resultsArr.length(); i++){
+//                            JSONObject videoObject = resultsArr.getJSONObject(i);
+//                            if (!videoObject.toString().contains("nsfw")) {
+//                                if (videoObject.has("meta")) {
+//
+//                                    Video v = new Video();
+//                                    v.title = videoObject.getString("title");
+//                                    v.user = videoObject.getString("author");
+//                                    v.setTime(videoObject.getString("created"));
+//                                    v.permlink = videoObject.getString("permlink");
+//                                    JSONObject videoMeta = new JSONObject(videoObject.getString("meta"));
+//
+//                                    if (videoMeta.has("video")) {
+//                                        v.snapHash = videoMeta.getJSONObject("video").getJSONObject("info").getString("snaphash");
+//
+//                                        videos.add(v);
+//                                    }
+//                                }
+//                            }
+//
+//                        }
+//
+//                        SearchActivity.this.runOnUiThread(new Runnable() {
+//                            @Override
+//                            public void run() {
+//                                if (videos.size()>0)
+//                                    askSteemLogo.setVisibility(View.GONE);
+//                                else
+//                                    askSteemLogo.setVisibility(View.VISIBLE);
+//                                adapter.setVideos(videos);
+//                            }
+//                        });
+//                    }
+//
+//                }catch (Exception e){
+//                    e.printStackTrace();
+//                }finally {
+//                    gettingVideos = false;
+//                    if (reader!=null)
+//                        try {
+//                            reader.close();
+//                        } catch (IOException e) {
+//                            e.printStackTrace();
+//                        }
+//                }
+//            }
+//        };
+//        new Thread(new searchRunner(q)).start();
+//    }
 
     public void onItemClick(int pos){
         Intent data = new Intent();
