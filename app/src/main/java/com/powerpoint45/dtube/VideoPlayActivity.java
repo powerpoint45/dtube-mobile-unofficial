@@ -6,9 +6,13 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -18,6 +22,7 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
@@ -29,16 +34,30 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.github.curioustechizen.ago.RelativeTimeTextView;
+import com.google.android.exoplayer2.ExoPlaybackException;
+import com.google.android.exoplayer2.ExoPlayerFactory;
+import com.google.android.exoplayer2.Player;
+import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.source.ExtractorMediaSource;
+import com.google.android.exoplayer2.source.MediaSource;
+import com.google.android.exoplayer2.ui.PlayerView;
+import com.google.android.exoplayer2.upstream.DataSource;
+import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
+import com.google.android.exoplayer2.util.Util;
+import com.google.android.exoplayer2.video.VideoListener;
 import com.makeramen.roundedimageview.RoundedTransformationBuilder;
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Target;
 import com.squareup.picasso.Transformation;
 
 import java.util.Collections;
 import java.util.Comparator;
 
-import cn.jzvd.JZVideoPlayerStandard;
+import static com.google.android.exoplayer2.ui.PlayerView.SHOW_BUFFERING_ALWAYS;
+
 
 /**
  * Created by michael on 5/11/17.
@@ -47,7 +66,9 @@ import cn.jzvd.JZVideoPlayerStandard;
 public class VideoPlayActivity extends AppCompatActivity {
     static final int REQUEST_CHANNEL = 0;
 
-    JZVideoPlayerStandard videoView;
+    PlayerView playerView;
+    SimpleExoPlayer player;
+
     WebViewVideoView webViewVideoView;
     FrameLayout videoLayoutHolder;
 
@@ -82,6 +103,7 @@ public class VideoPlayActivity extends AppCompatActivity {
     String accountName;
 
     boolean runningOnTV;
+    boolean fullscreen;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -140,7 +162,6 @@ public class VideoPlayActivity extends AppCompatActivity {
             steemWebView.getIsFollowing(videoToPlay.user, accountName);
         steemWebView.getSuggestedVideos(videoToPlay.user);
         steemWebView.getSubscriberCount(videoToPlay.user);
-        Log.d("dtube","PLAYING ON PLAYER:"+videoToPlay.getVideoStreamURL());
 
         subscribeLoader = findViewById(R.id.subscribe_loader);
         likedislikeLoader = findViewById(R.id.likedislike_loader);
@@ -155,7 +176,7 @@ public class VideoPlayActivity extends AppCompatActivity {
                 .build();
 
         if (clientProfileImageURL!=null) {
-            Picasso.with(this).load(clientProfileImageURL).placeholder(R.drawable.login).transform(transformation)
+            Picasso.get().load(clientProfileImageURL).placeholder(R.drawable.login).transform(transformation)
                     .into(((ImageView) findViewById(R.id.item_account_comment_image)));
         }
 
@@ -254,10 +275,23 @@ public class VideoPlayActivity extends AppCompatActivity {
         }
     }
 
+
+    private void pausePlayer(){
+        player.setPlayWhenReady(false);
+        player.getPlaybackState();
+    }
+    private void startPlayer(){
+        player.setPlayWhenReady(true);
+        player.getPlaybackState();
+    }
+
     @Override
     public void onBackPressed(){
-        if (JZVideoPlayerStandard.backPress()) {
-            return;
+        if (playerView!=null){
+            if (fullscreen) {
+                makeFullscreen(null);
+                return;
+            }
         }
 
         super.onBackPressed();
@@ -266,7 +300,10 @@ public class VideoPlayActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        JZVideoPlayerStandard.releaseAllVideos();
+
+        if (player!=null)
+            pausePlayer();
+
         if (webViewVideoView!=null) {
             webViewVideoView.pauseVideo();
             webViewVideoView.pauseTimers();
@@ -278,10 +315,9 @@ public class VideoPlayActivity extends AppCompatActivity {
     @Override
     public void finish() {
         super.finish();
-        JZVideoPlayerStandard.backPress();
-        if (videoView!=null) {
-            videoView.release();
-            videoView = null;
+        if (player!=null) {
+            player.release();
+            playerView = null;
         }
         if (webViewVideoView!=null){
             webViewVideoView.removeJavascriptInterface("androidAppProxy");
@@ -295,6 +331,10 @@ public class VideoPlayActivity extends AppCompatActivity {
     @Override
     public void onResume(){
         super.onResume();
+
+        if (player!=null)
+            startPlayer();
+
         if (webViewVideoView!=null)
             webViewVideoView.resumeTimers();
         if (steemWebView!=null)
@@ -396,6 +436,7 @@ public class VideoPlayActivity extends AppCompatActivity {
 
     @SuppressLint("SetTextI18n")
     public void updateUI(){
+        Log.d("dtube", "updateUI");
 
         ((TextView)findViewById(R.id.item_title)).setText(videoToPlay.title);
         ((TextView)findViewById(R.id.item_value)).setText(videoToPlay.price);
@@ -443,7 +484,7 @@ public class VideoPlayActivity extends AppCompatActivity {
             ((ImageView)findViewById(R.id.video_dislike)).setColorFilter(Color.RED, PorterDuff.Mode.SRC_ATOP);
 
         if (videoToPlay.user!=null) {
-            Picasso.with(this).load(DtubeAPI.PROFILE_IMAGE_SMALL_URL.replace("username", videoToPlay.user)).placeholder(R.drawable.login).transform(transformation)
+            Picasso.get().load(DtubeAPI.PROFILE_IMAGE_SMALL_URL.replace("username", videoToPlay.user)).placeholder(R.drawable.login).transform(transformation)
                     .into((ImageView) findViewById(R.id.item_profileimage));
         }
 
@@ -457,6 +498,21 @@ public class VideoPlayActivity extends AppCompatActivity {
 
 
         ((TextView)findViewById(R.id.subscribers)).setText(subscribers);
+
+
+        if (playerView!=null) {
+            ImageView fullscreenButton = findViewById(R.id.exo_fullscreen_button);
+            if (fullscreen) {
+                videoLayoutHolder.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                        findViewById(R.id.video_content).getHeight()));
+                fullscreenButton.setImageResource(R.drawable.exo_controls_fullscreen_exit);
+            } else {
+                videoLayoutHolder.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                        Tools.numtodp(200, this)));
+                fullscreenButton.setImageResource(R.drawable.exo_controls_fullscreen_enter);
+            }
+        }
+
     }
 
     public void subscribeButtonClicked(View v){
@@ -567,7 +623,7 @@ public class VideoPlayActivity extends AppCompatActivity {
         replyHolder.setVisibility(View.VISIBLE);
 
         if (clientProfileImageURL!=null) {
-            Picasso.with(this).load(clientProfileImageURL).placeholder(R.drawable.login).transform(transformation)
+            Picasso.get().load(clientProfileImageURL).placeholder(R.drawable.login).transform(transformation)
                     .into(((ImageView) replyHolder.findViewById(R.id.item_account_comment_image)));
         }
 
@@ -589,9 +645,9 @@ public class VideoPlayActivity extends AppCompatActivity {
             steemWebView.getVideoInfo(suggestedVideos.get(pos).user, suggestedVideos.get(pos).permlink, DtubeAPI.getAccountName(this));
     }
 
-    public final boolean useEmbeded = true;
+    public final boolean useEmbeded = false;
     public void setupVideoView(){
-        if (useEmbeded){
+        if (useEmbeded || runningOnTV){
             if (webViewVideoView != null) {
                 videoLayoutHolder.removeView(webViewVideoView);
                 webViewVideoView.killWebView();
@@ -612,19 +668,90 @@ public class VideoPlayActivity extends AppCompatActivity {
             if (videoLayoutHolder.findViewById(R.id.embeded_video_view)==null)
                 videoLayoutHolder.addView(webViewVideoView,0);
         }else {
-            Log.d("dtube4","setupVideoView");
-            if (videoView == null){
-                videoView = new JZVideoPlayerStandard(this);
+            Log.d("dtube","loading stream: "+ videoToPlay.getVideoStreamURL());
+            if (playerView == null){
+                playerView = new PlayerView(this);
+                player = ExoPlayerFactory.newSimpleInstance(this);
+                playerView.setShowBuffering(SHOW_BUFFERING_ALWAYS);
+                playerView.setPlayer(player);
             }
-            videoView.setUp(videoToPlay.getVideoStreamURL()
-                    , JZVideoPlayerStandard.SCREEN_WINDOW_NORMAL, videoToPlay.title);
+            playerView.showController();
 
-            Picasso.with(this).load(videoToPlay.getImageURL()).resize(720, 720).centerInside().into(videoView.thumbImageView);
-            videoView.startButton.performClick();
-            videoView.setId(R.id.native_video_view);
+            findViewById(R.id.video_content).addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+                @Override
+                public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                    if (oldBottom!=bottom) {
+                        updateUI();
+                        playerView.showController();
+                    }
+                    Log.d("dtube", "onLayoutChange");
+                }
+            });
 
-            if (videoLayoutHolder.findViewById(R.id.native_video_view)==null)
-                videoLayoutHolder.addView(videoView);
+
+            Uri uri = Uri.parse(videoToPlay.getVideoStreamURL());
+
+            // Produces DataSource instances through which media data is loaded.
+            DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(this,
+                    Util.getUserAgent(this, "DtubeClient"));
+            // This is the MediaSource representing the media to be played.
+            MediaSource videoSource = new ExtractorMediaSource.Factory(dataSourceFactory)
+                    .createMediaSource(uri);
+            // Prepare the player with the source.
+            player.prepare(videoSource);
+            player.setPlayWhenReady(true);
+
+            player.addListener(new Player.EventListener() {
+                @Override
+                public void onLoadingChanged(boolean isLoading) {
+
+                }
+
+                @Override
+                public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+
+                }
+
+                @Override
+                public void onPlayerError(ExoPlaybackException error) {
+                    Toast.makeText(VideoPlayActivity.this
+                            ,R.string.video_error, Toast.LENGTH_LONG).show();
+                }
+            });
+
+            player.addVideoListener(new VideoListener() {
+                @Override
+                public void onRenderedFirstFrame() {
+                }
+            });
+
+//            Log.d("dtube", "DATE:"+videoToPlay.getDate());
+//            playerView.setUp(videoToPlay.getVideoStreamURL(), videoToPlay.title
+//                    , JzvdStd.SCREEN_WINDOW_NORMAL);
+
+
+              Picasso.get().load(videoToPlay.getImageURL()).resize(720, 720).centerInside().into(new Target() {
+                  @Override
+                  public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                      playerView.findViewById(R.id.exo_shutter).setBackground(new BitmapDrawable(bitmap));
+                  }
+
+                  @Override
+                  public void onBitmapFailed(Exception e, Drawable errorDrawable) {
+
+                  }
+
+                  @Override
+                  public void onPrepareLoad(Drawable placeHolderDrawable) {
+
+                  }
+              });
+//            playerView.startButton.performClick();
+//            playerView.setId(R.id.native_video_view);
+
+            if (videoLayoutHolder.findViewById(R.id.exo_content_frame)==null)
+                videoLayoutHolder.addView(playerView);
+
         }
     }
 
@@ -668,6 +795,29 @@ public class VideoPlayActivity extends AppCompatActivity {
         steemWebView.getSuggestedVideos(videoToPlay.user);
         steemWebView.getSubscriberCount(videoToPlay.user);
 
+    }
+
+    public void makeFullscreen(View v){
+        fullscreen = !fullscreen;
+        updateUI();
+
+        if (fullscreen)
+        {
+            WindowManager.LayoutParams attrs = this.getWindow().getAttributes();
+            attrs.flags |= WindowManager.LayoutParams.FLAG_FULLSCREEN;
+            attrs.flags |= WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON;
+            this.getWindow().setAttributes(attrs);
+            int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+            this.getWindow().getDecorView().setSystemUiVisibility(uiOptions);
+        }
+        else
+        {
+            WindowManager.LayoutParams attrs = this.getWindow().getAttributes();
+            attrs.flags &= ~WindowManager.LayoutParams.FLAG_FULLSCREEN;
+            attrs.flags &= ~WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON;
+            this.getWindow().setAttributes(attrs);
+            this.getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
+        }
     }
 
     @Override

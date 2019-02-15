@@ -113,6 +113,7 @@ public class SearchActivity extends AppCompatActivity {
             public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
                 if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                     if (searchBar.getText().toString().length()>0) {
+                        findViewById(R.id.search_progress).setVisibility(View.VISIBLE);
                         esteemSearch(searchBar.getText().toString());
                         InputMethodManager mgr = (InputMethodManager)SearchActivity.this.getSystemService(
                                 Context.INPUT_METHOD_SERVICE);
@@ -168,7 +169,9 @@ public class SearchActivity extends AppCompatActivity {
                     // Request parameters and other properties.
                     List<NameValuePair> params = new ArrayList<>(3);
                     params.add(new BasicNameValuePair("q", q+"\"▶️ DTube\""));
-                    params.add(new BasicNameValuePair("so", "popularity"));
+                    params.add(new BasicNameValuePair("so", "newest"));
+                    //in the future search method can be an option
+                    //params.add(new BasicNameValuePair("so", "popularity"));
                     params.add(new BasicNameValuePair("pa", pageNumber+""));
                     httppost.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
 
@@ -202,7 +205,8 @@ public class SearchActivity extends AppCompatActivity {
                                     JSONObject videoObject = resultsArr.getJSONObject(i);
 
                                     if (!videoObject.toString().contains("nsfw")) {
-                                        if (videoObject.toString().contains("dtube\\/0.")) {
+                                        if (videoObject.toString().contains("dtube\\/0.")
+                                                || videoObject.toString().contains("oneloveipfs")) {
 
                                             Video v = new Video();
                                             v.title = videoObject.getString("title");
@@ -215,13 +219,25 @@ public class SearchActivity extends AppCompatActivity {
 
                                             //Extract img Hash from HTML such as <img src='https://ipfs.io/ipfs/QmQG6gPe6hnT8aTRvH3hskMiWbbn9HR6gVf2TH3vXYV71Q'>
                                             int imgTagIndex = body.indexOf("<img src='");
-                                            int imgHashIndex = body.indexOf("/Qm",imgTagIndex)+1;
-                                            System.out.println();
+                                            if (imgTagIndex != -1) {
+                                                int imgHashIndex = body.indexOf("/Qm", imgTagIndex) + 1;
+                                                Log.d("json", videoObject.toString());
+                                                v.snapHash = body.substring(imgHashIndex, body.indexOf("'>", imgHashIndex));
+                                            }else {
+                                                Log.d("dtube", "invalid snap. Replacing img");
 
-                                            v.snapHash = body.substring(imgHashIndex, body.indexOf("'>",imgHashIndex));
+                                                imgTagIndex = body.indexOf("(https://cdn.steemitimages.com/");
+
+
+                                                //int imgHashIndex = body.indexOf("/Qm", imgTagIndex) + 1;
+                                                String imgURL = body.substring(imgTagIndex+1, body.indexOf(".png",imgTagIndex)+4);
+                                                v.setImageURL(imgURL);
+                                            }
+
+
                                             videos.add(v);
 
-                                            Log.d("dtube", v.snapHash);
+                                            Log.d("dtube", v.user+","+v.snapHash);
                                         }
                                     }
                                 }
@@ -235,6 +251,7 @@ public class SearchActivity extends AppCompatActivity {
                                     else
                                         askSteemLogo.setVisibility(View.VISIBLE);
                                     adapter.setVideos(videos);
+                                    findViewById(R.id.search_progress).setVisibility(View.GONE);
                                 }
                             });
 
@@ -243,6 +260,12 @@ public class SearchActivity extends AppCompatActivity {
                 }catch (Exception e){
                     e.printStackTrace();
                     Log.d("dtube",e.getMessage());
+                    SearchActivity.this.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            findViewById(R.id.search_progress).setVisibility(View.GONE);
+                        }
+                    });
                 }
                 finally {
                     gettingVideos = false;

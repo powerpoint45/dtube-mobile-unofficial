@@ -31,6 +31,8 @@ This is the first release of the Dtube unofficial app! I am confident that every
 * Much more and much more to come as development continues
 
 # How do I get it?
+Download the app from the [Play Store](https://play.google.com/store/apps/details?id=com.powerpoint45.dtube) or from Github
+
 The app can be downloaded as an **APK** (Android Package). This is a standard application package format than many of you already know about. I will eventually be putting this app on places like XDA Labs and Aptoide. Currently you can find the app on the [Github Release Page](https://github.com/powerpoint45/dtube-mobile-unofficial/releases/)  . Just download the **app-release.apk** to your phone. Next make sure you have **Unknown Sources** enabled on your phone. Go to your phone settings **>** Lock Screen and Security (or just Security depending on your phone firmware) **>** Check the box that says **Unknown Sources**. This will allow you to install apps outside the Play Store. Now you can press on the downloaded app in your status bar and it should prompt you to install the app. Let me know if you have any problems and I can help. Press the install button and the app will be installed in a couple moments. Now the app should show up in your app drawer as D.tube.
 
 # Getting Started
@@ -54,17 +56,18 @@ Now I just encourage you to explore the app! Play some videos, comment on a vide
 ![](https://i.imgur.com/8sOqEA4.png)
 
 # Known Issues
-There are some things I am still trying to work out completely. One issue is that the app will freeze upon launch very rarely. I am not aware of what is causing this at the moment. Consider this release a beta build. More features and fixes are soon to come!
+Please let us know on discord or leave an issue on github if you notice anything wrong
 
 # Libraries used
 I did not reinvent wheels. I am very appreciative of all those devs who make this work!
-   * [com.github.curioustechizen.android-ago:library:1.3.4](https://github.com/curioustechizen/android-ago)
-   * [com.squareup.picasso:picasso:2.5.2](https://github.com/square/picasso)
-   * [com.github.javiersantos:AppUpdater:2.6.3](https://github.com/javiersantos/AppUpdater)
-   * [com.makeramen:roundedimageview:2.3.0](https://github.com/vinc3m1/RoundedImageView)
-   * [com.android.support:appcompat-v7:25.3.1](https://developer.android.com/topic/libraries/support-library/packages.html)
-   * [com.android.support:design:25.3.1](https://developer.android.com/topic/libraries/support-library/packages.html)
-   * [com.android.support:recyclerview-v7:25.3.1](https://developer.android.com/topic/libraries/support-library/packages.html)
+   * [com.google.android.exoplayer:exoplayer](https://github.com/google/ExoPlayer)
+   * [com.github.curioustechizen.android-ago:library](https://github.com/curioustechizen/android-ago)
+   * [com.squareup.picasso:picasso](https://github.com/square/picasso)
+   * [com.github.javiersantos:AppUpdater](https://github.com/javiersantos/AppUpdater)
+   * [com.makeramen:roundedimageview](https://github.com/vinc3m1/RoundedImageView)
+   * [com.android.support:appcompat-v7](https://developer.android.com/topic/libraries/support-library/packages.html)
+   * [com.android.support:design](https://developer.android.com/topic/libraries/support-library/packages.html)
+   * [com.android.support:recyclerview-v7](https://developer.android.com/topic/libraries/support-library/packages.html)
    * [Steemit JS API ](https://github.com/steemit/steem-js)(locally stored on app)
    * [dtube embedded player](https://github.com/dtube/embed) (locally stored on app)
    * [Asksteem API](https://steemit.com/steemit/@thekyle/introducing-asksteem-a-steem-search-engine)
@@ -74,7 +77,8 @@ I did not reinvent wheels. I am very appreciative of all those devs who make thi
 
 # Download
 Just in case you missed the download link mentioned in the article. 
-[Download Here](https://github.com/powerpoint45/dtube-mobile-unofficial/releases/)
+[Download From Play Store](https://play.google.com/store/apps/details?id=com.powerpoint45.dtube)
+[Download From Github](https://github.com/powerpoint45/dtube-mobile-unofficial/releases/)
 
 # Discord
 Join our Dtube Mobile Unofficial [Discord](https://discord.gg/3h88GDb)

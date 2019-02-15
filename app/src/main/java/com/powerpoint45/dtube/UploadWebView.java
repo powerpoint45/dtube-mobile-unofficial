@@ -4,13 +4,17 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.inputmethod.BaseInputConnection;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
+import android.webkit.CookieManager;
+import android.webkit.CookieSyncManager;
 import android.webkit.JavascriptInterface;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
@@ -31,6 +35,12 @@ public class UploadWebView extends WebView {
     public UploadWebView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
+        CookieSyncManager.createInstance(context);
+        CookieManager cookieManager = CookieManager.getInstance();
+        cookieManager.setAcceptCookie(true);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+            cookieManager.setAcceptThirdPartyCookies(this, true);
+
         WebView.setWebContentsDebuggingEnabled(true);
         getSettings().setJavaScriptEnabled(true);
         getSettings().setAppCacheEnabled(true);
@@ -42,13 +52,21 @@ public class UploadWebView extends WebView {
         getSettings().setDomStorageEnabled(true);
         getSettings().setMediaPlaybackRequiresUserGesture(false);
 
+        this.getSettings().setSupportZoom(true);
+        this.getSettings().setBuiltInZoomControls(true);
+        this.getSettings().setDisplayZoomControls(false);
+        this.getSettings().setPluginState(WebSettings.PluginState.ON);
+        this.getSettings().setUseWideViewPort(true);
+        this.getSettings().setSaveFormData(true);
+        this.getSettings().setSavePassword(true);
+
         Log.d("DT","UPLOAD WV SETUP");
 
         setWebViewClient(new WebViewClient() {
             @Override
             public void onPageFinished(WebView view, String url) {
                 loadedPage = true;
-                view.loadUrl("javascript:window.android.onUrlChange(window.location.href);");
+                view.loadUrl(JS_PRE+"window.android.onUrlChange(window.location.href);"+JS_POST);
                 if (url.equals(DtubeAPI.DTUBE_LOGIN_URL)) {
                     postDelayed(new Runnable() {
                         @Override

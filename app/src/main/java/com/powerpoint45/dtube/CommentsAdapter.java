@@ -141,7 +141,7 @@ class CommentsAdapter extends BaseAdapter {
             else
                 viewHolder.indentView.setVisibility(View.GONE);
 
-            Picasso.with(c).load(currentComment.getImageURL()).placeholder(R.drawable.login).transform(transformation)
+            Picasso.get().load(currentComment.getImageURL()).placeholder(R.drawable.login).transform(transformation)
                     .into(viewHolder.profileView);
         }
 

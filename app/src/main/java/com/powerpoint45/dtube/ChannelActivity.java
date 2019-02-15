@@ -57,7 +57,7 @@ public class ChannelActivity extends AppCompatActivity {
         String profileImageURL = getIntent().getExtras().getString("profileimage");
 
 
-        Picasso.with(this).load(DtubeAPI.PROFILE_IMAGE_MEDIUM_URL.replace("username",channelName)).placeholder(R.drawable.ic_account_circle).transform(new RoundedTransformationBuilder()
+        Picasso.get().load(DtubeAPI.PROFILE_IMAGE_MEDIUM_URL.replace("username",channelName)).placeholder(R.drawable.ic_account_circle).transform(new RoundedTransformationBuilder()
                 .cornerRadiusDp(50)
                 .oval(false)
                 .build())

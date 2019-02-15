@@ -582,7 +582,7 @@ public class MainActivity extends AppCompatActivity {
 
                     CustomMenuTarget target = new CustomMenuTarget(topChannelMenu.getItem(i),MainActivity.this, targets);
                     targets.add(target);
-                    Picasso.with(MainActivity.this).load(DtubeAPI.PROFILE_IMAGE_SMALL_URL.replace("username",persons.get(i).userName))
+                    Picasso.get().load(DtubeAPI.PROFILE_IMAGE_SMALL_URL.replace("username",persons.get(i).userName))
                             .into(target);
                 }
             }
@@ -608,10 +608,10 @@ public class MainActivity extends AppCompatActivity {
                     .oval(false)
                     .build();
 
-            Picasso.with(this).load(accountInfo.getImageURL()).placeholder(R.drawable.login).transform(transformation).into(
+            Picasso.get().load(accountInfo.getImageURL()).placeholder(R.drawable.login).transform(transformation).into(
                     ((ImageView) findViewById(R.id.profile_image)));
 
-            Picasso.with(this).load(DtubeAPI.PROFILE_IMAGE_MEDIUM_URL.replace("username",accountInfo.userName)).placeholder(R.drawable.login).transform(transformation).into(
+            Picasso.get().load(DtubeAPI.PROFILE_IMAGE_MEDIUM_URL.replace("username",accountInfo.userName)).placeholder(R.drawable.login).transform(transformation).into(
                     (ImageView)navigationHeader.findViewById(R.id.header_icon));
 
             ((TextView)navigationHeader.findViewById(R.id.header_name)).setText(accountInfo.userName);

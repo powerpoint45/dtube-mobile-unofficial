@@ -144,7 +144,7 @@ class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
 
 
 
-        Picasso.with(c).load(videos.get(position).getImageURL()).placeholder(placeholderDrawable)
+        Picasso.get().load(videos.get(position).getImageURL()).placeholder(placeholderDrawable)
                 .resize(720,720).centerInside()//prevents image to be shown to be larger than 720px w or h. Makes scrolling smoother
                 .noFade()
                 .into(holder.thumbView);

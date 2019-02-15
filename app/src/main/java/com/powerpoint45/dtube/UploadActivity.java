@@ -34,9 +34,6 @@ public class UploadActivity extends AppCompatActivity {
         pbar = findViewById(R.id.upload_pb);
 
         uploadWebView = findViewById(R.id.upload_wv);
-        uploadWebView.loadUrl(DtubeAPI.DTUBE_LOGIN_URL);
-
-
         uploadWebView.setWebChromeClient(new WebChromeClient()
         {
 
@@ -106,6 +103,15 @@ public class UploadActivity extends AppCompatActivity {
                 startActivityForResult(Intent.createChooser(i, "File Chooser"), FILECHOOSER_RESULTCODE);
             }
         });
+
+
+        uploadWebView.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                uploadWebView.loadUrl(DtubeAPI.DTUBE_LOGIN_URL);
+            }
+        },100);
+
 
 
     }

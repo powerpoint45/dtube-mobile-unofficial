@@ -1,3 +1,8 @@
+02-16-19
+*Native Video Player support for mobile
+*Small UI changes
+*Gateway fixes
+*Bug fixes and general changes
 01-31-19
 *Search Fixed (esteem search now implemented to replace AskSteem)
 *General Changes and improvements

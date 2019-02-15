@@ -101,7 +101,7 @@ public class ChannelAdapter extends RecyclerView.Adapter<ChannelAdapter.ViewHold
             holder.durationText.setVisibility(View.INVISIBLE);
 
 
-        Picasso.with(c).load(videos.get(position).getImageURL()).placeholder(R.drawable.ic_ondemand_video).resize(400,400).centerInside().into(
+        Picasso.get().load(videos.get(position).getImageURL()).placeholder(R.drawable.ic_ondemand_video).resize(400,400).centerInside().into(
                 holder.thumbView);
     }
 

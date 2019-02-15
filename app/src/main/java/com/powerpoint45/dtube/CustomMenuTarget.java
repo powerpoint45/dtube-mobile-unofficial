@@ -38,10 +38,11 @@ class CustomMenuTarget implements Target {
     }
 
     @Override
-    public void onBitmapFailed(Drawable drawable) {
+    public void onBitmapFailed(Exception e, Drawable errorDrawable) {
         Log.d("DEBUG", "onBitmapFailed");
         targets.remove(this);
     }
+
 
     @Override
     public void onPrepareLoad(Drawable drawable) {

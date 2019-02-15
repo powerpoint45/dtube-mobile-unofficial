@@ -486,7 +486,14 @@ function getSimpleVideoObject(r){
 
 	if (metadata && metadata.video && metadata.video.content && metadata.video.info){
 		video.snaphash = metadata.video.info.snaphash;
-		video.hash = metadata.video.content.videohash;
+
+		video.hash = metadata.video.content.video480hash;
+
+		if (!video.hash)
+			video.hash = metadata.video.content.videohash;
+
+		if (metadata.links && (metadata.links.includes("https://oneloveipfs.com") || metadata.links.includes("https://oneloved.tube/")))
+				video.gateway = "video.oneloveipfs.com";
 
 		var duration = metadata.video.info.duration;
 		if (duration){
@@ -540,8 +547,14 @@ function getAdvancedVideoObject(r, accountName){
 
 	if (metadata && metadata.video && metadata.video.content && metadata.video.info){
 		video.snaphash = metadata.video.info.snaphash;
-		video.hash = metadata.video.content.videohash;
 
+		video.hash = metadata.video.content.video480hash;
+
+		if (!video.hash)
+			video.hash = metadata.video.content.videohash;
+
+		if (metadata.links && (metadata.links.includes("https://oneloveipfs.com") || metadata.links.includes("https://oneloved.tube/")))
+				video.gateway = "video.oneloveipfs.com";
 
 		var converter = new showdown.Converter()
 		converter.setOption('simplifiedAutoLink', true);

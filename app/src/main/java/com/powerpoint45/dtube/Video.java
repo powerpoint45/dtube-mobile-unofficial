@@ -25,6 +25,7 @@ class Video implements Serializable{
     int categoryId;
     String hash;
     String snapHash;
+    String imageURL;
     private String duration;
 
     String longDescriptionHTML;
@@ -71,8 +72,13 @@ class Video implements Serializable{
         return VIDEO_FRAME_URL.replace("AUTHOR",user).replace("PERMLINK",permlink);
     }
 
+
     String getVideoStreamURL() {
-        return "https://" + getGateway() + "/ipfs/" + hash;
+        //Ater about Dec 12 dtube started using the new video.dtube.top gateway
+        if (getDate()>=1544653245000L && !getGateway().equals("video.oneloveipfs.com"))
+            return "https://video.dtube.top/ipfs/" + hash;
+        else
+            return "https://" + getGateway() + "/ipfs/" + hash;
     }
 
     public String getDuration() {
@@ -107,7 +113,14 @@ class Video implements Serializable{
     }
 
 
+    public void setImageURL(String url) {
+        imageURL = url;
+    }
+
     String getImageURL(){
+        if (imageURL!=null)
+            return imageURL;
+        else
             return DtubeAPI.CONTENT_IMAGE_URL + snapHash;
     }
 

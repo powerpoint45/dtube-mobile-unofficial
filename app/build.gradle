@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 27
-    buildToolsVersion '28.0.2'
+    buildToolsVersion '28.0.3'
 
     useLibrary 'org.apache.http.legacy'
 
@@ -10,8 +10,8 @@ android {
         applicationId "com.powerpoint45.dtube"
         minSdkVersion 21
         targetSdkVersion 27
-        versionCode 18
-        versionName "2.6"
+        versionCode 20
+        versionName "2.8"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -19,6 +19,11 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 
 }
@@ -29,11 +34,13 @@ dependencies {
     implementation 'me.dm7.barcodescanner:zxing:1.9.8'
     implementation 'us.feras.mdv:markdownview:1.1.0'
     implementation 'com.github.curioustechizen.android-ago:library:1.3.4'
-    implementation 'cn.jzvd:jiaozivideoplayer:6.1.2'
-    implementation 'com.squareup.picasso:picasso:2.5.2'
+    implementation 'com.squareup.picasso:picasso:2.71828'
     implementation 'com.github.javiersantos:AppUpdater:2.6.3'
     implementation 'com.makeramen:roundedimageview:2.3.0'
 //    implementation 'com.github.marvin-we.steem-java-api-wrapper:steemj-core:0.4.6-20180926-01PRE'
+
+    implementation 'com.google.android.exoplayer:exoplayer:2.9.5'
+    implementation 'com.google.android.exoplayer:exoplayer-ui:2.9.5'
 
     implementation 'com.github.hapramp:steemconnect4j:v1.3.1'
 

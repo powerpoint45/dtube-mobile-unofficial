@@ -16,7 +16,7 @@
             android:id="@+id/item_image"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:maxHeight="250dp"
+            android:maxHeight="230dp"
             android:scaleType="fitCenter"
             android:adjustViewBounds="true"/>
 
@@ -49,7 +49,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="TextView"
-        android:textAppearance="@style/Base.TextAppearance.AppCompat.Large" />
+        android:maxLines="2"
+        android:textAppearance="@style/Base.TextAppearance.AppCompat.Medium" />
 
 
     <TextView
@@ -57,7 +58,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Michael"
-        android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+        android:textAppearance="@style/TextAppearance.AppCompat.Small" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -72,7 +73,7 @@
             android:paddingBottom="5dp"
             android:paddingRight="8dp"
             android:text="$10"
-            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:textAppearance="@style/TextAppearance.AppCompat.Small"
             android:textStyle="bold" />
 
         <com.github.curioustechizen.ago.RelativeTimeTextView
@@ -80,7 +81,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="some time ago"
-            android:textAppearance="@style/TextAppearance.AppCompat.Medium"/>
+            android:textAppearance="@style/TextAppearance.AppCompat.Small"/>
 
     </LinearLayout>
 
