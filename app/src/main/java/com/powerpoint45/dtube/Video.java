@@ -31,6 +31,7 @@ class Video implements Serializable{
     String longDescriptionHTML;
     String subscribers;
     private String gateway;
+    private boolean triedLoadingBackupGateway;
 
 
     //0=no vote
@@ -78,14 +79,26 @@ class Video implements Serializable{
         if (getDate()>=1544653245000L && !getGateway().equals("video.oneloveipfs.com"))
             return "https://video.dtube.top/ipfs/" + hash;
         else
-            return "https://" + getGateway() + "/ipfs/" + hash;
+            return getBackupVideoStreamURL();
     }
 
-    public String getDuration() {
+    String getBackupVideoStreamURL(){
+        triedLoadingBackupGateway = true;
+        return "https://" + getGateway() + "/ipfs/" + hash;
+    }
+
+    public boolean hasTriedLoadingBackupGateway(){
+        return triedLoadingBackupGateway;
+    }
+
+
+    String getDuration() {
         return duration;
     }
 
-    public void setDuration(String duration) {
+    void setDuration(String duration) {
+        if (duration.startsWith("00:"))
+            duration = duration.substring(3);
         this.duration = duration;
     }
 
@@ -113,7 +126,7 @@ class Video implements Serializable{
     }
 
 
-    public void setImageURL(String url) {
+    void setImageURL(String url) {
         imageURL = url;
     }
 

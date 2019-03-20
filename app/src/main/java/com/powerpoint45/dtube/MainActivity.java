@@ -3,7 +3,6 @@ package com.powerpoint45.dtube;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.UiModeManager;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
@@ -112,11 +111,7 @@ public class MainActivity extends AppCompatActivity {
 
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setMessage(R.string.webview_alert)
-                    .setPositiveButton(R.string.install, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=com.google.android.webview")));
-                        }
-                    })
+                    .setPositiveButton(R.string.install, (dialog, id) -> startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=com.google.android.webview"))))
                     .setNegativeButton(android.R.string.cancel, null);
             // Create the AlertDialog object and return it
             builder.create().show();
@@ -133,32 +128,24 @@ public class MainActivity extends AppCompatActivity {
 
         mainFrame = findViewById(R.id.mainframe);
 
-        findViewById(R.id.search_btn).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                searchButtonClicked(v);
-            }
-        });
+        findViewById(R.id.search_btn).setOnClickListener(this::searchButtonClicked);
 
         if (!runningOnTV)
-            findViewById(R.id.upload_btn).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (accountInfo!=null) {
-                        if (ContextCompat.checkSelfPermission(MainActivity.this,
-                                Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                                != PackageManager.PERMISSION_GRANTED) {
+            findViewById(R.id.upload_btn).setOnClickListener(v -> {
+                if (accountInfo!=null) {
+                    if (ContextCompat.checkSelfPermission(MainActivity.this,
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                            != PackageManager.PERMISSION_GRANTED) {
 
-                            ActivityCompat.requestPermissions(MainActivity.this,
-                                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                                    FILES_REQUEST_PERMISSION);
-                        }else {
-                            startActivityForResult(new Intent(MainActivity.this, UploadActivity.class), REQUEST_CODE_UPLOAD);
-                        }
+                        ActivityCompat.requestPermissions(MainActivity.this,
+                                new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                                FILES_REQUEST_PERMISSION);
+                    }else {
+                        startActivityForResult(new Intent(MainActivity.this, UploadActivity.class), REQUEST_CODE_UPLOAD);
+                    }
 
-                    }else
-                        loginButtonClicked(v);
-                }
+                }else
+                    loginButtonClicked(v);
             });
 
 
@@ -171,7 +158,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-        setSupportActionBar((Toolbar)findViewById(R.id.toolbar));
+        setSupportActionBar(findViewById(R.id.toolbar));
         if (!runningOnTV) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setHomeButtonEnabled(true);
@@ -188,61 +175,57 @@ public class MainActivity extends AppCompatActivity {
 
         navigationView = findViewById(R.id.navigation_view);
         navigationView.setItemIconTintList(null);
-        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-                drawerLayout.closeDrawers();
-                switch (menuItem.getItemId()) {
-                    case R.id.menu_profile:
-                        loginButtonClicked(new View(MainActivity.this));
-                        break;
-                    case R.id.menu_update:
-                        String url = getPreferences(MODE_PRIVATE).getString(BuildConfig.VERSION_NAME,null);
-                        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-                        startActivity(browserIntent);
-                        break;
-                    case R.id.menu_subscribed:
-                        tabGoToSubscribedClicked(menuItem.getActionView());
-                        break;
-                    case R.id.menu_hot:
-                        tabGoToHotClicked(menuItem.getActionView());
-                        break;
-                    case R.id.menu_trending:
-                        tabGoToTrendingClicked(menuItem.getActionView());
-                        break;
-                    case R.id.menu_new:
-                        tabGoToNewClicked(menuItem.getActionView());
-                        break;
-                    case R.id.menu_history:
-                        tabGoToHistoryClicked(menuItem.getActionView());
-                        break;
-                    case R.id.menu_donate:
-                        startActivity(new Intent(MainActivity.this, DonateActivity.class));
-                        break;
-                    case R.id.menu_settings:
-                        startActivityForResult(new Intent(MainActivity.this, PreferencesActivity.class), REQUEST_CODE_SETTINGS);
-                        break;
-                    case R.id.menu_about:
-                        //Intent aboutIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://steemit.com/utopian-io/@immawake/introducing-the-dtube-mobile-app-unofficial-android-app"));
-                        Intent aboutIntent = new Intent(MainActivity.this,AboutActivity.class);
-                        startActivity(aboutIntent);
-                        break;
-                    case R.id.menu_more_apps:
-                        Intent moreIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/dev?id=7725486445697122776"));
-                        startActivity(moreIntent);
-                        break;
-                    case R.id.subscription_id:
-                        String username = menuItem.getTitle().toString();
-                        Intent i = new Intent(MainActivity.this, ChannelActivity.class);
-                        i.putExtra("username", username);
-                        i.putExtra("userurl", "/#!/c/" + username);
-                        startActivityForResult(i, REQUEST_CODE_PROFILE);
-                        break;
-                    // TODO - Handle other items
-                }
-                return true;
+        navigationView.setNavigationItemSelectedListener(menuItem -> {
+            drawerLayout.closeDrawers();
+            switch (menuItem.getItemId()) {
+                case R.id.menu_profile:
+                    loginButtonClicked(new View(MainActivity.this));
+                    break;
+                case R.id.menu_update:
+                    String url = getPreferences(MODE_PRIVATE).getString(BuildConfig.VERSION_NAME,null);
+                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                    startActivity(browserIntent);
+                    break;
+                case R.id.menu_subscribed:
+                    tabGoToSubscribedClicked(menuItem.getActionView());
+                    break;
+                case R.id.menu_hot:
+                    tabGoToHotClicked(menuItem.getActionView());
+                    break;
+                case R.id.menu_trending:
+                    tabGoToTrendingClicked(menuItem.getActionView());
+                    break;
+                case R.id.menu_new:
+                    tabGoToNewClicked(menuItem.getActionView());
+                    break;
+                case R.id.menu_history:
+                    tabGoToHistoryClicked(menuItem.getActionView());
+                    break;
+                case R.id.menu_donate:
+                    startActivity(new Intent(MainActivity.this, DonateActivity.class));
+                    break;
+                case R.id.menu_settings:
+                    startActivityForResult(new Intent(MainActivity.this, PreferencesActivity.class), REQUEST_CODE_SETTINGS);
+                    break;
+                case R.id.menu_about:
+                    //Intent aboutIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://steemit.com/utopian-io/@immawake/introducing-the-dtube-mobile-app-unofficial-android-app"));
+                    Intent aboutIntent = new Intent(MainActivity.this,AboutActivity.class);
+                    startActivity(aboutIntent);
+                    break;
+                case R.id.menu_more_apps:
+                    Intent moreIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/dev?id=7725486445697122776"));
+                    startActivity(moreIntent);
+                    break;
+                case R.id.subscription_id:
+                    String username = menuItem.getTitle().toString();
+                    Intent i = new Intent(MainActivity.this, ChannelActivity.class);
+                    i.putExtra("username", username);
+                    i.putExtra("userurl", "/#!/c/" + username);
+                    startActivityForResult(i, REQUEST_CODE_PROFILE);
+                    break;
+                // TODO - Handle other items
             }
+            return true;
         });
 
         navigationHeader = (FrameLayout) navigationView.getHeaderView(0);
@@ -417,14 +400,12 @@ public class MainActivity extends AppCompatActivity {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
             builder.setTitle(R.string.remove_history);
-            builder.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int id) {
-                    String permLink = videos.get(pos).permlink;
-                    Video.removeVideoFromRecents(permLink, MainActivity.this);
-                    Video videoToRemove = allVideos.findVideo(permLink, DtubeAPI.CAT_HISTORY);
-                    allVideos.remove(videoToRemove);
-                    initFeed();
-                }
+            builder.setPositiveButton(android.R.string.yes, (dialog, id) -> {
+                String permLink = videos.get(pos).permlink;
+                Video.removeVideoFromRecents(permLink, MainActivity.this);
+                Video videoToRemove = allVideos.findVideo(permLink, DtubeAPI.CAT_HISTORY);
+                allVideos.remove(videoToRemove);
+                initFeed();
             });
             builder.setNegativeButton(android.R.string.cancel, null);
 
@@ -556,35 +537,27 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    @SuppressLint("SetTextI18n")
     public void setSubscribers(String account, final int subscribers){
         if (account.equals(accountInfo.userName)){
-            runOnUiThread(new Runnable() {
-                @SuppressLint("SetTextI18n")
-                @Override
-                public void run() {
-                    ((TextView)navigationHeader.findViewById(R.id.header_status)).setText(subscribers+" "+getResources().getString(R.string.subscribers));
-                }
-            });
+            runOnUiThread(() -> ((TextView)navigationHeader.findViewById(R.id.header_status)).setText(subscribers+" "+getResources().getString(R.string.subscribers)));
         }
     }
 
     final List<CustomMenuTarget> targets = new ArrayList<>();
     public void setSubscriptions(final ArrayList<Person> persons){
 
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Menu m = navigationView.getMenu();
-                m.removeItem(R.id.subscriptions_id);
-                SubMenu topChannelMenu = m.addSubMenu(0,R.id.subscriptions_id,0,getResources().getString(R.string.subscriptions)+" ("+persons.size()+")");
-                for (int i = 0; i< persons.size(); i++){
-                    topChannelMenu.add(0,R.id.subscription_id,0,persons.get(i).userName);
+        runOnUiThread(() -> {
+            Menu m = navigationView.getMenu();
+            m.removeItem(R.id.subscriptions_id);
+            SubMenu topChannelMenu = m.addSubMenu(0,R.id.subscriptions_id,0,getResources().getString(R.string.subscriptions)+" ("+persons.size()+")");
+            for (int i = 0; i< persons.size(); i++){
+                topChannelMenu.add(0,R.id.subscription_id,0,persons.get(i).userName);
 
-                    CustomMenuTarget target = new CustomMenuTarget(topChannelMenu.getItem(i),MainActivity.this, targets);
-                    targets.add(target);
-                    Picasso.get().load(DtubeAPI.PROFILE_IMAGE_SMALL_URL.replace("username",persons.get(i).userName))
-                            .into(target);
-                }
+                CustomMenuTarget target = new CustomMenuTarget(topChannelMenu.getItem(i),MainActivity.this, targets);
+                targets.add(target);
+                Picasso.get().load(DtubeAPI.PROFILE_IMAGE_SMALL_URL.replace("username",persons.get(i).userName))
+                        .into(target);
             }
         });
 
@@ -638,30 +611,24 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("InflateParams")
     public void initFeed(){
         Log.d("dtube","UI:initFeed");
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                videos = allVideos.getCategorizedVideos(selectedTab);
-                class SortVideos implements Comparator<Video>
+        new Thread(() -> {
+            videos = allVideos.getCategorizedVideos(selectedTab);
+            class SortVideos implements Comparator<Video>
+            {
+                // Used for sorting in ascending order of
+                // roll number
+                public int compare(Video a, Video b)
                 {
-                    // Used for sorting in ascending order of
-                    // roll number
-                    public int compare(Video a, Video b)
-                    {
-                        return Long.compare(b.getDate(), a.getDate());
-                    }
+                    return Long.compare(b.getDate(), a.getDate());
                 }
-                synchronized (videos) {
-                    Collections.sort(videos, new SortVideos());
-                }
-                MainActivity.this.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        feedAdapter.setVideos(videos);
-                        feedAdapter.notifyDataSetChanged();
-                    }
-                });
             }
+            synchronized (videos) {
+                Collections.sort(videos, new SortVideos());
+            }
+            MainActivity.this.runOnUiThread(() -> {
+                feedAdapter.setVideos(videos);
+                feedAdapter.notifyDataSetChanged();
+            });
         }).start();
 
         //Show button to login if user clicked on subscription feed and not logged in
@@ -673,12 +640,7 @@ public class MainActivity extends AppCompatActivity {
                     Button v = (Button)LayoutInflater.from(this).inflate(R.layout.login_for_subs_btn, null);
                     if (Preferences.darkMode)
                         v.setTextColor(Color.WHITE);
-                    v.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            loginButtonClicked(null);
-                        }
-                    });
+                    v.setOnClickListener(view -> loginButtonClicked(null));
                     mainFrame.addView(v, lp);
                     recyclerView.setFocusable(false);
                 }
@@ -707,13 +669,10 @@ public class MainActivity extends AppCompatActivity {
 
 
     public void expandToolbar(){
-        toolbar.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                toolbar.setVisibility(View.VISIBLE);
-                toolbar.getLayoutParams().height = (int)getResources().getDimension(R.dimen.toolbar_size);
-                toolbar.requestLayout();
-            }
+        toolbar.postDelayed(() -> {
+            toolbar.setVisibility(View.VISIBLE);
+            toolbar.getLayoutParams().height = (int)getResources().getDimension(R.dimen.toolbar_size);
+            toolbar.requestLayout();
         },100);
 
     }
@@ -838,15 +797,12 @@ public class MainActivity extends AppCompatActivity {
                                 AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
                                 alertDialog.setTitle(R.string.update_available);
                                 alertDialog.setMessage(getResources().getString(R.string.update_summary));
-                                alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, getResources().getString(R.string.update_now), new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int id) {
-                                        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(update.getUrlToDownload().toString()));
-                                        startActivity(browserIntent);
-                                    }
+                                alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, getResources().getString(R.string.update_now), (dialog, id) -> {
+                                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(update.getUrlToDownload().toString()));
+                                    startActivity(browserIntent);
                                 });
 
-                                alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, getResources().getString(R.string.later), new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int id) {}});
+                                alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, getResources().getString(R.string.later), (dialog, id) -> {});
 
 
                                 alertDialog.show();

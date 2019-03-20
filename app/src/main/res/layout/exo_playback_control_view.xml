@@ -23,42 +23,49 @@
 
 
   <LinearLayout
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_gravity="bottom"
-    android:layoutDirection="ltr"
-    android:background="#f6cccccc"
-    android:orientation="vertical"
-    tools:targetApi="28">
+      android:id="@+id/control_bar_holder"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_gravity="bottom"
+      android:layoutDirection="ltr"
+      android:background="#f6cccccc"
+      android:orientation="vertical"
+      tools:targetApi="28"
+      android:focusable="true"
+      android:focusableInTouchMode="true">
 
 
 
     <LinearLayout
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:gravity="center"
-      android:paddingTop="4dp"
-      android:orientation="horizontal">
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:paddingTop="4dp"
+        android:orientation="horizontal">
 
       <ImageButton
+          android:focusable="true"
           android:id="@id/exo_rew"
           style="@style/ExoMediaButton.Rewind"
           android:layout_width="60dp"
           android:layout_height="30dp" />
 
       <ImageButton
+          android:focusable="true"
           android:id="@id/exo_play"
           style="@style/ExoMediaButton.Play"
           android:layout_width="60dp"
           android:layout_height="30dp" />
 
       <ImageButton
+          android:focusable="true"
           android:id="@id/exo_pause"
           style="@style/ExoMediaButton.Pause"
           android:layout_width="60dp"
           android:layout_height="30dp" />
 
       <ImageButton
+          android:focusable="true"
           android:id="@id/exo_ffwd"
           style="@style/ExoMediaButton.FastForward"
           android:layout_height="30dp"

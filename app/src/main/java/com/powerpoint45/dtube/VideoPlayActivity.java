@@ -3,16 +3,11 @@ package com.powerpoint45.dtube;
 import android.annotation.SuppressLint;
 import android.app.UiModeManager;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -29,47 +24,27 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.github.curioustechizen.ago.RelativeTimeTextView;
-import com.google.android.exoplayer2.ExoPlaybackException;
-import com.google.android.exoplayer2.ExoPlayerFactory;
-import com.google.android.exoplayer2.Player;
-import com.google.android.exoplayer2.SimpleExoPlayer;
-import com.google.android.exoplayer2.source.ExtractorMediaSource;
-import com.google.android.exoplayer2.source.MediaSource;
-import com.google.android.exoplayer2.ui.PlayerView;
-import com.google.android.exoplayer2.upstream.DataSource;
-import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
-import com.google.android.exoplayer2.util.Util;
-import com.google.android.exoplayer2.video.VideoListener;
 import com.makeramen.roundedimageview.RoundedTransformationBuilder;
 import com.squareup.picasso.Picasso;
-import com.squareup.picasso.Target;
 import com.squareup.picasso.Transformation;
 
 import java.util.Collections;
 import java.util.Comparator;
-
-import static com.google.android.exoplayer2.ui.PlayerView.SHOW_BUFFERING_ALWAYS;
 
 
 /**
  * Created by michael on 5/11/17.
  */
 
+
 public class VideoPlayActivity extends AppCompatActivity {
     static final int REQUEST_CHANNEL = 0;
-
-    PlayerView playerView;
-    SimpleExoPlayer player;
-
-    WebViewVideoView webViewVideoView;
     FrameLayout videoLayoutHolder;
 
     SteemitWebView steemWebView;
@@ -81,10 +56,6 @@ public class VideoPlayActivity extends AppCompatActivity {
 
     ListView commentsListView;
     ListView suggestedVideosListView;
-
-    LinearLayout playerControls;
-    ImageButton pausePlayButton;
-    long lastTimeUsingPlayerControls;
 
     VideoArrayList suggestedVideos;
     Video videoToPlay;
@@ -104,6 +75,8 @@ public class VideoPlayActivity extends AppCompatActivity {
 
     boolean runningOnTV;
     boolean fullscreen;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -128,22 +101,14 @@ public class VideoPlayActivity extends AppCompatActivity {
             if (Preferences.darkMode)
                 findViewById(R.id.contents_bg).setBackgroundColor(getResources().getColor(R.color.transparentBlack));
 
-            lastTimeUsingPlayerControls = System.currentTimeMillis();
-            playerControls = findViewById(R.id.playerControls);
-            pausePlayButton = findViewById(R.id.pausePlayButton);
-            pausePlayButton.requestFocus();
-            playerControls.postDelayed(playerControlsBeGoneRunner,5100);
         }else {
             setContentView(R.layout.activity_videoplay);
 
             //set height of comments section
-            findViewById(R.id.undervideo_contents).addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
-                @Override
-                public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                    if (bottom!=oldBottom)
-                        findViewById(R.id.comments_lv).setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT
-                                ,bottom-top-(int)Tools.dptopx(75)));
-                }
+            findViewById(R.id.undervideo_contents).addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+                if (bottom!=oldBottom)
+                    findViewById(R.id.comments_lv).setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT
+                            ,bottom-top-(int)Tools.dptopx(75)));
             });
         }
 
@@ -190,9 +155,6 @@ public class VideoPlayActivity extends AppCompatActivity {
             replyBox.setOnEditorActionListener(editorActionListener);
         else
             replyBox.setText(R.string.login_comment);
-
-
-
 
         updateUI();
         setupVideoView();
@@ -275,23 +237,11 @@ public class VideoPlayActivity extends AppCompatActivity {
         }
     }
 
-
-    private void pausePlayer(){
-        player.setPlayWhenReady(false);
-        player.getPlaybackState();
-    }
-    private void startPlayer(){
-        player.setPlayWhenReady(true);
-        player.getPlaybackState();
-    }
-
     @Override
     public void onBackPressed(){
-        if (playerView!=null){
-            if (fullscreen) {
-                makeFullscreen(null);
-                return;
-            }
+        if (fullscreen) {
+            makeFullscreen(null);
+            return;
         }
 
         super.onBackPressed();
@@ -300,14 +250,11 @@ public class VideoPlayActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
+        Log.d("dtube2", "onPause");
+        
+        if (!isFinishing())
+            MediaPlayerSingleton.getInstance(this).pausePlayer();
 
-        if (player!=null)
-            pausePlayer();
-
-        if (webViewVideoView!=null) {
-            webViewVideoView.pauseVideo();
-            webViewVideoView.pauseTimers();
-        }
         if (steemWebView!=null)
             steemWebView.pauseTimers();
     }
@@ -315,15 +262,11 @@ public class VideoPlayActivity extends AppCompatActivity {
     @Override
     public void finish() {
         super.finish();
-        if (player!=null) {
-            player.release();
-            playerView = null;
-        }
-        if (webViewVideoView!=null){
-            webViewVideoView.removeJavascriptInterface("androidAppProxy");
-            webViewVideoView.killWebView();
-            webViewVideoView = null;
-        }
+        Log.d("dtube2", "finish");
+        //MediaPlayerSingleton.getInstance(this).disattachFromParent();
+        MediaPlayerSingleton.getInstance(this).release();
+
+
         steemWebView.killWebView();
         steemWebView = null;
     }
@@ -332,11 +275,8 @@ public class VideoPlayActivity extends AppCompatActivity {
     public void onResume(){
         super.onResume();
 
-        if (player!=null)
-            startPlayer();
+        MediaPlayerSingleton.getInstance(this).startPlayer();
 
-        if (webViewVideoView!=null)
-            webViewVideoView.resumeTimers();
         if (steemWebView!=null)
             steemWebView.resumeTimers();
     }
@@ -500,8 +440,9 @@ public class VideoPlayActivity extends AppCompatActivity {
         ((TextView)findViewById(R.id.subscribers)).setText(subscribers);
 
 
-        if (playerView!=null) {
-            ImageView fullscreenButton = findViewById(R.id.exo_fullscreen_button);
+
+        ImageView fullscreenButton = findViewById(R.id.exo_fullscreen_button);
+        if (fullscreenButton!=null && !runningOnTV) {
             if (fullscreen) {
                 videoLayoutHolder.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                         findViewById(R.id.video_content).getHeight()));
@@ -512,6 +453,7 @@ public class VideoPlayActivity extends AppCompatActivity {
                 fullscreenButton.setImageResource(R.drawable.exo_controls_fullscreen_enter);
             }
         }
+
 
     }
 
@@ -550,39 +492,6 @@ public class VideoPlayActivity extends AppCompatActivity {
             commentsAdapter.notifyDataSetChanged();
         }
 
-    }
-
-    Runnable playerControlsBeGoneRunner = new Runnable() {
-        @Override
-        public void run() {
-            if (System.currentTimeMillis()-lastTimeUsingPlayerControls > 5000){
-                playerControls.setVisibility(View.INVISIBLE);
-            }
-        }
-    };
-
-    public void rewindButtonPressed(View v){
-        webViewVideoView.rewind();
-        lastTimeUsingPlayerControls = System.currentTimeMillis();
-        playerControls.postDelayed(playerControlsBeGoneRunner,5100);
-    }
-
-    public void ffButtonPressed(View v){
-        webViewVideoView.fastForward();
-        lastTimeUsingPlayerControls = System.currentTimeMillis();
-        playerControls.postDelayed(playerControlsBeGoneRunner,5100);
-    }
-
-    public void pauseplayButtonPressed(View v){
-        if (webViewVideoView.isPlaying()) {
-            webViewVideoView.pauseVideo();
-            pausePlayButton.setImageResource(android.R.drawable.ic_media_play);
-        }else {
-            webViewVideoView.playVideo();
-            pausePlayButton.setImageResource(android.R.drawable.ic_media_pause);
-        }
-        lastTimeUsingPlayerControls = System.currentTimeMillis();
-        playerControls.postDelayed(playerControlsBeGoneRunner,5100);
     }
 
 
@@ -631,12 +540,7 @@ public class VideoPlayActivity extends AppCompatActivity {
         commentReplyBox.setTag(v.getTag());
         commentReplyBox.setOnEditorActionListener(editorActionListener);
 
-        commentReplyBox.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                commentReplyBox.requestFocus();
-            }
-        },100);
+        commentReplyBox.postDelayed(() -> commentReplyBox.requestFocus(),100);
     }
 
 
@@ -646,111 +550,29 @@ public class VideoPlayActivity extends AppCompatActivity {
     }
 
     public final boolean useEmbeded = false;
+    boolean hadErrorLoading;
     public void setupVideoView(){
+        hadErrorLoading = false;
+
         if (useEmbeded || runningOnTV){
-            if (webViewVideoView != null) {
-                videoLayoutHolder.removeView(webViewVideoView);
-                webViewVideoView.killWebView();
-            }
-
-            webViewVideoView = new WebViewVideoView(this, runningOnTV);
-
-            webViewVideoView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-            webViewVideoView.setBackgroundColor(Color.BLACK);
-            Log.d("dtube4","To load "+videoToPlay.getVideoFrameUrl());
-
-            webViewVideoView.loadUrl(videoToPlay.getVideoFrameUrl());
-
-//            if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-//                webViewVideoView.makeFullscreen();
-//            }
-
-            if (videoLayoutHolder.findViewById(R.id.embeded_video_view)==null)
-                videoLayoutHolder.addView(webViewVideoView,0);
-        }else {
-            Log.d("dtube","loading stream: "+ videoToPlay.getVideoStreamURL());
-            if (playerView == null){
-                playerView = new PlayerView(this);
-                player = ExoPlayerFactory.newSimpleInstance(this);
-                playerView.setShowBuffering(SHOW_BUFFERING_ALWAYS);
-                playerView.setPlayer(player);
-            }
-            playerView.showController();
-
-            findViewById(R.id.video_content).addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
-                @Override
-                public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                    if (oldBottom!=bottom) {
-                        updateUI();
-                        playerView.showController();
-                    }
-                    Log.d("dtube", "onLayoutChange");
-                }
-            });
-
-
-            Uri uri = Uri.parse(videoToPlay.getVideoStreamURL());
-
-            // Produces DataSource instances through which media data is loaded.
-            DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(this,
-                    Util.getUserAgent(this, "DtubeClient"));
-            // This is the MediaSource representing the media to be played.
-            MediaSource videoSource = new ExtractorMediaSource.Factory(dataSourceFactory)
-                    .createMediaSource(uri);
-            // Prepare the player with the source.
-            player.prepare(videoSource);
-            player.setPlayWhenReady(true);
-
-            player.addListener(new Player.EventListener() {
-                @Override
-                public void onLoadingChanged(boolean isLoading) {
-
-                }
-
-                @Override
-                public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
-
-                }
-
-                @Override
-                public void onPlayerError(ExoPlaybackException error) {
-                    Toast.makeText(VideoPlayActivity.this
-                            ,R.string.video_error, Toast.LENGTH_LONG).show();
-                }
-            });
-
-            player.addVideoListener(new VideoListener() {
-                @Override
-                public void onRenderedFirstFrame() {
-                }
-            });
-
-//            Log.d("dtube", "DATE:"+videoToPlay.getDate());
-//            playerView.setUp(videoToPlay.getVideoStreamURL(), videoToPlay.title
-//                    , JzvdStd.SCREEN_WINDOW_NORMAL);
-
-
-              Picasso.get().load(videoToPlay.getImageURL()).resize(720, 720).centerInside().into(new Target() {
-                  @Override
-                  public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-                      playerView.findViewById(R.id.exo_shutter).setBackground(new BitmapDrawable(bitmap));
-                  }
-
-                  @Override
-                  public void onBitmapFailed(Exception e, Drawable errorDrawable) {
-
-                  }
-
-                  @Override
-                  public void onPrepareLoad(Drawable placeHolderDrawable) {
-
-                  }
-              });
-//            playerView.startButton.performClick();
-//            playerView.setId(R.id.native_video_view);
+            MediaPlayerSingleton.getInstance(this).playVideo(videoToPlay,this);
 
             if (videoLayoutHolder.findViewById(R.id.exo_content_frame)==null)
-                videoLayoutHolder.addView(playerView);
+                videoLayoutHolder.addView(MediaPlayerSingleton.getInstance(this).getPlayerView(),0);
+        }else {
+            MediaPlayerSingleton.getInstance(this).playVideo(videoToPlay,this);
+
+            findViewById(R.id.video_content).addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+                if (oldBottom!=bottom) {
+                    updateUI();
+                    MediaPlayerSingleton.getInstance(VideoPlayActivity.this).getPlayerView().showController();
+                }
+                Log.d("dtube", "onLayoutChange");
+            });
+
+
+            if (videoLayoutHolder.findViewById(R.id.exo_content_frame)==null)
+                videoLayoutHolder.addView(MediaPlayerSingleton.getInstance(this).getPlayerView());
 
         }
     }
@@ -842,31 +664,30 @@ public class VideoPlayActivity extends AppCompatActivity {
             case KeyEvent.KEYCODE_DPAD_LEFT:
                 if (runningOnTV) {
                     if (findViewById(R.id.undervideo_contents).getScrollY() == 0) {
-                        if (playerControls.getVisibility()==View.INVISIBLE) {
-                            wakeMediaControls();
-                            findViewById(R.id.rewindButton).requestFocus();
-                        }
+                        MediaPlayerSingleton.getInstance(this).showControls();
                     }
                 }
                 break;
             case KeyEvent.KEYCODE_DPAD_RIGHT:
                 if (runningOnTV) {
                     if (findViewById(R.id.undervideo_contents).getScrollY() == 0) {
-                        if (playerControls.getVisibility()==View.INVISIBLE) {
-                            wakeMediaControls();
-                            findViewById(R.id.ffButton).requestFocus();
-                        }
+                        MediaPlayerSingleton.getInstance(this).showControls();
                     }
                 }
                 break;
             case KeyEvent.KEYCODE_DPAD_UP:
-
                 if (runningOnTV) {
                     if (findViewById(R.id.undervideo_contents).getScrollY() == 0) {
-                        if (playerControls.getVisibility()==View.INVISIBLE) {
-                            wakeMediaControls();
-                            findViewById(R.id.pausePlayButton).requestFocus();
-                        }
+                        MediaPlayerSingleton.getInstance(this).showControls();
+                        MediaPlayerSingleton.getInstance(this).focusControls();
+                    }
+                }
+                break;
+            case KeyEvent.KEYCODE_DPAD_DOWN:
+                if (runningOnTV) {
+                    if (findViewById(R.id.undervideo_contents).getScrollY() == 0) {
+                        if (findViewById(R.id.exo_progress).isFocused())
+                            MediaPlayerSingleton.getInstance(this).hideControls();
                     }
                 }
                 break;
@@ -875,10 +696,7 @@ public class VideoPlayActivity extends AppCompatActivity {
 
                 if (runningOnTV) {
                     if (findViewById(R.id.undervideo_contents).getScrollY() == 0) {
-                        if (playerControls.getVisibility()==View.INVISIBLE) {
-                            wakeMediaControls();
-                            findViewById(R.id.pausePlayButton).requestFocus();
-                        }
+                        MediaPlayerSingleton.getInstance(this).showControls();
                     }
                 }
 
@@ -903,10 +721,7 @@ public class VideoPlayActivity extends AppCompatActivity {
     }
 
     public void wakeMediaControls(){
-        if (playerControls.getVisibility()==View.INVISIBLE) {
-            playerControls.setVisibility(View.VISIBLE);
-            playerControls.postDelayed(playerControlsBeGoneRunner,5100);
-        }
+        MediaPlayerSingleton.getInstance(this).showControls();
     }
 
     @Override
@@ -924,38 +739,30 @@ public class VideoPlayActivity extends AppCompatActivity {
                             final View commentView = commentsListView.getSelectedView();
                             final AlertDialog.Builder builderSingle = new AlertDialog.Builder(VideoPlayActivity.this);
 
-                            ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(VideoPlayActivity.this, android.R.layout.select_dialog_item);
+                            ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(VideoPlayActivity.this, android.R.layout.select_dialog_item);
                             arrayAdapter.add(getResources().getString(R.string.like_comment));
                             arrayAdapter.add(getResources().getString(R.string.dislike_comment));
 
                             builderSingle.setNegativeButton("cancel", null);
 
-                            builderSingle.setAdapter(arrayAdapter, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    switch (which) {
-                                        case 0:
-                                        commentView.findViewById(R.id.comment_like).performClick();
+                            builderSingle.setAdapter(arrayAdapter, (dialog, which) -> {
+                                switch (which) {
+                                    case 0:
+                                    commentView.findViewById(R.id.comment_like).performClick();
+                                    break;
+
+                                    case 1:
+                                        commentView.findViewById(R.id.comment_dislike).performClick();
                                         break;
 
-                                        case 1:
-                                            commentView.findViewById(R.id.comment_dislike).performClick();
-                                            break;
-
-                                        case 2:
-                                            commentView.findViewById(R.id.comment_reply).performClick();
-                                            break;
-                                    }
+                                    case 2:
+                                        commentView.findViewById(R.id.comment_reply).performClick();
+                                        break;
                                 }
                             });
 
                             //dialog display is delayed to prevent misfocus
-                            commentView.postDelayed(new Runnable() {
-                                @Override
-                                public void run() {
-                                    builderSingle.show();
-                                }
-                            },10);
+                            commentView.postDelayed(builderSingle::show,10);
 
                             Log.d("dtube", "dispatch" + ((ViewGroup) getCurrentFocus()).getChildAt(0).getId() + "VS" + R.id.comment_item);
                         }else if (getCurrentFocus().getId() == R.id.suggestions_lv) {
@@ -965,9 +772,8 @@ public class VideoPlayActivity extends AppCompatActivity {
                     }
                     break;
                 case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
-                    pauseplayButtonPressed(null);
                     wakeMediaControls();
-                    findViewById(R.id.pausePlayButton).requestFocus();
+                    MediaPlayerSingleton.getInstance(this).togglePlayPause();
                     break;
 
                 case KeyEvent.KEYCODE_MEDIA_REWIND:
@@ -975,7 +781,7 @@ public class VideoPlayActivity extends AppCompatActivity {
                 case KeyEvent.KEYCODE_MEDIA_SKIP_BACKWARD:
                 case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
                     wakeMediaControls();
-                    rewindButtonPressed(null);
+                    MediaPlayerSingleton.getInstance(this).rewind();
                     break;
 
                 case KeyEvent.KEYCODE_MEDIA_FAST_FORWARD:
@@ -983,7 +789,7 @@ public class VideoPlayActivity extends AppCompatActivity {
                 case KeyEvent.KEYCODE_MEDIA_STEP_FORWARD:
                 case KeyEvent.KEYCODE_MEDIA_NEXT:
                     wakeMediaControls();
-                    ffButtonPressed(null);
+                    MediaPlayerSingleton.getInstance(this).fastForward();
                     break;
 
             }

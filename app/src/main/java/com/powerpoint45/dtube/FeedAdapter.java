@@ -1,6 +1,7 @@
 package com.powerpoint45.dtube;
 
 import android.graphics.drawable.Drawable;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,7 +25,7 @@ class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
     private boolean tvMode;
     private int focusedItem;
 
-    public int getFocusedItem() {
+    int getFocusedItem() {
         return focusedItem;
     }
 
@@ -66,9 +67,9 @@ class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
     }
 
     // Create new views (invoked by the layout manager)
+    @NonNull
     @Override
-    public FeedAdapter.ViewHolder onCreateViewHolder(ViewGroup parent,
-                                                   int viewType) {
+    public FeedAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         int layoutid = tvMode ? R.layout.feed_item_tv : R.layout.feed_item;
 
         // create a new view
@@ -84,7 +85,7 @@ class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
         return new ViewHolder(v);
     }
 
-    View.OnFocusChangeListener onFocusChangeListener = new View.OnFocusChangeListener() {
+    private View.OnFocusChangeListener onFocusChangeListener = new View.OnFocusChangeListener() {
         @Override
         public void onFocusChange(View v, boolean hasFocus) {
             focusedItem = (int)v.getTag();
@@ -93,23 +94,14 @@ class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
 
     // Replace the contents of a view (invoked by the layout manager)
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
-
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
 
         holder.itemView.setTag(position);
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                c.onItemClick((Integer)v.getTag());
-            }
-        });
+        holder.itemView.setOnClickListener(v -> c.onItemClick((Integer)v.getTag()));
 
-        holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                c.onItemLongClick((Integer)v.getTag());
-                return true;
-            }
+        holder.itemView.setOnLongClickListener(v -> {
+            c.onItemLongClick((Integer)v.getTag());
+            return true;
         });
 
         if (tvMode)
