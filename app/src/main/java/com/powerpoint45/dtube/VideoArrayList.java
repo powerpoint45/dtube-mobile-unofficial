@@ -11,6 +11,7 @@ import java.util.ArrayList;
 class VideoArrayList extends ArrayList<Video>{
 
 
+
     public int getNumberOfCategories(){
         ArrayList<Integer> categories = new ArrayList<>();
         for (int i =0; i<size(); i++){

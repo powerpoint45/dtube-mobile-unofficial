@@ -73,10 +73,7 @@ class AppJavaScriptProxy {
                     ((VideoPlayActivity)activity).setSuggestedVideos(videos);
                 }
             });
-
-
         }
-
     }
 
 

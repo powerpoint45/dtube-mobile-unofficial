@@ -1,13 +1,12 @@
 <AppUpdater>
   <update>
-    <latestVersion>2.8</latestVersion>
-    <latestVersionCode>20</latestVersionCode>
+    <latestVersion>2.83</latestVersion>
+    <latestVersionCode>23</latestVersionCode>
     <url>https://github.com/powerpoint45/dtube-mobile-unofficial/releases</url>
     <releaseNotes>
-	*Native Video Player support for mobile
-	*Small UI changes
-	*Gateway fixes
-	*Bug fixes and general changes
+	*Infinite scrolling for hot,trending,new tabs
+	*Image loading fixes
+	*General changes and Improvements
     </releaseNotes>
   </update>
 </AppUpdater>

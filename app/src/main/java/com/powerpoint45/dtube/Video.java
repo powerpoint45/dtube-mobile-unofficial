@@ -137,6 +137,10 @@ class Video implements Serializable{
             return DtubeAPI.CONTENT_IMAGE_URL + snapHash;
     }
 
+    String getBackupImageURL(){
+        return DtubeAPI.CONTENT_IMAGE_URL_BAK + snapHash;
+    }
+
 
     static void removeVideoFromRecents(String permlink, Context c){
         VideoArrayList v = getRecentVideos(c);

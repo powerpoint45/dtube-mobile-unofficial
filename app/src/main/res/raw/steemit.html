@@ -193,101 +193,6 @@ function getReplies(author, permlink, accountName){
 		});
 }
 
-//A callback function
-//gets all replies on a post plus replies to replies
-//and sends an easy workable array of comment Objects
-// function getAllReplies(author, permlink, accountName){
-//   var comments = [];
-//
-//   // Eagerly fetch all of the descendant replies (recursively)
-//   var fetchReplies = function (author, permlink) {
-//     return steem.api.getContentReplies(author, permlink)
-//       .then(function (replies) {
-//         return Promise.map(replies, function (r) {
-//           if (r.children > 0) {
-//             return fetchReplies(r.author, r.permlink)
-//               .then(function (children) {
-//                 r.replies = children;
-//                 return r;
-//               })
-//           } else {
-//             return r;
-//           }
-//         });
-//       });
-//   }
-//
-//   steem.api.getContentAsync(author, permlink)
-//     .then(function (post) {
-//       return fetchReplies(author, permlink)
-//         .then(function (comments) {
-//           post.replies = comments;
-//           return post;
-//         });
-//     })
-//     .then(function (post) {
-// 	//create a comparator to sort by net_votes
-// 	function compare(a, b){
-// 	  var comparison = 0;
-//
-// 	  if (a.net_votes > b.net_votes) {
-// 	    comparison = -1;
-// 	  } else if (b.net_votes > a.net_votes) {
-// 	    comparison = 1;
-// 	  }
-//
-// 	  return comparison;
-// 	}
-//
-// 	//sort replies by net_vote
-// 	post.replies.sort(compare);
-//
-// 	//now add likes and dislikes to the comments
-// 	var repliesObject = getCommentsObject(post.replies, 0);
-// 	var promises = repliesObject.map(function(name) {
-// 		return steem.api.getActiveVotes(name.author, name.permlink, function(err, r) {
-//
-// 			var likes = 0;
-// 			var dislikes = 0;
-//
-// 			//0=no vote
-// 			//1=vote up
-// 			//-1=vote down
-// 			var voteType = 0;
-//
-// 			var vote;
-// 			for (voteIndex in r) {
-// 				vote =  r[voteIndex];
-//
-// 				if (vote.percent>0)
-// 					likes++;
-// 				else if (vote.percent<0)
-// 					dislikes++;
-//
-// 				if (vote.voter == accountName){
-// 					if (vote.percent>0)
-// 						voteType = 1;
-// 					else if (vote.percent<0)
-// 						voteType = -1;
-// 				}
-// 			}
-//
-// 			name.likes = likes;
-// 			name.dislikes = dislikes;
-// 			name.voteType = voteType;
-// 		});
-//
-// 	});
-//
-// 	Promise.all(promises)
-// 	.then(function() {
-// 		//console.log(repliesObject);
-// 		androidAppProxy.getAllRepliesCallback(JSON.stringify(repliesObject));
-// 	}).error(console.error);
-// 	 	return post;
-//     	}).catch(console.log);
-// }
-
 
 
 //A callback function
@@ -408,7 +313,10 @@ function getSubscriptionFeed(username){
 
 //A callback function
 //gets a set of videos and sends as a single chunk
-function getHotVideosFeed(){
+function getHotVideosFeed(start_author, start_permlink){
+	querry.start_author = start_author;
+	querry.start_permlink = start_permlink;
+
 	steem.api.getDiscussionsByHot(querry, function(err, r) {
 		var videos = [];
 		for(var key in r){
@@ -417,7 +325,6 @@ function getHotVideosFeed(){
 				}
 		}
 		console.log("hot loaded");
-		console.log(videos);
 		androidAppProxy.getHotVideosFeedCallback(JSON.stringify(videos));
 		});
 }
@@ -427,7 +334,10 @@ function getHotVideosFeed(){
 
 //A callback function
 //gets a set of videos and sends as a single chunk
-function getTrendingVideosFeed(){
+function getTrendingVideosFeed(start_author, start_permlink){
+	querry.start_author = start_author;
+	querry.start_permlink = start_permlink;
+
 	 steem.api.getDiscussionsByTrending(querry, function(err, r) {
 		var videos = [];
 		for(var key in r){
@@ -444,7 +354,10 @@ function getTrendingVideosFeed(){
 
 //A callback function
 //gets a set of videos and sends as a single chunk
-function getNewVideosFeed(){
+function getNewVideosFeed(start_author, start_permlink){
+	querry.start_author = start_author;
+	querry.start_permlink = start_permlink;
+
 	  steem.api.getDiscussionsByCreated(querry, function(err, r) {
 				var videos = [];
 				for(var key in r){
@@ -452,6 +365,7 @@ function getNewVideosFeed(){
 							videos.push(getSimpleVideoObject(r[key]));
 						}
 				}
+
 				console.log("new loaded");
 				androidAppProxy.getNewVideosFeedCallback(JSON.stringify(videos));
 		});

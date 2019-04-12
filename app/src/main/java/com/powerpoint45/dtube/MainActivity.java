@@ -38,6 +38,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.github.javiersantos.appupdater.AppUpdaterUtils;
 import com.github.javiersantos.appupdater.enums.AppUpdaterError;
@@ -75,8 +76,10 @@ public class MainActivity extends AppCompatActivity {
     final int FILES_REQUEST_PERMISSION = 10;
 
     RecyclerView recyclerView;
+    RecyclerView.LayoutManager layoutManager;
     private FeedAdapter feedAdapter;
     LinearLayout bottomBar;
+    boolean gettingMoreVideos;
 
     SteemitWebView steemWebView;
     Toolbar toolbar;
@@ -305,12 +308,14 @@ public class MainActivity extends AppCompatActivity {
         onConfigurationChanged(getResources().getConfiguration());
 
         //Animate toolbar when scrolling feed for non-TV Mode
-        if (!runningOnTV) {
-            recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+        //Enable infinite scrolling
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
 
-                @Override
-                public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                    super.onScrolled(recyclerView, dx, dy);
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+
+                if (!runningOnTV) {
                     if (toolbar.getHeight() - dy <= 0) {
                         if (toolbar.getVisibility() == View.VISIBLE)
                             toolbar.setVisibility(View.GONE);
@@ -325,10 +330,40 @@ public class MainActivity extends AppCompatActivity {
                         else
                             toolbar.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, toolbar.getHeight() - dy));
                     }
-
                 }
-            });
-        }
+
+                if(((LinearLayoutManager)layoutManager).findLastVisibleItemPosition() == feedAdapter.getItemCount()-1){
+
+                    if (feedAdapter.getItemCount()>0 && !gettingMoreVideos
+                            && selectedTab != DtubeAPI.CAT_HISTORY && selectedTab != DtubeAPI.CAT_SUBSCRIBED){
+                        //endless scrolling. Get more videos here
+                        if (getResources().getBoolean(R.bool.debug)) {
+                            Toast.makeText(MainActivity.this, "getting more videos", Toast.LENGTH_SHORT).show();
+                        }
+
+                        gettingMoreVideos = true;
+
+                        Video lastVideo = videos.get(videos.size()-1);
+                        switch (selectedTab){
+                            case DtubeAPI.CAT_HOT:
+                                steemWebView.getHotVideosFeed(lastVideo.user,lastVideo.permlink);
+                            break;
+
+                            case DtubeAPI.CAT_NEW:
+                                steemWebView.getNewVideosFeed(lastVideo.user,lastVideo.permlink);
+                            break;
+
+                            case DtubeAPI.CAT_TRENDING:
+                                steemWebView.getTrendingVideosFeed(lastVideo.user,lastVideo.permlink);
+                            break;
+                        }
+                    }
+                }
+
+
+            }
+        });
+
 
         feedAdapter = new FeedAdapter(this, runningOnTV);
         recyclerView.setAdapter(feedAdapter);
@@ -339,9 +374,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (accountInfo!=null)
             steemWebView.getSubscriptionFeed(accountInfo.userName);
-        steemWebView.getHotVideosFeed();
-        steemWebView.getTrendingVideosFeed();
-        steemWebView.getNewVideosFeed();
+        getInitialFeeds();
 
         addVideos(Video.getRecentVideos(this));
 
@@ -440,6 +473,8 @@ public class MainActivity extends AppCompatActivity {
 
 
         if (allVideos.hasNewContent(videos)) {
+
+
             for (Video videoToAdd: videos){
                 if (!allVideos.containsVideo(videoToAdd)){
                     if (videoToAdd.categoryId == DtubeAPI.CAT_HISTORY)
@@ -484,9 +519,7 @@ public class MainActivity extends AppCompatActivity {
                     steemWebView.getSubscriptions(accountInfo.userName);
                 if (accountInfo!=null)
                     steemWebView.getSubscriptionFeed(accountInfo.userName);
-                steemWebView.getHotVideosFeed();
-                steemWebView.getTrendingVideosFeed();
-                steemWebView.getNewVideosFeed();
+                getInitialFeeds();
                 break;
 
             case REQUEST_CODE_LOGIN:
@@ -494,9 +527,7 @@ public class MainActivity extends AppCompatActivity {
 
                 if (accountInfo!=null)
                     steemWebView.getSubscriptionFeed(accountInfo.userName);
-                steemWebView.getHotVideosFeed();
-                steemWebView.getTrendingVideosFeed();
-                steemWebView.getNewVideosFeed();
+                getInitialFeeds();
                 initFeed();
                 break;
             case REQUEST_CODE_PROFILE:
@@ -534,6 +565,12 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
         }
+    }
+
+    private void getInitialFeeds() {
+        steemWebView.getHotVideosFeed();
+        steemWebView.getTrendingVideosFeed();
+        steemWebView.getNewVideosFeed();
     }
 
 
@@ -622,9 +659,12 @@ public class MainActivity extends AppCompatActivity {
                     return Long.compare(b.getDate(), a.getDate());
                 }
             }
-            synchronized (videos) {
-                Collections.sort(videos, new SortVideos());
-            }
+
+            if (selectedTab == DtubeAPI.CAT_SUBSCRIBED)
+                synchronized (videos) {
+                    Collections.sort(videos, new SortVideos());
+                }
+
             MainActivity.this.runOnUiThread(() -> {
                 feedAdapter.setVideos(videos);
                 feedAdapter.notifyDataSetChanged();
@@ -653,7 +693,7 @@ public class MainActivity extends AppCompatActivity {
             recyclerView.setFocusable(true);
         }
 
-
+        gettingMoreVideos = false;
         updateBottomBar();
     }
 
@@ -824,11 +864,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         if (runningOnTV) {
-            recyclerView.setLayoutManager(new GridLayoutManager(recyclerView.getContext(), 2, GridLayoutManager.HORIZONTAL, false));
+            recyclerView.setLayoutManager(layoutManager = new GridLayoutManager(recyclerView.getContext(), 2, GridLayoutManager.HORIZONTAL, false));
         }else if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
+            recyclerView.setLayoutManager(layoutManager = new GridLayoutManager(this, 2));
         }else
-            recyclerView.setLayoutManager(new LinearLayoutManager(this));
+            recyclerView.setLayoutManager(layoutManager = new LinearLayoutManager(this));
 
         //remove cached recycled views because feed_item layout needs to change for orientation
         recyclerView.getRecycledViewPool().clear();

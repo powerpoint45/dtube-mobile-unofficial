@@ -76,18 +76,32 @@ public class SteemitWebView extends WebView {
         queURL("javascript:getSubscriptionFeed('"+username+"');");
     }
 
+    public void getHotVideosFeed(String StartAuthor, String StartPermlink){
+        queURL("javascript:getHotVideosFeed('"+StartAuthor+"','"+StartPermlink+"');");
+    }
+
+
+    public void getTrendingVideosFeed(String StartAuthor, String StartPermlink){
+        queURL("javascript:getTrendingVideosFeed('"+StartAuthor+"','"+StartPermlink+"');");
+    }
+
+
+    public void getNewVideosFeed(String StartAuthor, String StartPermlink){
+        queURL("javascript:getNewVideosFeed('"+StartAuthor+"','"+StartPermlink+"');");
+    }
+
     public void getHotVideosFeed(){
-        queURL("javascript:getHotVideosFeed();");
+        queURL("javascript:getHotVideosFeed(null,null);");
     }
 
 
     public void getTrendingVideosFeed(){
-        queURL("javascript:getTrendingVideosFeed();");
+        queURL("javascript:getTrendingVideosFeed(null,null);");
     }
 
 
     public void getNewVideosFeed(){
-        queURL("javascript:getNewVideosFeed();");
+        queURL("javascript:getNewVideosFeed(null,null);");
     }
 
 

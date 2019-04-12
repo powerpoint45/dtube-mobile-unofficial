@@ -21,8 +21,8 @@ public class DtubeAPI {
     static String PROFILE_IMAGE_SMALL_URL = "https://steemitimages.com/u/username/avatar/small";//replace username with actual username
     static String PROFILE_IMAGE_MEDIUM_URL = "https://steemitimages.com/u/username/avatar/medium";//replace username with actual username
     public String PROFILE_IMAGE_LARGE_URL = "https://steemitimages.com/u/username/avatar/large";//replace username with actual username
-    static String CONTENT_IMAGE_URL = "https://steemitimages.com/0x0/https://ipfs.io/ipfs/"; // hash at end
-    //static String CONTENT_IMAGE_URL = "https://steemitimages.com/0x0/https://ipfs.io/ipfs/";
+    static String CONTENT_IMAGE_URL_BAK = "https://steemitimages.com/0x0/https://ipfs.io/ipfs/"; // hash at end
+    static String CONTENT_IMAGE_URL = "https://snap1.d.tube/ipfs/";
     static String DTUBE_LOGIN_URL = "https://d.tube/#!/login";
     static String DTUBE_HOME_URL = "https://d.tube/#!";
     static String DTUBE_UPLOAD_URL = "https://d.tube/#!/upload";

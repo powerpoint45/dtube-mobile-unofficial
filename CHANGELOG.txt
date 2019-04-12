@@ -1,3 +1,7 @@
+04-12-19
+*Infinite scrolling for hot,trending,new tabs
+*Image loading fixes
+*General changes & Improvements
 02-16-19
 *Native Video Player support for mobile
 *Small UI changes

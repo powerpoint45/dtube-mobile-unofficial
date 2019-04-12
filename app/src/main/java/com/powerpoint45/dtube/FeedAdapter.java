@@ -9,8 +9,11 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.github.curioustechizen.ago.RelativeTimeTextView;
+import com.google.android.exoplayer2.ExoPlayer;
+import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
 /**
@@ -139,7 +142,14 @@ class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
         Picasso.get().load(videos.get(position).getImageURL()).placeholder(placeholderDrawable)
                 .resize(720,720).centerInside()//prevents image to be shown to be larger than 720px w or h. Makes scrolling smoother
                 .noFade()
-                .into(holder.thumbView);
+                .into(holder.thumbView,new Callback() {
+                            @Override public void onSuccess() {}
+                            @Override public void onError(Exception e) {
+                                Picasso.get().load(videos.get(position).getBackupImageURL()).placeholder(placeholderDrawable)
+                                        .resize(720,720).centerInside()//prevents image to be shown to be larger than 720px w or h. Makes scrolling smoother
+                                        .noFade()
+                                        .into(holder.thumbView);
+                            }});
 
     }
 
