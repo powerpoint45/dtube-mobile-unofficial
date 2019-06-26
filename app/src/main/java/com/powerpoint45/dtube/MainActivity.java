@@ -474,7 +474,6 @@ public class MainActivity extends AppCompatActivity {
 
         if (allVideos.hasNewContent(videos)) {
 
-
             for (Video videoToAdd: videos){
                 if (!allVideos.containsVideo(videoToAdd)){
                     if (videoToAdd.categoryId == DtubeAPI.CAT_HISTORY)
@@ -519,7 +518,9 @@ public class MainActivity extends AppCompatActivity {
                     steemWebView.getSubscriptions(accountInfo.userName);
                 if (accountInfo!=null)
                     steemWebView.getSubscriptionFeed(accountInfo.userName);
-                getInitialFeeds();
+
+                //load any new videos
+                steemWebView.getNewVideosFeed();
                 break;
 
             case REQUEST_CODE_LOGIN:
@@ -647,9 +648,10 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressLint("InflateParams")
     public void initFeed(){
-        Log.d("dtube","UI:initFeed");
+
         new Thread(() -> {
             videos = allVideos.getCategorizedVideos(selectedTab);
+
             class SortVideos implements Comparator<Video>
             {
                 // Used for sorting in ascending order of
@@ -660,14 +662,19 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
 
-            if (selectedTab == DtubeAPI.CAT_SUBSCRIBED)
+            if (selectedTab == DtubeAPI.CAT_SUBSCRIBED || selectedTab == DtubeAPI.CAT_NEW) {
                 synchronized (videos) {
                     Collections.sort(videos, new SortVideos());
                 }
+            }
+
+            Log.d("dtube","UI: initFeed " + videos.size());
 
             MainActivity.this.runOnUiThread(() -> {
                 feedAdapter.setVideos(videos);
                 feedAdapter.notifyDataSetChanged();
+                if (videos.size()>0)
+                Log.d("dtube4","added vids ending with "+videos.get(videos.size()-1).title);
             });
         }).start();
 
@@ -713,7 +720,7 @@ public class MainActivity extends AppCompatActivity {
             toolbar.setVisibility(View.VISIBLE);
             toolbar.getLayoutParams().height = (int)getResources().getDimension(R.dimen.toolbar_size);
             toolbar.requestLayout();
-        },100);
+        },200);
 
     }
 
@@ -740,7 +747,7 @@ public class MainActivity extends AppCompatActivity {
         selectedTab = DtubeAPI.CAT_HOT;
         initFeed();
         checkMenuItem(R.id.menu_hot);
-        recyclerView.smoothScrollToPosition(0);
+        scrollToTop();
         expandToolbar();
     }
 
@@ -748,7 +755,7 @@ public class MainActivity extends AppCompatActivity {
         selectedTab = DtubeAPI.CAT_TRENDING;
         initFeed();
         checkMenuItem(R.id.menu_trending);
-        recyclerView.smoothScrollToPosition(0);
+        scrollToTop();
         expandToolbar();
     }
 
@@ -756,7 +763,7 @@ public class MainActivity extends AppCompatActivity {
         selectedTab = DtubeAPI.CAT_NEW;
         initFeed();
         checkMenuItem(R.id.menu_new);
-        recyclerView.smoothScrollToPosition(0);
+        scrollToTop();
         expandToolbar();
     }
 
@@ -764,7 +771,7 @@ public class MainActivity extends AppCompatActivity {
         selectedTab = DtubeAPI.CAT_HISTORY;
         initFeed();
         checkMenuItem(R.id.menu_history);
-        recyclerView.smoothScrollToPosition(0);
+        scrollToTop();
         expandToolbar();
     }
 
@@ -772,8 +779,17 @@ public class MainActivity extends AppCompatActivity {
         selectedTab = DtubeAPI.CAT_SUBSCRIBED;
         initFeed();
         checkMenuItem(R.id.menu_subscribed);
-        recyclerView.smoothScrollToPosition(0);
+        scrollToTop();
         expandToolbar();
+    }
+
+    public void scrollToTop(){
+        recyclerView.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                recyclerView.scrollToPosition(0);
+            }
+        },100);
     }
 
     public void goToTab(int tab){

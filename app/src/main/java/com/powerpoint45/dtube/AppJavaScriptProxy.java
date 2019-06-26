@@ -36,7 +36,7 @@ class AppJavaScriptProxy {
 
     @JavascriptInterface
     public void getHotVideosFeedCallback(String jsonVideos){
-        Log.d("dtube",jsonVideos);
+        Log.d("dtube5",jsonVideos);
         manageFeed(jsonVideos, DtubeAPI.CAT_HOT);
     }
 
@@ -293,8 +293,10 @@ class AppJavaScriptProxy {
                 videos.add(video);
             }
 
+            Log.d("dtube5", "manageFeed size:" + videos.size() +",category:" + category);
 
             if (((MainActivity)activity).addVideos(videos)) {
+                Log.d("dtube5", "addVideos category:" + category);
                 activity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {

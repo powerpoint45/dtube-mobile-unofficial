@@ -324,7 +324,7 @@ function getHotVideosFeed(start_author, start_permlink){
 					videos.push(getSimpleVideoObject(r[key]));
 				}
 		}
-		console.log("hot loaded");
+		console.log("hot loaded "+ videos);
 		androidAppProxy.getHotVideosFeedCallback(JSON.stringify(videos));
 		});
 }
@@ -345,7 +345,7 @@ function getTrendingVideosFeed(start_author, start_permlink){
 					videos.push(getSimpleVideoObject(r[key]));
 				}
 		}
-		console.log("trending loaded");
+		console.log("trending loaded" + videos);
 		androidAppProxy.getTrendingVideosFeedCallback(JSON.stringify(videos));
 		});
 }
@@ -398,22 +398,39 @@ function getSimpleVideoObject(r){
 	video.permlink = r.permlink;
 	video.date = r.created;
 
-	if (metadata && metadata.video && metadata.video.content && metadata.video.info){
-		video.snaphash = metadata.video.info.snaphash;
+	if (metadata && metadata.video){
 
-		video.hash = metadata.video.content.video480hash;
+		if (metadata.video.ipfs){
+			video.snaphash = metadata.video.ipfs.snaphash;
+			video.hash = metadata.video.ipfs.video480hash;
+		}else{
+			video.snaphash = metadata.video.info.snaphash;
+			video.hash = metadata.video.content.video480hash;
+			//video.description = r.body;
+		}
 
-		if (!video.hash)
-			video.hash = metadata.video.content.videohash;
+
+		if (!video.hash){
+			if (metadata.video.ipfs){
+				video.hash = metadata.video.ipfs.videohash;
+			}else{
+				video.hash = metadata.video.content.videohash;
+			}
+		}
+
 
 		if ((metadata.links && (metadata.links.includes("https://oneloveipfs.com") || metadata.links.includes("https://oneloved.tube/")))
 				|| metadata.app.includes("onelovedtube/"))
 				video.gateway = "video.oneloveipfs.com";
 
-		var duration = metadata.video.info.duration;
+		if (metadata.video.duration)
+			var duration = metadata.video.duration;
+		else
+			var duration = metadata.video.info.duration;
+
 		if (duration){
 			var date = new Date(null);
-			date.setSeconds(metadata.video.info.duration); // specify value for SECONDS here
+			date.setSeconds(duration); // specify value for SECONDS here
 			var timeString = date.toISOString().substr(11, 8);
 			video.duration = timeString;
 		}
@@ -460,13 +477,24 @@ function getAdvancedVideoObject(r, accountName){
 		console.log(e);
 	}
 
-	if (metadata && metadata.video && metadata.video.content && metadata.video.info){
-		video.snaphash = metadata.video.info.snaphash;
+	if (metadata && metadata.video){
 
-		video.hash = metadata.video.content.video480hash;
+		if (metadata.video.ipfs){
+			video.snaphash = metadata.video.ipfs.snaphash;
+			video.hash = metadata.video.ipfs.video480hash;
+		}else{
+			video.snaphash = metadata.video.info.snaphash;
+			video.hash = metadata.video.content.video480hash;
+			//video.description = r.body;
+		}
 
-		if (!video.hash)
-			video.hash = metadata.video.content.videohash;
+		if (!video.hash){
+			if (metadata.video.ipfs){
+				video.hash = metadata.video.ipfs.videohash;
+			}else{
+				video.hash = metadata.video.content.videohash;
+			}
+		}
 
 		if ((metadata.links && (metadata.links.includes("https://oneloveipfs.com") || metadata.links.includes("https://oneloved.tube/")))
 				|| metadata.app.includes("onelovedtube/"))
@@ -474,7 +502,16 @@ function getAdvancedVideoObject(r, accountName){
 
 		var converter = new showdown.Converter()
 		converter.setOption('simplifiedAutoLink', true);
-	  textDescription      = metadata.video.content.description,
+
+		var textDescription;
+
+		if (metadata.video.description){
+    		textDescription      = metadata.video.description;
+		}else if (metadata.video.content){
+			  textDescription      = metadata.video.content.description;
+		}
+		if (!textDescription)
+				textDescription = "No Description";
 	  htmlDescription      = converter.makeHtml(textDescription);
 
 		video.description = htmlDescription;
@@ -617,10 +654,8 @@ function getCommentObject(reply, votes, accountName){
 
 //detects if appropriate dtube video information exists and detects any NSFW
 function isVideoViewable(r){
-	//dtube permalinks are length 8
-	if (r.permlink.length == 8){
 		var metadata = JSON.parse(r.json_metadata);
-		if (metadata && metadata.video && metadata.video.content && metadata.video.info){
+		if (metadata && metadata.video && (metadata.video.ipfs || metadata.video.info)){
 			if (!metadata.tags.includes("nsfw") && !metadata.tags.includes("dtube-NSFW") && !metadata.tags.includes("NSFW")){
 				//blacklisted accounts with inappropriate content
 				var BLACKLIST = ["aroused","godfather123","arabebtc","elibella","anarchyandporn"];
@@ -641,7 +676,7 @@ function isVideoViewable(r){
 				}
 			}
 		}
-	}
+
 	return false;
 }
 
