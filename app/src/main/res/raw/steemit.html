@@ -53,6 +53,7 @@ function login(username, password, upvote, follow){
 
 			androidAppProxy.loginCallback(isvalid);
 		}catch(e){
+			console.log(e);
 			androidAppProxy.loginCallback(false);
 		}
 	});
@@ -425,8 +426,12 @@ function getSimpleVideoObject(r){
 
 		if (metadata.video.duration)
 			var duration = metadata.video.duration;
-		else
+		else if (metadata.video.info && metadata.video.info.duration)
 			var duration = metadata.video.info.duration;
+		else //sometimes duration can be null
+			console.log("Unknown duration:" + video.permlink + " " + video.username +" "+ video.title);
+
+
 
 		if (duration){
 			var date = new Date(null);
