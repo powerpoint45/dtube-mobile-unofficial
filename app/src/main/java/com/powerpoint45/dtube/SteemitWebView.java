@@ -3,8 +3,10 @@ package com.powerpoint45.dtube;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.util.Log;
+import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Toast;
 
 /**
  * Created by michael on 11/11/17.
@@ -28,7 +30,25 @@ public class SteemitWebView extends WebView {
             public void onPageFinished(WebView view, String url) {
                 loadedPage = true;
             }
+
+            @Override
+            public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+                Toast.makeText(context, "Oh no! " + description, Toast.LENGTH_SHORT).show();
+            }
         });
+
+        setWebChromeClient(new WebChromeClient(){
+
+            public void onProgressChanged(WebView view, int newProgress){
+
+                if(newProgress == 100){
+                    // Page loading finish
+                    if (view.getUrl().equals("file:///android_res/raw/steemit.html"))
+                    loadedPage = true;
+                }
+            }
+        });
+
 
         getSettings().setJavaScriptEnabled(true);
         loadUrl("file:///android_res/raw/steemit.html");
