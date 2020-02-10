@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 27
+    compileSdkVersion 28
     buildToolsVersion '28.0.3'
 
     useLibrary 'org.apache.http.legacy'
@@ -9,9 +9,9 @@ android {
     defaultConfig {
         applicationId "com.powerpoint45.dtube"
         minSdkVersion 21
-        targetSdkVersion 27
-        versionCode 26
-        versionName "2.86"
+        targetSdkVersion 28
+        versionCode 27
+        versionName "2.87"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -48,5 +48,7 @@ dependencies {
     implementation 'com.android.support:appcompat-v7:27.1.1'
     implementation 'com.android.support:design:27.1.1'
     implementation 'com.android.support:recyclerview-v7:27.1.1'
+
+    implementation project(path: ':YouTubeAndroidPlayerApi')
 
 }

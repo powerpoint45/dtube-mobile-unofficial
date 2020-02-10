@@ -16,7 +16,7 @@
             android:layout_width="match_parent"
             android:orientation="vertical"
             android:background="@android:color/black"
-            android:layout_height="200dp">
+            android:layout_height="250dp">
         </FrameLayout>
 
         <ScrollView
@@ -148,6 +148,7 @@
                             android:background="?attr/selectableItemBackgroundBorderless"
                             android:clickable="true"
                             android:onClick="videoLikeClicked"
+                            android:src="@drawable/ic_thumb_up"
                             app:srcCompat="@drawable/ic_thumb_up" />
 
                         <TextView
@@ -164,6 +165,7 @@
                             android:background="?attr/selectableItemBackgroundBorderless"
                             android:clickable="true"
                             android:onClick="videoDislikeClicked"
+                            android:src="@drawable/ic_thumb_down"
                             app:srcCompat="@drawable/ic_thumb_down" />
 
                         <TextView
@@ -177,6 +179,14 @@
 
 
                 </LinearLayout>
+
+                <TextView
+                    android:id="@+id/provider_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                    android:text="Provider"
+                    android:layout_marginBottom="4dp"/>
 
                 <TextView
                     android:layout_width="match_parent"

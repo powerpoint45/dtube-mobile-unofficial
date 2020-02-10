@@ -19,6 +19,7 @@
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:layout_margin="5dp"
+        android:src="@drawable/ic_account_circle"
         app:srcCompat="@drawable/ic_account_circle" />
 
     <LinearLayout
@@ -80,6 +81,7 @@
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:clickable="true"
                 android:onClick="likeCommentButtonClicked"
+                android:src="@drawable/ic_thumb_up"
                 app:srcCompat="@drawable/ic_thumb_up" />
 
             <TextView
@@ -96,6 +98,7 @@
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:clickable="true"
                 android:onClick="dislikeCommentButtonClicked"
+                android:src="@drawable/ic_thumb_down"
                 app:srcCompat="@drawable/ic_thumb_down" />
 
             <TextView

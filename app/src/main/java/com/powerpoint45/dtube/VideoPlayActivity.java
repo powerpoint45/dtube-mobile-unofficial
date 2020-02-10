@@ -10,7 +10,6 @@ import android.graphics.PorterDuff;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.text.method.LinkMovementMethod;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -30,6 +29,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.github.curioustechizen.ago.RelativeTimeTextView;
+import com.google.android.youtube.player.YouTubeBaseActivity;
 import com.makeramen.roundedimageview.RoundedTransformationBuilder;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Transformation;
@@ -43,7 +43,7 @@ import java.util.Comparator;
  */
 
 
-public class VideoPlayActivity extends AppCompatActivity {
+public class VideoPlayActivity extends YouTubeBaseActivity {
     static final int REQUEST_CHANNEL = 0;
     FrameLayout videoLayoutHolder;
 
@@ -382,6 +382,7 @@ public class VideoPlayActivity extends AppCompatActivity {
         ((TextView)findViewById(R.id.item_value)).setText(videoToPlay.price);
         ((TextView)findViewById(R.id.item_user)).setText(videoToPlay.user);
         ((RelativeTimeTextView)findViewById(R.id.item_time)).setReferenceTime(videoToPlay.getDate());
+        ((TextView)findViewById(R.id.provider_text)).setText("Provider: "+videoToPlay.getProvider());
 
 
         if (accountName!=null && accountName.equals(videoToPlay.user)){
@@ -449,7 +450,7 @@ public class VideoPlayActivity extends AppCompatActivity {
                 fullscreenButton.setImageResource(R.drawable.exo_controls_fullscreen_exit);
             } else {
                 videoLayoutHolder.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                        Tools.numtodp(200, this)));
+                        Tools.numtodp(250, this)));
                 fullscreenButton.setImageResource(R.drawable.exo_controls_fullscreen_enter);
             }
         }
@@ -554,25 +555,29 @@ public class VideoPlayActivity extends AppCompatActivity {
     public void setupVideoView(){
         hadErrorLoading = false;
 
+        videoLayoutHolder.removeView(MediaPlayerSingleton.getInstance(this).getYouTubePlayerView());
+        videoLayoutHolder.removeView(MediaPlayerSingleton.getInstance(this).getIPFSPlayerView());
+
         if (useEmbeded || runningOnTV){
             MediaPlayerSingleton.getInstance(this).playVideo(videoToPlay,this);
 
-            if (videoLayoutHolder.findViewById(R.id.exo_content_frame)==null)
-                videoLayoutHolder.addView(MediaPlayerSingleton.getInstance(this).getPlayerView(),0);
+            if (videoLayoutHolder.findViewById(R.id.exo_content_frame)==null) {
+                videoLayoutHolder.addView(MediaPlayerSingleton.getInstance(this).getRightPlayerView(), 0);
+            }
         }else {
             MediaPlayerSingleton.getInstance(this).playVideo(videoToPlay,this);
 
             findViewById(R.id.video_content).addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
                 if (oldBottom!=bottom) {
                     updateUI();
-                    MediaPlayerSingleton.getInstance(VideoPlayActivity.this).getPlayerView().showController();
+                    MediaPlayerSingleton.getInstance(VideoPlayActivity.this).getIPFSPlayerView().showController();
                 }
                 Log.d("dtube", "onLayoutChange");
             });
 
 
             if (videoLayoutHolder.findViewById(R.id.exo_content_frame)==null)
-                videoLayoutHolder.addView(MediaPlayerSingleton.getInstance(this).getPlayerView());
+                videoLayoutHolder.addView(MediaPlayerSingleton.getInstance(this).getRightPlayerView());
 
         }
     }

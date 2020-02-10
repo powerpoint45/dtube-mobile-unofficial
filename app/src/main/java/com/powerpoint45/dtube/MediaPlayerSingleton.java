@@ -24,6 +24,9 @@ import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
 import com.google.android.exoplayer2.video.VideoListener;
+import com.google.android.youtube.player.YouTubeInitializationResult;
+import com.google.android.youtube.player.YouTubePlayer;
+import com.google.android.youtube.player.YouTubePlayerView;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
@@ -38,11 +41,23 @@ public class MediaPlayerSingleton {
     private Video videoToPlay;
     private Context c;
 
+    YouTubePlayerView youTubePlayerView;
+    WebViewVideoView embeddedPlayer;
+    //FacebookPlayerView facebookPlayerView; //future
+
     private MediaPlayerSingleton(){
 
     }
 
-    private MediaPlayerSingleton(Context c){
+    private MediaPlayerSingleton(Activity c){
+        init(c);
+    }
+
+    private void init(Activity c) {
+        youTubePlayerView = new YouTubePlayerView(c);
+        embeddedPlayer = new WebViewVideoView(c,false);
+
+
         playerView = new PlayerView(c);
         player = ExoPlayerFactory.newSimpleInstance(c);
         playerView.setShowBuffering(SHOW_BUFFERING_ALWAYS);
@@ -54,7 +69,7 @@ public class MediaPlayerSingleton {
 
         if (uiModeManager.getCurrentModeType()== Configuration.UI_MODE_TYPE_TELEVISION) {
             playerView.findViewById(R.id.exo_fullscreen_button).setVisibility(View.GONE);
-            int extraPadding = Tools.numtodp(20, (Activity)c);
+            int extraPadding = Tools.numtodp(20, c);
             playerView.findViewById(R.id.control_bar_holder).setPadding(extraPadding,0,extraPadding,extraPadding);
         }
 
@@ -93,9 +108,23 @@ public class MediaPlayerSingleton {
         return player;
     }
 
-    PlayerView getPlayerView(){
+    /**
+     *
+     * @return playerView or youTubePlayerView based on provider
+     */
+    View getRightPlayerView(){
+        if (videoToPlay.getProvider().equals(DtubeAPI.PROVIDER_YOUTUBE))
+            return youTubePlayerView;
+        else if(videoToPlay.getProvider().equals(DtubeAPI.PROVIDER_TWITCH))
+            return  embeddedPlayer;
+        else
+            return playerView;
+    }
+
+    PlayerView getIPFSPlayerView(){
         return playerView;
     }
+    YouTubePlayerView getYouTubePlayerView(){return youTubePlayerView;}
 
     private MediaSource getMediaSource(String url){
         Uri uri = Uri.parse(url);
@@ -109,34 +138,61 @@ public class MediaPlayerSingleton {
     }
 
     void playVideo(Video videoToPlay, Context c){
+        if (this.videoToPlay!=null && this.videoToPlay.getProvider()!=videoToPlay.getProvider())
+            if (this.videoToPlay.getProvider().equals(DtubeAPI.PROVIDER_TWITCH))
+                embeddedPlayer.loadUrl("about:blank"+videoToPlay.hash);
+
         this.videoToPlay = videoToPlay;
-        Log.d("dtube","loading stream: "+ videoToPlay.getVideoStreamURL());
+        Log.d("dtube","provider:  "+ videoToPlay.getProvider());
 
-        player.prepare(getMediaSource(videoToPlay.getVideoStreamURL()));
-        player.setPlayWhenReady(true);
+        if (videoToPlay.getProvider().equals(DtubeAPI.PROVIDER_YOUTUBE)) {
+            Log.d("dtube", "loading stream: " + videoToPlay.hash);
 
-        playerView.showController();
+            youTubePlayerView.initialize("AIzaSyAWk7QQRnSw4JL801vb40VmIknXS1EAo-8", new YouTubePlayer.OnInitializedListener() {
+                @Override
+                public void onInitializationSuccess(YouTubePlayer.Provider provider, YouTubePlayer youTubePlayer, boolean b) {
+                    Log.d("dtube","onInitializationSuccess");
+                    youTubePlayer.loadVideo(videoToPlay.hash);
+                }
+
+                @Override
+                public void onInitializationFailure(YouTubePlayer.Provider provider, YouTubeInitializationResult youTubeInitializationResult) {
+
+                }
+            });
+        }else if (videoToPlay.getProvider().equals(DtubeAPI.PROVIDER_TWITCH)) {
+            embeddedPlayer.loadUrl("https://player.twitch.tv/?video="+videoToPlay.hash);
+
+        } else {
+            Log.d("dtube", "loading stream: " + videoToPlay.getVideoStreamURL());
 
 
-        Picasso.get().load(videoToPlay.getImageURL()).resize(720, 720).centerInside().into(new Target() {
-            @Override
-            public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-                playerView.findViewById(R.id.exo_shutter).setBackground(new BitmapDrawable(bitmap));
-            }
+            player.prepare(getMediaSource(videoToPlay.getVideoStreamURL()));
+            player.setPlayWhenReady(true);
 
-            @Override
-            public void onBitmapFailed(Exception e, Drawable errorDrawable) {
+            playerView.showController();
 
-            }
 
-            @Override
-            public void onPrepareLoad(Drawable placeHolderDrawable) {
+            Picasso.get().load(videoToPlay.getImageURL()).resize(720, 720).centerInside().into(new Target() {
+                @Override
+                public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                    playerView.findViewById(R.id.exo_shutter).setBackground(new BitmapDrawable(bitmap));
+                }
 
-            }
-        });
+                @Override
+                public void onBitmapFailed(Exception e, Drawable errorDrawable) {
+
+                }
+
+                @Override
+                public void onPrepareLoad(Drawable placeHolderDrawable) {
+
+                }
+            });
+        }
     }
 
-    static MediaPlayerSingleton getInstance(Context c){
+    static MediaPlayerSingleton getInstance(Activity c){
         if (mediaPlayer == null)
             mediaPlayer = new MediaPlayerSingleton(c);
 
@@ -165,10 +221,7 @@ public class MediaPlayerSingleton {
         player.setPlayWhenReady(true);
         player.getPlaybackState();
     }
-
-    void disattachFromParent(){
-        ((ViewGroup)playerView.getParent()).removeView(playerView);
-    }
+    
 
     void togglePlayPause(){
         if (playerView.findViewById(R.id.exo_play).getVisibility()==View.VISIBLE)

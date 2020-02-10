@@ -27,6 +27,7 @@ class Video implements Serializable{
     String snapHash;
     String imageURL;
     private String duration;
+    String provider;//such as YouTube or FaceBook Videos
 
     String longDescriptionHTML;
     String subscribers;
@@ -125,8 +126,18 @@ class Video implements Serializable{
             return time;
     }
 
+    public String getProvider() {
+        if (provider == null)
+            return DtubeAPI.PROVIDER_IPFS;
+        return provider;
+    }
 
-    void setImageURL(String url) {
+    public void setProvider(String provider) {
+        this.provider = provider;
+    }
+
+
+    public void setImageURL(String url) {
         imageURL = url;
     }
 

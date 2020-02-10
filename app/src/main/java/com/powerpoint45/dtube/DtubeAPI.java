@@ -16,6 +16,10 @@ public class DtubeAPI {
     static final int CAT_NEW = 3;
     static final int CAT_HISTORY = 4;
 
+    static final String PROVIDER_IPFS = "IPFS";
+    static final String PROVIDER_YOUTUBE = "YouTube";
+    static final String PROVIDER_TWITCH = "Twitch";
+
 
     //public static String PROFILE_IMG_URL = "https://img.busy.org/@";//https://img.busy.org/@lukewearechange//too slow, useing steemitimages
     static String PROFILE_IMAGE_SMALL_URL = "https://steemitimages.com/u/username/avatar/small";//replace username with actual username

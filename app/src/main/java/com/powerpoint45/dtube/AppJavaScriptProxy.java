@@ -321,7 +321,16 @@ class AppJavaScriptProxy {
             if (jo.has("hash")) {
                 video.hash = jo.getString("hash");
             }
-            video.snapHash = jo.getString("snaphash");
+
+            if (jo.has("snaphash"))
+                video.snapHash = jo.getString("snaphash");
+
+            if (jo.has("thumbnailUrl"))
+                video.setImageURL(jo.getString("thumbnailUrl"));
+
+            if (jo.has("provider"))
+                video.setProvider(jo.getString("provider"));
+
             video.permlink = jo.getString("permlink");
 
             if (jo.has("duration")){

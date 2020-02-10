@@ -272,6 +272,7 @@ function getSuggestedVideos(author){
 function getSubscriptionFeed(username){
 	//first get a list of subscriptions
 	steem.api.getFollowing(username, 0, "blog", 100, function(err, result) {
+		console.log(err)
 
 		//the more the subscribers the less videos from each sub
 		var numberOfVideosToGetFromEachSub = 50/result.length;
@@ -321,13 +322,14 @@ function getHotVideosFeed(start_author, start_permlink){
 	querry.start_permlink = start_permlink;
 
 	steem.api.getDiscussionsByHot(querry, function(err, r) {
+		console.log(err)
 		var videos = [];
 		for(var key in r){
 				if (isVideoViewable(r[key])){
 					videos.push(getSimpleVideoObject(r[key]));
 				}
 		}
-		console.log("hot loaded "+ videos);
+		console.log("hot loaded "+ JSON.stringify(videos));
 		androidAppProxy.getHotVideosFeedCallback(JSON.stringify(videos));
 		});
 }
@@ -342,13 +344,14 @@ function getTrendingVideosFeed(start_author, start_permlink){
 	querry.start_permlink = start_permlink;
 
 	 steem.api.getDiscussionsByTrending(querry, function(err, r) {
+	  console.log(err)
 		var videos = [];
 		for(var key in r){
-				if (isVideoViewable(r[key])){
+				//if (isVideoViewable(r[key])){
 					videos.push(getSimpleVideoObject(r[key]));
-				}
+				//}
 		}
-		console.log("trending loaded" + videos);
+		console.log("trending loaded" + JSON.stringify(videos));
 		androidAppProxy.getTrendingVideosFeedCallback(JSON.stringify(videos));
 		});
 }
@@ -362,6 +365,7 @@ function getNewVideosFeed(start_author, start_permlink){
 	querry.start_permlink = start_permlink;
 
 	  steem.api.getDiscussionsByCreated(querry, function(err, r) {
+				console.log(err)
 				var videos = [];
 				for(var key in r){
 						if (isVideoViewable(r[key])){
@@ -381,7 +385,7 @@ function getNewVideosFeed(start_author, start_permlink){
 function getSimpleVideoObject(r){
 
 	var metadata = JSON.parse(r.json_metadata);
-
+	console.log(metadata);
 
 	var video = new Object();
 	video.username = r.author;
@@ -406,10 +410,16 @@ function getSimpleVideoObject(r){
 		if (metadata.video.ipfs){
 			video.snaphash = metadata.video.ipfs.snaphash;
 			video.hash = metadata.video.ipfs.video480hash;
-		}else{
+		}else if (metadata.video.info && metadata.video.info){
 			video.snaphash = metadata.video.info.snaphash;
 			video.hash = metadata.video.content.video480hash;
-			//video.description = r.body;
+		}else if (metadata.video.thumbnailUrl){
+			video.thumbnailUrl = metadata.video.thumbnailUrl;
+			video.hash = metadata.video.videoId;
+		}
+
+		if (metadata.video.providerName){
+			video.provider = metadata.video.providerName;
 		}
 
 
@@ -489,10 +499,16 @@ function getAdvancedVideoObject(r, accountName){
 		if (metadata.video.ipfs){
 			video.snaphash = metadata.video.ipfs.snaphash;
 			video.hash = metadata.video.ipfs.video480hash;
-		}else{
+		}else if (metadata.video.info && metadata.video.info){
 			video.snaphash = metadata.video.info.snaphash;
 			video.hash = metadata.video.content.video480hash;
-			//video.description = r.body;
+		}else if (metadata.video.thumbnailUrl){
+			video.thumbnailUrl = metadata.video.thumbnailUrl;
+			video.hash = metadata.video.videoId;
+		}
+
+		if (metadata.video.providerName){
+			video.provider = metadata.video.providerName;
 		}
 
 		if (!video.hash){
