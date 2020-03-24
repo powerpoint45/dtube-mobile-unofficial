@@ -76,6 +76,8 @@ class Video implements Serializable{
 
 
     String getVideoStreamURL() {
+        if (provider.equals(DtubeAPI.PROVIDER_BTFS))
+            return "https://player.d.tube/btfs/" + hash;
         //Ater about Dec 12 dtube started using the new video.dtube.top gateway
         if (getDate()>=1544653245000L && !getGateway().equals("video.oneloveipfs.com"))
             return "https://video.dtube.top/ipfs/" + hash;

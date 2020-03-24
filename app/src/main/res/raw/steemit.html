@@ -426,8 +426,22 @@ function getSimpleVideoObject(r){
 		if (!video.hash){
 			if (metadata.video.ipfs){
 				video.hash = metadata.video.ipfs.videohash;
-			}else{
+			}else if (metadata.video.content){
 				video.hash = metadata.video.content.videohash;
+			}else if (metadata.video.files){
+				if (metadata.video.files.youtube){
+						video.providerName = "YouTube";
+						video.hash = metadata.video.files.youtube;
+				}else if (metadata.video.files.ipfs){
+						video.providerName = "IPFS";
+						video.hash = metadata.video.files.ipfs;
+				}else if (metadata.video.files.btfs){
+						video.providerName = "BTFS";
+						video.hash = metadata.video.files.btfs;
+				}else if (metadata.video.files.twitch){
+						video.providerName = "Twitch";
+						video.hash = metadata.video.files.twitch;
+				}
 			}
 		}
 

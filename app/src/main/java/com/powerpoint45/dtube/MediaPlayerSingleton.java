@@ -162,7 +162,6 @@ public class MediaPlayerSingleton {
             });
         }else if (videoToPlay.getProvider().equals(DtubeAPI.PROVIDER_TWITCH)) {
             embeddedPlayer.loadUrl("https://player.twitch.tv/?video="+videoToPlay.hash);
-
         } else {
             Log.d("dtube", "loading stream: " + videoToPlay.getVideoStreamURL());
 

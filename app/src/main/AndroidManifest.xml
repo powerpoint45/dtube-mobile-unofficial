@@ -16,6 +16,8 @@
     <uses-feature android:name="android.hardware.faketouch" android:required="false"/>
     <uses-feature android:name="android.hardware.screen.portrait" android:required="false"/>
 
+
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -24,6 +26,7 @@
         android:theme="@style/AppTheme"
         tools:ignore="UnusedAttribute"
         android:banner="@drawable/banner">
+        <uses-library android:name="org.apache.http.legacy" android:required="false" />
         <activity
             android:name=".MainActivity"
             android:configChanges="orientation|screenLayout|keyboard|keyboardHidden|navigation|fontScale|mcc|mnc|locale|touchscreen|screenSize">

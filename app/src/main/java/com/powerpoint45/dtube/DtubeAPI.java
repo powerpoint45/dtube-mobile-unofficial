@@ -17,6 +17,7 @@ public class DtubeAPI {
     static final int CAT_HISTORY = 4;
 
     static final String PROVIDER_IPFS = "IPFS";
+    static final String PROVIDER_BTFS = "BTFS";
     static final String PROVIDER_YOUTUBE = "YouTube";
     static final String PROVIDER_TWITCH = "Twitch";
 
