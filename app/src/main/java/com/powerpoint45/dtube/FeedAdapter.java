@@ -1,6 +1,5 @@
 package com.powerpoint45.dtube;
 
-import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
@@ -11,10 +10,8 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.github.curioustechizen.ago.RelativeTimeTextView;
-import com.google.android.exoplayer2.ExoPlayer;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 

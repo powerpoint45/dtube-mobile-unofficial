@@ -72,13 +72,24 @@ public class UploadWebView extends WebView {
                         @Override
                         public void run() {
 
+                            goToSteemitLogin();
+
                             if (Preferences.darkMode){
                                 setDarkMode();
                             }
                             removeTopBar();
-                            setUsername(DtubeAPI.getAccountName(getContext()));
-                            setPassword(DtubeAPI.getUserPrivateKey(getContext()));
-                            clickLogin();
+
+                            postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    setUsername(DtubeAPI.getAccountName(getContext()));
+                                    setPassword(DtubeAPI.getUserPrivateKey(getContext()));
+
+                                    clickLogin();
+                                }
+                            },100);
+
+
                         }
                     }, 101);
                 }else if (url.equals(DtubeAPI.DTUBE_UPLOAD_URL)){
@@ -113,12 +124,12 @@ public class UploadWebView extends WebView {
         public void onUrlChange(String url) {
             Log.d("DT", "onUrlChange" + url);
             if (url.equals(DtubeAPI.DTUBE_HOME_URL)) {
-                post(new Runnable() {
+                postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        loadUrl(DtubeAPI.DTUBE_UPLOAD_URL);
+                        loadUrl(DtubeAPI.DTUBE_PUBLISH_URL);
                     }
-                });
+                },100);
             }else if (url.contains(DtubeAPI.DTUBE_VIDEO_URL)){
                 class FinishRunner implements Runnable{
                     private String url;
@@ -149,13 +160,19 @@ public class UploadWebView extends WebView {
         }
     }
 
+    public void goToSteemitLogin(){
+        Log.d("dtube","goToSteemitLogin");
+        loadUrl(JS_PRE+"for (i = 0; i < 3; i++) {if (document.getElementsByClassName('loginOption')[i].getAttribute(\"data-network\") == \"Steem\"){document.getElementsByClassName('loginOption')[i].click();}}"+JS_POST);
+        loadUrl(JS_PRE+"document.getElementsByClassName('submit')[1].click();"+JS_POST);
+    }
+
     public void setDarkMode(){
         loadUrl(JS_PRE+"document.getElementsByClassName('nightMode nightmodetext')[0].click();"+JS_POST);
         loadUrl(JS_PRE+"document.getElementsByClassName('nightMode')[0].click();"+JS_POST);
     }
 
     public void removeTopBar(){
-        loadUrl(JS_PRE+"document.getElementsByClassName(\"mobiletopbar\")[0].parentNode.removeChild(document.getElementsByClassName(\"mobiletopbar\")[0]);"+JS_POST);
+        //loadUrl(JS_PRE+"document.getElementsByClassName(\"mobiletopbar\")[0].parentNode.removeChild(document.getElementsByClassName(\"mobiletopbar\")[0]);"+JS_POST);
     }
     public void setUsername(String username){
         loadUrl(JS_PRE+"document.getElementsByName('username')[0].value='" + username + "';"+JS_POST);

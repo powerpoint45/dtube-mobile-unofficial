@@ -31,6 +31,7 @@ public class DtubeAPI {
     static String DTUBE_LOGIN_URL = "https://d.tube/#!/login";
     static String DTUBE_HOME_URL = "https://d.tube/#!";
     static String DTUBE_UPLOAD_URL = "https://d.tube/#!/upload";
+    static String DTUBE_PUBLISH_URL = "https://d.tube/#!/publish";
     static String DTUBE_VIDEO_URL = "https://d.tube/#!/v/";
 
 

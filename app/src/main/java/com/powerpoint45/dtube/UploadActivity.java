@@ -108,7 +108,7 @@ public class UploadActivity extends AppCompatActivity {
         uploadWebView.postDelayed(new Runnable() {
             @Override
             public void run() {
-                uploadWebView.loadUrl(DtubeAPI.DTUBE_LOGIN_URL);
+                uploadWebView.loadUrl(DtubeAPI.DTUBE_PUBLISH_URL);
             }
         },100);
 
