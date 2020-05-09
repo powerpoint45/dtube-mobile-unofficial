@@ -15,6 +15,7 @@
 
     <com.powerpoint45.dtube.UploadWebView
         android:id="@+id/upload_wv"
+        android:layout_marginTop="@dimen/toolbar_size"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 </LinearLayout>
