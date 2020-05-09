@@ -43,6 +43,7 @@ public class MediaPlayerSingleton {
 
     YouTubePlayerView youTubePlayerView;
     WebViewVideoView embeddedPlayer;
+    YouTubePlayer youTubePlayer;
     //FacebookPlayerView facebookPlayerView; //future
 
     private MediaPlayerSingleton(){
@@ -145,21 +146,28 @@ public class MediaPlayerSingleton {
         this.videoToPlay = videoToPlay;
         Log.d("dtube","provider:  "+ videoToPlay.getProvider());
 
+
         if (videoToPlay.getProvider().equals(DtubeAPI.PROVIDER_YOUTUBE)) {
             Log.d("dtube", "loading stream: " + videoToPlay.hash);
 
-            youTubePlayerView.initialize("AIzaSyAWk7QQRnSw4JL801vb40VmIknXS1EAo-8", new YouTubePlayer.OnInitializedListener() {
-                @Override
-                public void onInitializationSuccess(YouTubePlayer.Provider provider, YouTubePlayer youTubePlayer, boolean b) {
-                    Log.d("dtube","onInitializationSuccess");
-                    youTubePlayer.loadVideo(videoToPlay.hash);
-                }
+            if (youTubePlayer!=null){
+                youTubePlayer.loadVideo(videoToPlay.hash);
+            }else {
+                youTubePlayerView.initialize("YOUR API KEY", new YouTubePlayer.OnInitializedListener() {
+                    @Override
+                    public void onInitializationSuccess(YouTubePlayer.Provider provider, YouTubePlayer youTubePlayer, boolean b) {
+                        Log.d("dtube", "onInitializationSuccess");
+                        youTubePlayer.loadVideo(videoToPlay.hash);
+                        MediaPlayerSingleton.this.youTubePlayer = youTubePlayer;
+                    }
 
-                @Override
-                public void onInitializationFailure(YouTubePlayer.Provider provider, YouTubeInitializationResult youTubeInitializationResult) {
+                    @Override
+                    public void onInitializationFailure(YouTubePlayer.Provider provider, YouTubeInitializationResult youTubeInitializationResult) {
 
-                }
-            });
+                    }
+                });
+            }
+
         }else if (videoToPlay.getProvider().equals(DtubeAPI.PROVIDER_TWITCH)) {
             embeddedPlayer.loadUrl("https://player.twitch.tv/?video="+videoToPlay.hash);
         } else {

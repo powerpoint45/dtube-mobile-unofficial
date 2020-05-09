@@ -112,6 +112,9 @@ public class VideoPlayActivity extends YouTubeBaseActivity {
             });
         }
 
+        //keep screen on
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
         commentsListView = findViewById(R.id.comments_lv);
 
         setVolumeControlStream(AudioManager.STREAM_MUSIC);

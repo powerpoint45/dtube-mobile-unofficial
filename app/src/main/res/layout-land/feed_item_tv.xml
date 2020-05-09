@@ -13,13 +13,11 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom">
 
-
-
         <ImageView
             android:id="@+id/item_image"
             android:layout_width="400dp"
             android:layout_height="wrap_content"
-            android:scaleType="fitCenter"
+            android:scaleType="centerCrop"
             android:adjustViewBounds="true"/>
 
         <TextView

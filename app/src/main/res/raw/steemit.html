@@ -327,9 +327,10 @@ function getHotVideosFeed(start_author, start_permlink){
 		for(var key in r){
 				if (isVideoViewable(r[key])){
 					videos.push(getSimpleVideoObject(r[key]));
+					console.log(r[key]);
 				}
 		}
-		console.log("hot loaded "+ JSON.stringify(videos));
+		console.log("hot loaded ");
 		androidAppProxy.getHotVideosFeedCallback(JSON.stringify(videos));
 		});
 }
@@ -347,9 +348,9 @@ function getTrendingVideosFeed(start_author, start_permlink){
 	  console.log(err)
 		var videos = [];
 		for(var key in r){
-				//if (isVideoViewable(r[key])){
+				if (isVideoViewable(r[key])){
 					videos.push(getSimpleVideoObject(r[key]));
-				//}
+				}
 		}
 		console.log("trending loaded" + JSON.stringify(videos));
 		androidAppProxy.getTrendingVideosFeedCallback(JSON.stringify(videos));
@@ -365,14 +366,13 @@ function getNewVideosFeed(start_author, start_permlink){
 	querry.start_permlink = start_permlink;
 
 	  steem.api.getDiscussionsByCreated(querry, function(err, r) {
-				console.log(err)
 				var videos = [];
 				for(var key in r){
 						if (isVideoViewable(r[key])){
+							console.log(r[key]);
 							videos.push(getSimpleVideoObject(r[key]));
 						}
 				}
-
 				console.log("new loaded");
 				androidAppProxy.getNewVideosFeedCallback(JSON.stringify(videos));
 		});
@@ -383,9 +383,8 @@ function getNewVideosFeed(start_author, start_permlink){
 
 //turns a video object from steemit API into something more workable
 function getSimpleVideoObject(r){
-
+	console.log(r);
 	var metadata = JSON.parse(r.json_metadata);
-	console.log(metadata);
 
 	var video = new Object();
 	video.username = r.author;
@@ -426,21 +425,39 @@ function getSimpleVideoObject(r){
 		if (!video.hash){
 			if (metadata.video.ipfs){
 				video.hash = metadata.video.ipfs.videohash;
+				video.provider = "IPFS";
 			}else if (metadata.video.content){
 				video.hash = metadata.video.content.videohash;
+				video.provider = "IPFS";
 			}else if (metadata.video.files){
 				if (metadata.video.files.youtube){
-						video.providerName = "YouTube";
+						video.provider = "YouTube";
 						video.hash = metadata.video.files.youtube;
-				}else if (metadata.video.files.ipfs){
-						video.providerName = "IPFS";
-						video.hash = metadata.video.files.ipfs;
 				}else if (metadata.video.files.btfs){
-						video.providerName = "BTFS";
-						video.hash = metadata.video.files.btfs;
+						video.provider = "BTFS";
+						if (metadata.video.files.btfs.vid){
+								video.hash = metadata.video.files.btfs.vid['480'];
+							if (!video.hash)
+								video.hash = metadata.video.files.btfs.vid['240'];
+							if (!video.hash)
+								video.hash = metadata.video.files.btfs.vid['src'];
+							if (!video.hash)
+								video.hash = metadata.video.files.btfs.vid['1080'];
+						}else{
+							video.hash = metadata.video.files.btfs;
+						}
+				}else if (metadata.video.files.ipfs){
+						video.provider = "IPFS";
+						video.hash = metadata.video.files.ipfs;
 				}else if (metadata.video.files.twitch){
-						video.providerName = "Twitch";
+						video.provider = "Twitch";
 						video.hash = metadata.video.files.twitch;
+				}
+
+				if (metadata.video.files.ipfs){
+						if (metadata.video.files.ipfs.img){
+								video.snaphash = metadata.video.files.ipfs.img['118'];
+						}
 				}
 			}
 		}
@@ -450,7 +467,9 @@ function getSimpleVideoObject(r){
 				|| metadata.app.includes("onelovedtube/"))
 				video.gateway = "video.oneloveipfs.com";
 
-		if (metadata.video.duration)
+		if (metadata.video.dur)
+			var duration = metadata.video.dur;
+		else if (metadata.video.duration)
 			var duration = metadata.video.duration;
 		else if (metadata.video.info && metadata.video.info.duration)
 			var duration = metadata.video.info.duration;
@@ -528,8 +547,40 @@ function getAdvancedVideoObject(r, accountName){
 		if (!video.hash){
 			if (metadata.video.ipfs){
 				video.hash = metadata.video.ipfs.videohash;
-			}else{
+				video.provider = "IPFS";
+			}else if (metadata.video.content){
 				video.hash = metadata.video.content.videohash;
+				video.provider = "IPFS";
+			}else if (metadata.video.files){
+				if (metadata.video.files.youtube){
+						video.provider = "YouTube";
+						video.hash = metadata.video.files.youtube;
+				}else if (metadata.video.files.btfs){
+						video.provider = "BTFS";
+						if (metadata.video.files.btfs.vid){
+								video.hash = metadata.video.files.btfs.vid['480'];
+							if (!video.hash)
+								video.hash = metadata.video.files.btfs.vid['240'];
+							if (!video.hash)
+								video.hash = metadata.video.files.btfs.vid['src'];
+							if (!video.hash)
+								video.hash = metadata.video.files.btfs.vid['1080'];
+						}else{
+							video.hash = metadata.video.files.btfs;
+						}
+				}else if (metadata.video.files.ipfs){
+						video.provider = "IPFS";
+						video.hash = metadata.video.files.ipfs;
+				}else if (metadata.video.files.twitch){
+						video.provider = "Twitch";
+						video.hash = metadata.video.files.twitch;
+				}
+
+				if (metadata.video.files.ipfs){
+						if (metadata.video.files.ipfs.img){
+								video.snaphash = metadata.video.files.ipfs.img['118'];
+						}
+				}
 			}
 		}
 
@@ -542,7 +593,9 @@ function getAdvancedVideoObject(r, accountName){
 
 		var textDescription;
 
-		if (metadata.video.description){
+		if (metadata.video.desc){
+			  textDescription      = metadata.video.desc;
+		}if (metadata.video.description){
     		textDescription      = metadata.video.description;
 		}else if (metadata.video.content){
 			  textDescription      = metadata.video.content.description;
@@ -692,7 +745,7 @@ function getCommentObject(reply, votes, accountName){
 //detects if appropriate dtube video information exists and detects any NSFW
 function isVideoViewable(r){
 		var metadata = JSON.parse(r.json_metadata);
-		if (metadata && metadata.video && (metadata.video.ipfs || metadata.video.info)){
+		if (metadata && metadata.video && (metadata.video.ipfs || metadata.video.info || metadata.video.files)){
 			if (!metadata.tags.includes("nsfw") && !metadata.tags.includes("dtube-NSFW") && !metadata.tags.includes("NSFW")){
 				//blacklisted accounts with inappropriate content
 				var BLACKLIST = ["aroused","godfather123","arabebtc","elibella","anarchyandporn"];

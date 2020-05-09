@@ -76,7 +76,7 @@ class Video implements Serializable{
 
 
     String getVideoStreamURL() {
-        if (provider.equals(DtubeAPI.PROVIDER_BTFS))
+        if (getProvider().equals(DtubeAPI.PROVIDER_BTFS))
             return "https://player.d.tube/btfs/" + hash;
         //Ater about Dec 12 dtube started using the new video.dtube.top gateway
         if (getDate()>=1544653245000L && !getGateway().equals("video.oneloveipfs.com"))
@@ -144,9 +144,12 @@ class Video implements Serializable{
     }
 
     String getImageURL(){
+
         if (imageURL!=null)
             return imageURL;
-        else
+        else if (getProvider().equals(DtubeAPI.PROVIDER_YOUTUBE)) {
+            return "https://img.youtube.com/vi/" + hash + "/hqdefault.jpg";
+        }else
             return DtubeAPI.CONTENT_IMAGE_URL + snapHash;
     }
 
