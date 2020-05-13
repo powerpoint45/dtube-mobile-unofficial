@@ -479,12 +479,16 @@ function getSimpleVideoObject(r){
 
 
 		if (duration){
-			var date = new Date(null);
-			date.setSeconds(duration); // specify value for SECONDS here
-			var timeString = date.toISOString().substr(11, 8);
-			video.duration = timeString;
+			console.log(duration);
+			if (typeof duration == "string" && duration.includes(":"))
+					video.duration = duration;
+			else {
+					var date = new Date(null);
+					date.setSeconds(duration); // specify value for SECONDS here
+					var timeString = date.toISOString().substr(11, 8);
+					video.duration = timeString;
+			}
 		}
-
 	}
 	return(video);
 }
