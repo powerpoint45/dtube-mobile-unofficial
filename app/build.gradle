@@ -10,9 +10,9 @@ android {
         applicationId "com.powerpoint45.dtube"
         minSdkVersion 21
         targetSdkVersion 28
-        versionCode 31
-        versionName "2.91"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        versionCode 35
+        versionName "2.95"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         release {
@@ -45,10 +45,15 @@ dependencies {
     implementation 'com.github.hapramp:steemconnect4j:v1.3.1'
 
 
-    implementation 'com.android.support:appcompat-v7:27.1.1'
-    implementation 'com.android.support:design:27.1.1'
-    implementation 'com.android.support:recyclerview-v7:27.1.1'
+    implementation 'androidx.appcompat:appcompat:1.1.0-alpha03'
+    implementation 'com.google.android.material:material:1.0.0'
+    implementation 'androidx.recyclerview:recyclerview:1.0.0'
 
-    implementation project(path: ':YouTubeAndroidPlayerApi')
+    implementation 'com.github.HamedTaherpour:floating-layout-android:1.1.0'
+
+    implementation 'com.pierfrancescosoffritti.androidyoutubeplayer:core:10.0.5'
+
+    implementation 'com.android.billingclient:billing:2.2.1'
+
 
 }

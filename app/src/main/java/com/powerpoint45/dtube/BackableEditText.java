@@ -1,9 +1,10 @@
 package com.powerpoint45.dtube;
 
 import android.content.Context;
-import android.support.v7.widget.AppCompatEditText;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
+
+import androidx.appcompat.widget.AppCompatEditText;
 
 /**
  * Created by michael on 13/11/17.

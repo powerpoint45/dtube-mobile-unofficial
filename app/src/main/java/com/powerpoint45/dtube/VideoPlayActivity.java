@@ -1,15 +1,20 @@
 package com.powerpoint45.dtube;
 
 import android.annotation.SuppressLint;
+import android.app.ActivityManager;
 import android.app.UiModeManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.media.AudioManager;
+import android.os.Build;
 import android.os.Bundle;
-import android.support.v7.app.AlertDialog;
+import android.preference.PreferenceManager;
 import android.text.method.LinkMovementMethod;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -28,14 +33,21 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.github.curioustechizen.ago.RelativeTimeTextView;
-import com.google.android.youtube.player.YouTubeBaseActivity;
 import com.makeramen.roundedimageview.RoundedTransformationBuilder;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Transformation;
 
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
+
+import static android.content.Intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP;
+import static android.content.Intent.FLAG_ACTIVITY_REORDER_TO_FRONT;
 
 
 /**
@@ -43,8 +55,10 @@ import java.util.Comparator;
  */
 
 
-public class VideoPlayActivity extends YouTubeBaseActivity {
+public class VideoPlayActivity extends AppCompatActivity {
     static final int REQUEST_CHANNEL = 0;
+    static final int REQUEST_UPGRADE = 1;
+
     FrameLayout videoLayoutHolder;
 
     SteemitWebView steemWebView;
@@ -82,6 +96,8 @@ public class VideoPlayActivity extends YouTubeBaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         overridePendingTransition(R.anim.slide_up, android.R.anim.fade_out);
+
+        Log.d("dtube2", "onCreate");
 
         UiModeManager uiModeManager = (UiModeManager) getSystemService(UI_MODE_SERVICE);
         assert uiModeManager != null;
@@ -161,8 +177,26 @@ public class VideoPlayActivity extends YouTubeBaseActivity {
 
         updateUI();
         setupVideoView();
+
+
+
     }
 
+    @Override
+    public void onPictureInPictureModeChanged (boolean isInPictureInPictureMode, Configuration newConfig) {
+        if (isInPictureInPictureMode){
+            MediaPlayerSingleton.getInstance(this).removeControls();
+        }else {
+            if (onStopCalled) {
+                finish();
+            }else {
+                MediaPlayerSingleton.getInstance(this).restoreControls();
+                videoLayoutHolder.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                        Tools.numtodp(250, this)));
+                updateUI();
+            }
+        }
+    }
 
 
     EditText.OnEditorActionListener editorActionListener = new EditText.OnEditorActionListener() {
@@ -242,24 +276,89 @@ public class VideoPlayActivity extends YouTubeBaseActivity {
 
     @Override
     public void onBackPressed(){
+        Log.d("dtube2", "onBackPressed");
+
         if (fullscreen) {
             makeFullscreen(null);
             return;
+        }else if (!showPIPUpgrade()) {
+            if (Preferences.hasUpgrade && Tools.deviceSupportsPIPMode(this)) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    enterPictureInPictureMode();
+                }
+            } else {
+                super.onBackPressed();
+            }
         }
-
-        super.onBackPressed();
     }
+
+    public boolean showPIPUpgrade(){
+
+        //check if upgrade compatible for Picture-in-picture upgrade
+        if (!Preferences.hasUpgrade && Tools.deviceSupportsPIPMode(this)) {
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+
+            //dont show on first launch of app
+            boolean firstLaunch = prefs.getBoolean("firstlaunch",true);
+            if (!firstLaunch) {
+
+                //Only show popup max once per day
+
+                int dayLastShown = prefs.getInt("lastdayshownupgrade", -1);
+
+                Calendar calendar = Calendar.getInstance();
+                int day = calendar.get(Calendar.DAY_OF_MONTH);
+
+                if (dayLastShown!= day){
+                    prefs.edit().putInt("lastdayshownupgrade", day).apply();
+                    Intent pipUpgradeIntent = new Intent(VideoPlayActivity.this,PictureInPictureUpgradeActivity.class);
+                    startActivityForResult(pipUpgradeIntent, REQUEST_UPGRADE);
+                    return true;
+                }
+
+            }else {
+                prefs.edit().putBoolean("firstlaunch",false).apply();
+            }
+        }
+        return false;
+
+    }
+
 
     @Override
     protected void onPause() {
         super.onPause();
         Log.d("dtube2", "onPause");
-        
-        if (!isFinishing())
-            MediaPlayerSingleton.getInstance(this).pausePlayer();
+        //MediaPlayerSingleton.getInstance(this).startPlayer();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && isInPictureInPictureMode()) {
+            // Continue playback
+            Log.d("dtube","onPause:isInPictureInPictureMode");
+        } else {
+            // Use existing playback logic for paused Activity behavior.
+            if (!isFinishing())
+                MediaPlayerSingleton.getInstance(this).pausePlayer();
+        }
 
-        if (steemWebView!=null)
-            steemWebView.pauseTimers();
+
+
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
+//            if (isApplicationSentToBackground(this)){
+//                enterPictureInPictureMode();
+//            }
+//        }
+    }
+
+
+    public boolean isApplicationSentToBackground(final Context context) {
+        ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        List<ActivityManager.RunningTaskInfo> tasks = am.getRunningTasks(1);
+        if (!tasks.isEmpty()) {
+            ComponentName topActivity = tasks.get(0).topActivity;
+            if (!topActivity.getPackageName().equals(context.getPackageName())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -274,14 +373,59 @@ public class VideoPlayActivity extends YouTubeBaseActivity {
         steemWebView = null;
     }
 
+    boolean onStopCalled;
+
+    @Override
+    protected void onStop() {
+        Log.d("dtube2", "onStop");
+        super.onStop();
+        onStopCalled = true;
+    }
+
+    @Override
+    protected void onDestroy() {
+        Log.d("dtube2", "onDestroy");
+        super.onDestroy();
+    }
+
     @Override
     public void onResume(){
         super.onResume();
+        Log.d("dtube2", "onResume");
+        onStopCalled = false;
 
         MediaPlayerSingleton.getInstance(this).startPlayer();
 
         if (steemWebView!=null)
             steemWebView.resumeTimers();
+
+        if (onNewIntentCalled){
+
+            onNewIntentCalled = false;
+            playVideo(videoToPlay);
+        }
+
+        if (enterPIPModeOnResume){
+            enterPIPModeOnResume = false;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                enterPictureInPictureMode();
+            }
+        }
+    }
+
+    boolean onNewIntentCalled;
+    @Override
+    protected void onNewIntent(Intent intent)
+    {
+        super.onNewIntent(intent);
+        // set the string passed from the service to the original intent
+        setIntent(intent);
+
+        Bundle videoBundle = getIntent().getBundleExtra("video");
+        videoToPlay = ((Video)videoBundle.getSerializable("video"));
+        Log.d("dtube2", "onNewIntent "+videoToPlay.title);
+        onNewIntentCalled = true;
+
     }
 
     public void setNumberOfSubscribers(int count){
@@ -381,80 +525,95 @@ public class VideoPlayActivity extends YouTubeBaseActivity {
     public void updateUI(){
         Log.d("dtube", "updateUI");
 
-        ((TextView)findViewById(R.id.item_title)).setText(videoToPlay.title);
-        ((TextView)findViewById(R.id.item_value)).setText(videoToPlay.price);
-        ((TextView)findViewById(R.id.item_user)).setText(videoToPlay.user);
-        ((RelativeTimeTextView)findViewById(R.id.item_time)).setReferenceTime(videoToPlay.getDate());
-        ((TextView)findViewById(R.id.provider_text)).setText("Provider: "+videoToPlay.getProvider());
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && isInPictureInPictureMode()) {
+            //if in picture mode hide undervideo content and make view fullscreen
+            findViewById(R.id.undervideo_contents).setVisibility(View.GONE);
+            videoLayoutHolder.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT));
+
+//            Log.d("dtube", "updateUI - startPlayer");
+//            super.onResume();
+//            MediaPlayerSingleton.getInstance(this).startPlayer();
+
+        } else {
+
+            findViewById(R.id.undervideo_contents).setVisibility(View.VISIBLE);
 
 
-        if (accountName!=null && accountName.equals(videoToPlay.user)){
-            findViewById(R.id.item_subscribe).setEnabled(false);
-        }else
-            findViewById(R.id.item_subscribe).setEnabled(true);
-
-        if (restrictClicks){
-            findViewById(R.id.item_subscribe).setClickable(false);
-            findViewById(R.id.video_like).setClickable(false);
-            findViewById(R.id.video_dislike).setClickable(false);
-            replyBox.setFocusableInTouchMode(false);
-        }else {
-            replyBox.setFocusableInTouchMode(true);
-            replyBox.setFocusable(true);
-            findViewById(R.id.item_subscribe).setClickable(true);
-            findViewById(R.id.video_like).setClickable(true);
-            findViewById(R.id.video_dislike).setClickable(true);
-        }
-
-        if (subscribed){
-            ((Button)findViewById(R.id.item_subscribe)).setText(R.string.unsubscribe);
-        }else
-            ((Button)findViewById(R.id.item_subscribe)).setText(R.string.subscribe);
-
-        ((TextView) findViewById(R.id.text_likes)).setText("" + videoToPlay.likes);
-        ((TextView) findViewById(R.id.text_dislikes)).setText("" + videoToPlay.dislikes);
-
-        if (Preferences.darkMode){
-            ((ImageView) findViewById(R.id.video_like)).setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_ATOP);
-            ((ImageView) findViewById(R.id.video_dislike)).setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_ATOP);
-        }else {
-            ((ImageView) findViewById(R.id.video_like)).setColorFilter(null);
-            ((ImageView) findViewById(R.id.video_dislike)).setColorFilter(null);
-        }
-
-        if (videoToPlay.voteType == 1){
-            ((ImageView)findViewById(R.id.video_like)).setColorFilter(Color.RED, PorterDuff.Mode.SRC_ATOP);
-        }else if(videoToPlay.voteType == -1)
-            ((ImageView)findViewById(R.id.video_dislike)).setColorFilter(Color.RED, PorterDuff.Mode.SRC_ATOP);
-
-        if (videoToPlay.user!=null) {
-            Picasso.get().load(DtubeAPI.PROFILE_IMAGE_SMALL_URL.replace("username", videoToPlay.user)).placeholder(R.drawable.login).transform(transformation)
-                    .into((ImageView) findViewById(R.id.item_profileimage));
-        }
-
-        if (!setFullDescription) {
-            ((TextView) findViewById(R.id.item_description)).setText(Tools.fromHtml(videoToPlay.longDescriptionHTML));
-            //disable links if running on TV
-            if (!runningOnTV)
-                ((TextView) findViewById(R.id.item_description)).setMovementMethod(LinkMovementMethod.getInstance());
-            setFullDescription = true;
-        }
+            ((TextView) findViewById(R.id.item_title)).setText(videoToPlay.title);
+            ((TextView) findViewById(R.id.item_value)).setText(videoToPlay.price);
+            ((TextView) findViewById(R.id.item_user)).setText(videoToPlay.user);
+            ((RelativeTimeTextView) findViewById(R.id.item_time)).setReferenceTime(videoToPlay.getDate());
+            ((TextView) findViewById(R.id.provider_text)).setText("Provider: " + videoToPlay.getProvider());
 
 
-        ((TextView)findViewById(R.id.subscribers)).setText(subscribers);
+            if (accountName != null && accountName.equals(videoToPlay.user)) {
+                findViewById(R.id.item_subscribe).setEnabled(false);
+            } else
+                findViewById(R.id.item_subscribe).setEnabled(true);
 
-
-
-        ImageView fullscreenButton = findViewById(R.id.exo_fullscreen_button);
-        if (fullscreenButton!=null && !runningOnTV) {
-            if (fullscreen) {
-                videoLayoutHolder.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                        findViewById(R.id.video_content).getHeight()));
-                fullscreenButton.setImageResource(R.drawable.exo_controls_fullscreen_exit);
+            if (restrictClicks) {
+                findViewById(R.id.item_subscribe).setClickable(false);
+                findViewById(R.id.video_like).setClickable(false);
+                findViewById(R.id.video_dislike).setClickable(false);
+                replyBox.setFocusableInTouchMode(false);
             } else {
-                videoLayoutHolder.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                        Tools.numtodp(250, this)));
-                fullscreenButton.setImageResource(R.drawable.exo_controls_fullscreen_enter);
+                replyBox.setFocusableInTouchMode(true);
+                replyBox.setFocusable(true);
+                findViewById(R.id.item_subscribe).setClickable(true);
+                findViewById(R.id.video_like).setClickable(true);
+                findViewById(R.id.video_dislike).setClickable(true);
+            }
+
+            if (subscribed) {
+                ((Button) findViewById(R.id.item_subscribe)).setText(R.string.unsubscribe);
+            } else
+                ((Button) findViewById(R.id.item_subscribe)).setText(R.string.subscribe);
+
+            ((TextView) findViewById(R.id.text_likes)).setText("" + videoToPlay.likes);
+            ((TextView) findViewById(R.id.text_dislikes)).setText("" + videoToPlay.dislikes);
+
+            if (Preferences.darkMode) {
+                ((ImageView) findViewById(R.id.video_like)).setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_ATOP);
+                ((ImageView) findViewById(R.id.video_dislike)).setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_ATOP);
+            } else {
+                ((ImageView) findViewById(R.id.video_like)).setColorFilter(null);
+                ((ImageView) findViewById(R.id.video_dislike)).setColorFilter(null);
+            }
+
+            if (videoToPlay.voteType == 1) {
+                ((ImageView) findViewById(R.id.video_like)).setColorFilter(Color.RED, PorterDuff.Mode.SRC_ATOP);
+            } else if (videoToPlay.voteType == -1)
+                ((ImageView) findViewById(R.id.video_dislike)).setColorFilter(Color.RED, PorterDuff.Mode.SRC_ATOP);
+
+            if (videoToPlay.user != null) {
+                Picasso.get().load(DtubeAPI.PROFILE_IMAGE_SMALL_URL.replace("username", videoToPlay.user)).placeholder(R.drawable.login).transform(transformation)
+                        .into((ImageView) findViewById(R.id.item_profileimage));
+            }
+
+            if (!setFullDescription) {
+                ((TextView) findViewById(R.id.item_description)).setText(Tools.fromHtml(videoToPlay.longDescriptionHTML));
+                //disable links if running on TV
+                if (!runningOnTV)
+                    ((TextView) findViewById(R.id.item_description)).setMovementMethod(LinkMovementMethod.getInstance());
+                setFullDescription = true;
+            }
+
+
+            ((TextView) findViewById(R.id.subscribers)).setText(subscribers);
+
+
+            ImageView fullscreenButton = findViewById(R.id.exo_fullscreen_button);
+            if (fullscreenButton != null && !runningOnTV) {
+                if (fullscreen) {
+                    videoLayoutHolder.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.MATCH_PARENT));
+                    fullscreenButton.setImageResource(R.drawable.exo_controls_fullscreen_exit);
+                } else {
+                    videoLayoutHolder.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                            Tools.numtodp(250, this)));
+                    fullscreenButton.setImageResource(R.drawable.exo_controls_fullscreen_enter);
+                }
             }
         }
 
@@ -558,7 +717,7 @@ public class VideoPlayActivity extends YouTubeBaseActivity {
     public void setupVideoView(){
         hadErrorLoading = false;
 
-        videoLayoutHolder.removeView(MediaPlayerSingleton.getInstance(this).getYouTubePlayerView());
+        videoLayoutHolder.removeView(MediaPlayerSingleton.getInstance(this).getEmbeddedPlayerView());
         videoLayoutHolder.removeView(MediaPlayerSingleton.getInstance(this).getIPFSPlayerView());
 
         if (useEmbeded || runningOnTV){
@@ -650,6 +809,7 @@ public class VideoPlayActivity extends YouTubeBaseActivity {
         }
     }
 
+    boolean enterPIPModeOnResume = false;
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -661,6 +821,14 @@ public class VideoPlayActivity extends YouTubeBaseActivity {
                     if (v!=null)
                         steemWebView.getVideoInfo(v.user, v.permlink, DtubeAPI.getAccountName(this));
                 }
+
+            case REQUEST_UPGRADE:
+                if (resultCode == RESULT_OK){
+                    //ativity must be resmed beforeentering PIP mod
+                    enterPIPModeOnResume = true;
+                }else if (resultCode == RESULT_CANCELED){
+                    finish();
+                }
         }
     }
 
@@ -670,16 +838,10 @@ public class VideoPlayActivity extends YouTubeBaseActivity {
 
         switch (keyCode) {
             case KeyEvent.KEYCODE_DPAD_LEFT:
-                if (runningOnTV) {
-                    if (findViewById(R.id.undervideo_contents).getScrollY() == 0) {
-                        MediaPlayerSingleton.getInstance(this).showControls();
-                    }
-                }
-                break;
             case KeyEvent.KEYCODE_DPAD_RIGHT:
                 if (runningOnTV) {
                     if (findViewById(R.id.undervideo_contents).getScrollY() == 0) {
-                        MediaPlayerSingleton.getInstance(this).showControls();
+                        wakeMediaControls();
                     }
                 }
                 break;

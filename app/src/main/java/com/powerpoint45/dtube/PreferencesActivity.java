@@ -11,7 +11,6 @@ import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
-import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.MenuItem;
 
@@ -29,7 +28,7 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
     static boolean inUIActivity;
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         if (Preferences.darkMode)
             setTheme(R.style.AppThemeDarkWAB);
         super.onCreate(savedInstanceState);

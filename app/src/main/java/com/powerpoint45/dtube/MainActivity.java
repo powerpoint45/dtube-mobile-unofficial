@@ -10,20 +10,8 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.media.AudioManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.design.widget.NavigationView;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.AppCompatImageView;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -40,10 +28,24 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatImageView;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.github.javiersantos.appupdater.AppUpdaterUtils;
 import com.github.javiersantos.appupdater.enums.AppUpdaterError;
 import com.github.javiersantos.appupdater.enums.UpdateFrom;
 import com.github.javiersantos.appupdater.objects.Update;
+import com.google.android.material.navigation.NavigationView;
 import com.makeramen.roundedimageview.RoundedTransformationBuilder;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Transformation;
@@ -111,7 +113,6 @@ public class MainActivity extends AppCompatActivity {
 
         //For proper functioning of this app, Android System Webview must be installed
         if (!Tools.isPackageInstalled("com.google.android.webview",getPackageManager())){
-
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setMessage(R.string.webview_alert)
                     .setPositiveButton(R.string.install, (dialog, id) -> startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=com.google.android.webview"))))
@@ -207,6 +208,9 @@ public class MainActivity extends AppCompatActivity {
                 case R.id.menu_donate:
                     startActivity(new Intent(MainActivity.this, DonateActivity.class));
                     break;
+                case R.id.menu_upgrade:
+                    startActivity(new Intent(MainActivity.this,PictureInPictureUpgradeActivity.class));
+                    break;
                 case R.id.menu_settings:
                     startActivityForResult(new Intent(MainActivity.this, PreferencesActivity.class), REQUEST_CODE_SETTINGS);
                     break;
@@ -272,16 +276,21 @@ public class MainActivity extends AppCompatActivity {
             });
         }
 
+        Menu m = navigationView.getMenu();
+
         //remove donation options to comply with Play Store policy
         if (getResources().getBoolean(R.bool.on_play_store)){
-            Menu m = navigationView.getMenu();
             m.findItem(R.id.menu_donate).setVisible(false);
+        }
+
+        //remove upgrade button if not compatible or already purchased
+        if ((Preferences.hasUpgrade) || !Tools.deviceSupportsPIPMode(this)) {
+            m.findItem(R.id.menu_upgrade).setVisible(false);
         }
 
         //remove more apps & about menu item if running on TV
         //trying to comply with play store policy for Android TV
         if (runningOnTV){
-            Menu m = navigationView.getMenu();
             m.findItem(R.id.menu_more_apps).setVisible(false);
             m.findItem(R.id.menu_about).setVisible(false);
             m.findItem(R.id.menu_donate).setVisible(false);
@@ -378,7 +387,6 @@ public class MainActivity extends AppCompatActivity {
 
         addVideos(Video.getRecentVideos(this));
 
-        Menu m = navigationView.getMenu();
         m.findItem(R.id.menu_update).setVisible(false);
 
         //only check for updates on GitHub if app was not downloaded from PlayStore
@@ -451,6 +459,7 @@ public class MainActivity extends AppCompatActivity {
     public void playVideo(Video v){
         if (!activityPaused) {
             Intent videoPlayIntent = new Intent(MainActivity.this, VideoPlayActivity.class);
+            videoPlayIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             Bundle videoBundle = new Bundle();
             videoBundle.putSerializable("video", v);
             videoPlayIntent.putExtra("video", videoBundle);

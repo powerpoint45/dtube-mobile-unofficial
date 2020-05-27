@@ -65,4 +65,9 @@
 
     <string name="webview_alert">For proper functioning of this app, Android System Webview must be installed</string>
     <string name="install">Install Now</string>
+    <string name="upgrade">Upgrade</string>
+
+    <string name="pip_upgraded_message">Congrats! You now have the picture-in-picture feature. Press the back button when playing a video to activate it.</string>
+    <string name="okay">Okay</string>
+    <string name="dismiss">Dismiss</string>
 </resources>

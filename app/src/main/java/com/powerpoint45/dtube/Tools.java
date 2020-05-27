@@ -1,13 +1,18 @@
 package com.powerpoint45.dtube;
 
 import android.app.Activity;
+import android.app.UiModeManager;
+import android.content.Context;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Build;
 import android.text.Html;
 import android.text.Spanned;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
+
+import static android.content.Context.UI_MODE_SERVICE;
 
 /**
  * Created by michael on 20/11/17.
@@ -45,6 +50,20 @@ public class Tools {
             found = false;
         }
         return found;
+    }
+
+    //check if device can run in Picture In Picture mode
+    static boolean deviceSupportsPIPMode(Context c){
+        PackageManager packageManager = c.getApplicationContext().getPackageManager();
+        boolean supportsPIP = false;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            supportsPIP = packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE);
+        }
+
+        UiModeManager uiModeManager = (UiModeManager) c.getSystemService(UI_MODE_SERVICE);
+        boolean runningOnTV = uiModeManager.getCurrentModeType()== Configuration.UI_MODE_TYPE_TELEVISION;
+
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && !runningOnTV && supportsPIP;
     }
 
 //    static String getFormattedText(String unformatted){

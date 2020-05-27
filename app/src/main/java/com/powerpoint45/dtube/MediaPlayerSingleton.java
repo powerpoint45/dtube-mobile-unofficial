@@ -10,7 +10,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
+import android.webkit.WebView;
 import android.widget.Toast;
 
 import com.google.android.exoplayer2.ExoPlaybackException;
@@ -24,9 +24,6 @@ import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
 import com.google.android.exoplayer2.video.VideoListener;
-import com.google.android.youtube.player.YouTubeInitializationResult;
-import com.google.android.youtube.player.YouTubePlayer;
-import com.google.android.youtube.player.YouTubePlayerView;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
@@ -41,10 +38,7 @@ public class MediaPlayerSingleton {
     private Video videoToPlay;
     private Context c;
 
-    YouTubePlayerView youTubePlayerView;
     WebViewVideoView embeddedPlayer;
-    YouTubePlayer youTubePlayer;
-    //FacebookPlayerView facebookPlayerView; //future
 
     private MediaPlayerSingleton(){
 
@@ -55,9 +49,7 @@ public class MediaPlayerSingleton {
     }
 
     private void init(Activity c) {
-        youTubePlayerView = new YouTubePlayerView(c);
         embeddedPlayer = new WebViewVideoView(c,false);
-
 
         playerView = new PlayerView(c);
         player = ExoPlayerFactory.newSimpleInstance(c);
@@ -114,9 +106,8 @@ public class MediaPlayerSingleton {
      * @return playerView or youTubePlayerView based on provider
      */
     View getRightPlayerView(){
-        if (videoToPlay.getProvider().equals(DtubeAPI.PROVIDER_YOUTUBE))
-            return youTubePlayerView;
-        else if(videoToPlay.getProvider().equals(DtubeAPI.PROVIDER_TWITCH))
+        if(videoToPlay.getProvider().equals(DtubeAPI.PROVIDER_TWITCH)
+                ||videoToPlay.getProvider().equals(DtubeAPI.PROVIDER_YOUTUBE))
             return  embeddedPlayer;
         else
             return playerView;
@@ -125,7 +116,7 @@ public class MediaPlayerSingleton {
     PlayerView getIPFSPlayerView(){
         return playerView;
     }
-    YouTubePlayerView getYouTubePlayerView(){return youTubePlayerView;}
+    WebView getEmbeddedPlayerView(){return embeddedPlayer;}
 
     private MediaSource getMediaSource(String url){
         Uri uri = Uri.parse(url);
@@ -139,40 +130,26 @@ public class MediaPlayerSingleton {
     }
 
     void playVideo(Video videoToPlay, Context c){
-        if (this.videoToPlay!=null && this.videoToPlay.getProvider()!=videoToPlay.getProvider())
+        if (this.videoToPlay!=null && this.videoToPlay.getProvider()!=videoToPlay.getProvider()) {
             if (this.videoToPlay.getProvider().equals(DtubeAPI.PROVIDER_TWITCH))
-                embeddedPlayer.loadUrl("about:blank"+videoToPlay.hash);
+                embeddedPlayer.loadUrl("about:blank" + videoToPlay.hash);
+
+            pausePlayer();
+        }
 
         this.videoToPlay = videoToPlay;
         Log.d("dtube","provider:  "+ videoToPlay.getProvider());
 
 
         if (videoToPlay.getProvider().equals(DtubeAPI.PROVIDER_YOUTUBE)) {
-            Log.d("dtube", "loading stream: " + videoToPlay.hash);
-
-            if (youTubePlayer!=null){
-                youTubePlayer.loadVideo(videoToPlay.hash);
-            }else {
-                youTubePlayerView.initialize("YOUR API KEY", new YouTubePlayer.OnInitializedListener() {
-                    @Override
-                    public void onInitializationSuccess(YouTubePlayer.Provider provider, YouTubePlayer youTubePlayer, boolean b) {
-                        Log.d("dtube", "onInitializationSuccess");
-                        youTubePlayer.loadVideo(videoToPlay.hash);
-                        MediaPlayerSingleton.this.youTubePlayer = youTubePlayer;
-                    }
-
-                    @Override
-                    public void onInitializationFailure(YouTubePlayer.Provider provider, YouTubeInitializationResult youTubeInitializationResult) {
-
-                    }
-                });
-            }
-
+            Log.d("dtube2", "loading stream: " + videoToPlay.hash);
+            String url = "https://www.youtube.com/embed/"+videoToPlay.hash+"?autoplay=1&modestbranding=1&rel=0&showinfo=0";
+            String html = "<html><body><iframe frameborder=0 allowfullscreen width=100% height=100% src=\"" + url + "\"  frameborder=0 allowfullscreen></iframe></body></html>";
+            embeddedPlayer.loadData(html, "text/html", "utf-8");
         }else if (videoToPlay.getProvider().equals(DtubeAPI.PROVIDER_TWITCH)) {
             embeddedPlayer.loadUrl("https://player.twitch.tv/?video="+videoToPlay.hash);
         } else {
             Log.d("dtube", "loading stream: " + videoToPlay.getVideoStreamURL());
-
 
             player.prepare(getMediaSource(videoToPlay.getVideoStreamURL()));
             player.setPlayWhenReady(true);
@@ -214,6 +191,14 @@ public class MediaPlayerSingleton {
         playerView.hideController();
     }
 
+    void removeControls(){
+        playerView.findViewById(R.id.control_bar_holder).setVisibility(View.GONE);
+    }
+
+    void restoreControls(){
+        playerView.findViewById(R.id.control_bar_holder).setVisibility(View.VISIBLE);
+    }
+
     void focusControls(){
         playerView.findViewById(R.id.exo_pause).requestFocus();
         playerView.findViewById(R.id.exo_play).requestFocus();
@@ -225,8 +210,10 @@ public class MediaPlayerSingleton {
     }
 
     void startPlayer(){
-        player.setPlayWhenReady(true);
-        player.getPlaybackState();
+        if (videoToPlay.getProvider().equals(DtubeAPI.PROVIDER_BTFS) || videoToPlay.getProvider().equals(DtubeAPI.PROVIDER_IPFS)) {
+            player.setPlayWhenReady(true);
+            player.getPlaybackState();
+        }
     }
     
 
