@@ -7,7 +7,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
@@ -45,9 +44,6 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-
-import static android.content.Intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP;
-import static android.content.Intent.FLAG_ACTIVITY_REORDER_TO_FRONT;
 
 
 /**
@@ -380,6 +376,7 @@ public class VideoPlayActivity extends AppCompatActivity {
         Log.d("dtube2", "onStop");
         super.onStop();
         onStopCalled = true;
+        MediaPlayerSingleton.getInstance(this).pausePlayer();
     }
 
     @Override
@@ -621,6 +618,7 @@ public class VideoPlayActivity extends AppCompatActivity {
     }
 
     public void subscribeButtonClicked(View v){
+
         subscribeLoader.setVisibility(View.VISIBLE);
         findViewById(R.id.item_subscribe).setClickable(false);
 

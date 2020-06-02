@@ -10,8 +10,8 @@ android {
         applicationId "com.powerpoint45.dtube"
         minSdkVersion 21
         targetSdkVersion 28
-        versionCode 35
-        versionName "2.95"
+        versionCode 38
+        versionName "2.98"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {

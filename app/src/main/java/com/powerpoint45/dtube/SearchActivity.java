@@ -218,19 +218,18 @@ public class SearchActivity extends AppCompatActivity {
                                             String body = videoObject.getString("body");
 
 
-                                            //Extract img Hash from HTML such as <img src='https://ipfs.io/ipfs/QmQG6gPe6hnT8aTRvH3hskMiWbbn9HR6gVf2TH3vXYV71Q'>
+                                            //Extract img Hash from HTML such as <img src='https://ipfs.io/ipfs/QmQG6gPe6hnT8aTRvH3hskMiWbbn9HR6gVf2TH3vXYV71Q' >
                                             int imgTagIndex = body.indexOf("<img src='");
                                             if (imgTagIndex != -1) {
-                                                int imgHashIndex = body.indexOf("/Qm", imgTagIndex) + 1;
-                                                Log.d("json", videoObject.toString());
-                                                v.snapHash = body.substring(imgHashIndex, body.indexOf("'>", imgHashIndex));
+                                                String imageURL = body.substring(imgTagIndex+10,body.indexOf(">", imgTagIndex)-1);
+                                                if (imageURL.endsWith("'"))
+                                                    imageURL = imageURL.substring(0,imageURL.length()-1);
+                                                v.setImageURL(imageURL);
                                             }else {
                                                 Log.d("dtube", "invalid snap. Replacing img");
 
                                                 imgTagIndex = body.indexOf("(https://cdn.steemitimages.com/");
 
-
-                                                //int imgHashIndex = body.indexOf("/Qm", imgTagIndex) + 1;
                                                 String imgURL = body.substring(imgTagIndex+1, body.indexOf(".png",imgTagIndex)+4);
                                                 v.setImageURL(imgURL);
                                             }

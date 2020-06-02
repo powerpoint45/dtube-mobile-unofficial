@@ -479,14 +479,20 @@ function getSimpleVideoObject(r){
 
 
 		if (duration){
+			console.log("Duration:");
 			console.log(duration);
+			console.log(metadata);
 			if (typeof duration == "string" && duration.includes(":"))
 					video.duration = duration;
 			else {
+				try{
 					var date = new Date(null);
 					date.setSeconds(duration); // specify value for SECONDS here
 					var timeString = date.toISOString().substr(11, 8);
 					video.duration = timeString;
+				}catch(err) {
+					video.duration = "unknown";
+				}
 			}
 		}
 	}

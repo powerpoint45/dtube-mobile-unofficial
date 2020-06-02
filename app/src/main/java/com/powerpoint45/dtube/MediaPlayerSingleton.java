@@ -130,32 +130,28 @@ public class MediaPlayerSingleton {
     }
 
     void playVideo(Video videoToPlay, Context c){
-        if (this.videoToPlay!=null && this.videoToPlay.getProvider()!=videoToPlay.getProvider()) {
-            if (this.videoToPlay.getProvider().equals(DtubeAPI.PROVIDER_TWITCH))
-                embeddedPlayer.loadUrl("about:blank" + videoToPlay.hash);
-
-            pausePlayer();
-        }
-
         this.videoToPlay = videoToPlay;
         Log.d("dtube","provider:  "+ videoToPlay.getProvider());
-
 
         if (videoToPlay.getProvider().equals(DtubeAPI.PROVIDER_YOUTUBE)) {
             Log.d("dtube2", "loading stream: " + videoToPlay.hash);
             String url = "https://www.youtube.com/embed/"+videoToPlay.hash+"?autoplay=1&modestbranding=1&rel=0&showinfo=0";
             String html = "<html><body><iframe frameborder=0 allowfullscreen width=100% height=100% src=\"" + url + "\"  frameborder=0 allowfullscreen></iframe></body></html>";
             embeddedPlayer.loadData(html, "text/html", "utf-8");
+            pauseNativePlayer();
+            startEmbeddedPlayer();
         }else if (videoToPlay.getProvider().equals(DtubeAPI.PROVIDER_TWITCH)) {
             embeddedPlayer.loadUrl("https://player.twitch.tv/?video="+videoToPlay.hash);
+            pauseNativePlayer();
+            startEmbeddedPlayer();
         } else {
             Log.d("dtube", "loading stream: " + videoToPlay.getVideoStreamURL());
 
             player.prepare(getMediaSource(videoToPlay.getVideoStreamURL()));
             player.setPlayWhenReady(true);
-
             playerView.showController();
 
+            pauseEmbeddedPlayer();
 
             Picasso.get().load(videoToPlay.getImageURL()).resize(720, 720).centerInside().into(new Target() {
                 @Override
@@ -205,14 +201,41 @@ public class MediaPlayerSingleton {
     }
 
     void pausePlayer(){
-        player.setPlayWhenReady(false);
-        player.getPlaybackState();
+        pauseNativePlayer();
+        pauseEmbeddedPlayer();
+    }
+
+    void pauseNativePlayer(){
+        if (player!=null){
+            player.setPlayWhenReady(false);
+            player.getPlaybackState();
+        }
+    }
+
+    void pauseEmbeddedPlayer(){
+        if (embeddedPlayer!=null){
+            embeddedPlayer.onPause();
+        }
     }
 
     void startPlayer(){
         if (videoToPlay.getProvider().equals(DtubeAPI.PROVIDER_BTFS) || videoToPlay.getProvider().equals(DtubeAPI.PROVIDER_IPFS)) {
+            startNativePlayer();
+        }else{
+            startEmbeddedPlayer();
+        }
+    }
+
+    void startNativePlayer(){
+        if (player!=null){
             player.setPlayWhenReady(true);
             player.getPlaybackState();
+        }
+    }
+
+    void startEmbeddedPlayer(){
+        if (embeddedPlayer!=null){
+            embeddedPlayer.onResume();
         }
     }
     
