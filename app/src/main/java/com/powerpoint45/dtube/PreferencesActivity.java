@@ -83,7 +83,7 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
     public void onHeaderClick(Header header, int position) {
         super.onHeaderClick(header, position);
         if (header.id == R.id.logout) {
-            new AlertDialog.Builder(this, R.style.Theme_AppCompat_DayNight_Dialog_Alert)
+            new AlertDialog.Builder(this, R.style.Theme_AppCompat_Light_Dialog_Alert)
                     .setMessage(R.string.logout_confirm)
                     .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
 

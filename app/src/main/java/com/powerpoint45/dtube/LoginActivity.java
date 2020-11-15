@@ -5,6 +5,7 @@ import android.app.UiModeManager;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
@@ -97,6 +98,11 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     final int CAMERA_REQUEST_PERMISSION = 10;
+
+    public void createAccountButtonClicked(View v){
+        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://signup.steemit.com/"));
+        startActivity(browserIntent);
+    }
 
     public void qrButtonClicked(View v){
         if (ContextCompat.checkSelfPermission(this,

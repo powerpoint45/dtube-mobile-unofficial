@@ -6,6 +6,7 @@
     android:padding="10dp"
     android:focusable="true"
     android:id="@+id/feed_item"
+
     android:background="?android:attr/selectableItemBackground">
 
     <FrameLayout
@@ -13,6 +14,7 @@
         android:layout_height="wrap_content">
 
         <ImageView
+
             android:id="@+id/item_image"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

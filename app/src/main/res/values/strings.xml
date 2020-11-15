@@ -70,4 +70,5 @@
     <string name="pip_upgraded_message">Congrats! You now have the picture-in-picture feature. Press the back button when playing a video to activate it.</string>
     <string name="okay">Okay</string>
     <string name="dismiss">Dismiss</string>
+    <string name="create_account">Create Account</string>
 </resources>

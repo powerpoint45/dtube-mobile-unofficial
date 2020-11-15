@@ -6,4 +6,5 @@
 
     <color name="transparentWhite">#f3ffffff</color>
     <color name="transparentBlack">#d0000000</color>
+    <color name="design_default_color_primary_dark">#3700B3</color>
 </resources>

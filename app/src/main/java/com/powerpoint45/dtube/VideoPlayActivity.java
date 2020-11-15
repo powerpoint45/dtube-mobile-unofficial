@@ -173,9 +173,6 @@ public class VideoPlayActivity extends AppCompatActivity {
 
         updateUI();
         setupVideoView();
-
-
-
     }
 
     @Override
@@ -713,6 +710,7 @@ public class VideoPlayActivity extends AppCompatActivity {
     public final boolean useEmbeded = false;
     boolean hadErrorLoading;
     public void setupVideoView(){
+        Log.d("dtube9", videoToPlay.getVideoStreamURL());
         hadErrorLoading = false;
 
         videoLayoutHolder.removeView(MediaPlayerSingleton.getInstance(this).getEmbeddedPlayerView());
@@ -964,5 +962,13 @@ public class VideoPlayActivity extends AppCompatActivity {
         }
         return super.dispatchKeyEvent(event);
     }
+
+//    @Override
+//    public void onConfigurationChanged(Configuration newConfig) {
+//        super.onConfigurationChanged(newConfig);
+//        if (!runningOnTV && newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+//            makeFullscreen(new View(this));
+//        }
+//    }
 
 }

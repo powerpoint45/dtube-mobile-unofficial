@@ -1,9 +1,12 @@
 package com.powerpoint45.dtube;
 
 import android.graphics.drawable.Drawable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -22,7 +25,7 @@ import com.squareup.picasso.Picasso;
 
 class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
 
-    private VideoArrayList videos;
+    private VideoArrayList videos = new VideoArrayList();
     MainActivity c;
     private Drawable placeholderDrawable;
     private boolean tvMode;
@@ -30,6 +33,8 @@ class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
 
     static final int TYPE_VIDEO = 1;
     static final int TYPE_LOADER = 2;
+
+    private int lastPosition = -1;
 
     int getFocusedItem() {
         return focusedItem;
@@ -42,16 +47,16 @@ class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
         TextView priceView;
         RelativeTimeTextView timeView;
         TextView userView;
-        LinearLayout itemView;
+        View itemView;
         ImageView removeButton;
         TextView durationText;
         ProgressBar progressBar;
 
         ViewHolder(View v, int type) {
             super(v);
+            itemView = v;
 
             if (type == TYPE_VIDEO) {
-                itemView = (LinearLayout)v;
                 thumbView = v.findViewById(R.id.item_image);
                 titleView = v.findViewById(R.id.item_title);
                 timeView = v.findViewById(R.id.item_time);
@@ -62,6 +67,10 @@ class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
             }else {
                 progressBar = (ProgressBar)v;
             }
+        }
+        public void clearAnimation()
+        {
+            itemView.clearAnimation();
         }
     }
 
@@ -76,6 +85,7 @@ class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
     }
 
     public void setVideos(VideoArrayList videos){
+        Log.d("dtube","setVideos:"+videos.size());
         this.videos = videos;
     }
 
@@ -102,6 +112,9 @@ class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
             ProgressBar pb = new ProgressBar(c);
             if (tvMode)
                 pb.setLayoutParams(new LinearLayout.LayoutParams(Tools.numtodp(400, c), Tools.numtodp(267, c)));
+            else {
+                pb.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+            }
             return new ViewHolder(pb, TYPE_LOADER);
         }
     }
@@ -116,8 +129,7 @@ class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
     // Replace the contents of a view (invoked by the layout manager)
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-
-        if (getItemViewType(position)==TYPE_VIDEO) {
+        if (getItemViewType(position)==TYPE_VIDEO && videos.size()>0) {
 
             holder.itemView.setTag(position);
             holder.itemView.setOnClickListener(v -> c.onItemClick((Integer) v.getTag()));
@@ -167,10 +179,12 @@ class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
 
                         @Override
                         public void onError(Exception e) {
-                            Picasso.get().load(videos.get(position).getBackupImageURL()).placeholder(placeholderDrawable)
-                                    .resize(720, 720).centerInside()//prevents image to be shown to be larger than 720px w or h. Makes scrolling smoother
-                                    .noFade()
-                                    .into(holder.thumbView);
+                            if (videos.size()>0) {
+                                Picasso.get().load(videos.get(position).getBackupImageURL()).placeholder(placeholderDrawable)
+                                        .resize(720, 720).centerInside()//prevents image to be shown to be larger than 720px w or h. Makes scrolling smoother
+                                        .noFade()
+                                        .into(holder.thumbView);
+                            }
                         }
                     });
         }else {
@@ -182,16 +196,17 @@ class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
                 holder.progressBar.setVisibility(View.GONE);
             }else
                 holder.progressBar.setVisibility(View.VISIBLE);
-
         }
 
+        if (!tvMode)
+            setAnimation(holder.itemView, position);
     }
 
     // Return the size of your dataset (invoked by the layout manager)
     @Override
     public int getItemCount() {
-        if (videos == null)
-            return 0;
+        if (videos.size() == 0 && c.findViewById(R.id.login_for_subs)==null)
+            return 1;
         else {
             return videos.size();
         }
@@ -200,16 +215,36 @@ class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
 
     @Override
     public int getItemViewType(int position) {
-        if (position == videos.size()-1)
-            return 2;
+        if (position == videos.size()-1 || videos.size() == 0)
+            return TYPE_LOADER;
         else
-            return 1;
+            return TYPE_VIDEO;
     }
 
     @Override
     public long getItemId(int position) {
-        if (videos!=null)
+        if (videos.size()>0)
             return videos.get(position).hashCode();
         return super.getItemId(position);
+    }
+
+    @Override
+    public void onViewDetachedFromWindow(@NonNull ViewHolder holder) {
+        super.onViewDetachedFromWindow(holder);
+        holder.clearAnimation();
+    }
+
+    /**
+     * Here is the key method to apply the animation
+     */
+    private void setAnimation(View viewToAnimate, int position)
+    {
+        // If the bound view wasn't previously displayed on screen, it's animated
+        if (position > lastPosition && viewToAnimate!=null)
+        {
+            Animation animation = AnimationUtils.loadAnimation(c, R.anim.float_up_slow);
+            viewToAnimate.startAnimation(animation);
+            lastPosition = position;
+        }
     }
 }

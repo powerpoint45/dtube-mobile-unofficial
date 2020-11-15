@@ -2,6 +2,7 @@ package com.powerpoint45.dtube;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.SystemClock;
@@ -76,24 +77,47 @@ public class WebViewVideoView extends WebView {
         setId(R.id.embeded_video_view);
 
         setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageStarted(WebView view, String url, Bitmap favicon) {
+                super.onPageStarted(view, url, favicon);
+                Log.d("dtube9","pagestart:"+ url);
+            }
+
+            public boolean shouldOverrideUrlLoading (WebView view, String url) {
+                if (url.startsWith("https://m.youtube.com/"))
+                    return true; // reject loading this page
+                else
+                    return false;
+            }
+
             public void onPageFinished(WebView view, String url) {
-                loadedPage = true;
-                if (runningTVMode)
-                    removeControlBarChildren();
+                if (url.startsWith("https://m.youtube.com/"))
+                    goBack();
+                else {
 
-                //autoplay youTube
-                long delta = 100;
-                long downTime = SystemClock.uptimeMillis();
-                float x = view.getLeft() + (view.getWidth()/2);
-                float y = view.getTop() + (view.getHeight()/2);
+                    loadedPage = true;
+                    if (runningTVMode)
+                        removeControlBarChildren();
 
-                MotionEvent tapDownEvent = MotionEvent.obtain(downTime, downTime + delta, MotionEvent.ACTION_DOWN, x, y, 0);
-                tapDownEvent.setSource(InputDevice.SOURCE_CLASS_POINTER);
-                MotionEvent tapUpEvent = MotionEvent.obtain(downTime, downTime + delta + 2, MotionEvent.ACTION_UP, x, y, 0);
-                tapUpEvent.setSource(InputDevice.SOURCE_CLASS_POINTER);
+                    //autoplay youTube
+                    long delta = 100;
+                    long downTime = SystemClock.uptimeMillis();
+                    float x = view.getLeft() + (view.getWidth() / 2);
+                    float y = view.getTop() + (view.getHeight() / 2);
 
-                view.dispatchTouchEvent(tapDownEvent);
-                view.dispatchTouchEvent(tapUpEvent);
+                    view.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            MotionEvent tapDownEvent = MotionEvent.obtain(downTime, downTime + delta, MotionEvent.ACTION_DOWN, x, y, 0);
+                            tapDownEvent.setSource(InputDevice.SOURCE_CLASS_POINTER);
+                            MotionEvent tapUpEvent = MotionEvent.obtain(downTime, downTime + delta + 2, MotionEvent.ACTION_UP, x, y, 0);
+                            tapUpEvent.setSource(InputDevice.SOURCE_CLASS_POINTER);
+
+                            view.dispatchTouchEvent(tapDownEvent);
+                            view.dispatchTouchEvent(tapUpEvent);
+                        }
+                    }, 100);
+                }
             }
         });
 

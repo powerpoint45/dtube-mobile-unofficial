@@ -15,19 +15,21 @@
         android:id="@+id/mainframe"
         tools:context="com.powerpoint45.dtube.MainActivity">
 
-
-
-
-
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/swiperefresh"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="50dp"
+            >
 
         <androidx.recyclerview.widget.RecyclerView
+            android:paddingTop="50dp"
             android:id="@+id/feed_rv"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:paddingTop="50dp"
             android:clipToPadding="false"
-            android:layout_marginBottom="50dp"
              />
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
         <LinearLayout
             android:id="@+id/bottom_bar"

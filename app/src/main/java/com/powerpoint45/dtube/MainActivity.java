@@ -39,6 +39,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.github.javiersantos.appupdater.AppUpdaterUtils;
 import com.github.javiersantos.appupdater.enums.AppUpdaterError;
@@ -76,6 +77,7 @@ public class MainActivity extends AppCompatActivity {
 
     final int FILES_REQUEST_PERMISSION = 10;
 
+    SwipeRefreshLayout swipeRefreshLayout;
     RecyclerView recyclerView;
     RecyclerView.LayoutManager layoutManager;
     private FeedAdapter feedAdapter;
@@ -167,9 +169,50 @@ public class MainActivity extends AppCompatActivity {
             getSupportActionBar().setHomeButtonEnabled(true);
         }
 
+        swipeRefreshLayout = findViewById(R.id.swiperefresh);
+
+        if (swipeRefreshLayout!=null) {
+            swipeRefreshLayout.setProgressViewOffset(true, 0, Tools.numtodp(60, this));
+            swipeRefreshLayout.setProgressBackgroundColorSchemeColor(Color.RED);
+            swipeRefreshLayout.setColorSchemeColors(Color.WHITE);
+
+            swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+                @Override
+                public void onRefresh() {
+                    switch (selectedTab) {
+                        case DtubeAPI.CAT_SUBSCRIBED:
+                            allVideos.removeAll(videos.getCategorizedVideos(DtubeAPI.CAT_SUBSCRIBED));
+                            feedAdapter.notifyDataSetChanged();
+                            steemWebView.getSubscriptionFeed(accountInfo.userName);
+                            break;
+                        case DtubeAPI.CAT_HOT:
+                            allVideos.removeAll(videos.getCategorizedVideos(DtubeAPI.CAT_HOT));
+                            feedAdapter.notifyDataSetChanged();
+                            steemWebView.getHotVideosFeed();
+                            break;
+
+                        case DtubeAPI.CAT_NEW:
+                            allVideos.removeAll(videos.getCategorizedVideos(DtubeAPI.CAT_NEW));
+                            feedAdapter.notifyDataSetChanged();
+                            steemWebView.getNewVideosFeed();
+                            break;
+
+                        case DtubeAPI.CAT_TRENDING:
+                            allVideos.removeAll(videos.getCategorizedVideos(DtubeAPI.CAT_TRENDING));
+                            feedAdapter.notifyDataSetChanged();
+                            steemWebView.getTrendingVideosFeed();
+                            break;
+                        case DtubeAPI.CAT_HISTORY:
+                            tabGoToHistoryClicked(new View(MainActivity.this));
+                            swipeRefreshLayout.setRefreshing(false);
+                            break;
+                    }
+                }
+            });
+        }
+
+
         drawerLayout = findViewById(R.id.drawer_layout);
-
-
 
 //        drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_OPEN);
         if (runningOnTV)
@@ -351,20 +394,39 @@ public class MainActivity extends AppCompatActivity {
 
                         gettingMoreVideos = true;
 
-                        Video lastVideo = videos.get(videos.size()-1);
-                        switch (selectedTab){
-                            case DtubeAPI.CAT_HOT:
-                                steemWebView.getHotVideosFeed(lastVideo.user,lastVideo.permlink);
-                            break;
+                        //if videos are loaded at current time
+                        if (videos.size()>0) {
+                            Video lastVideo = videos.get(videos.size() - 1);
+                            switch (selectedTab) {
+                                case DtubeAPI.CAT_HOT:
+                                    steemWebView.getHotVideosFeed(lastVideo.user, lastVideo.permlink);
+                                    break;
 
-                            case DtubeAPI.CAT_NEW:
-                                steemWebView.getNewVideosFeed(lastVideo.user,lastVideo.permlink);
-                            break;
+                                case DtubeAPI.CAT_NEW:
+                                    steemWebView.getNewVideosFeed(lastVideo.user, lastVideo.permlink);
+                                    break;
 
-                            case DtubeAPI.CAT_TRENDING:
-                                steemWebView.getTrendingVideosFeed(lastVideo.user,lastVideo.permlink);
-                            break;
+                                case DtubeAPI.CAT_TRENDING:
+                                    steemWebView.getTrendingVideosFeed(lastVideo.user, lastVideo.permlink);
+                                    break;
+                            }
+                        }else{
+                            switch (selectedTab) {
+                                case DtubeAPI.CAT_HOT:
+                                    steemWebView.getHotVideosFeed();
+                                    break;
+
+                                case DtubeAPI.CAT_NEW:
+                                    steemWebView.getNewVideosFeed();
+                                    break;
+
+                                case DtubeAPI.CAT_TRENDING:
+                                    steemWebView.getTrendingVideosFeed();
+                                    break;
+                            }
+                            Log.d("dtube9", "get Feeds");
                         }
+
                     }
                 }
 
@@ -382,6 +444,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (accountInfo!=null)
             steemWebView.getSubscriptionFeed(accountInfo.userName);
+
         getInitialFeeds();
 
         addVideos(Video.getRecentVideos(this));
@@ -472,6 +535,8 @@ public class MainActivity extends AppCompatActivity {
 
     public boolean addVideos(VideoArrayList videos){
         Log.d("dtube4", "adding videos");
+        if (swipeRefreshLayout!=null)
+            swipeRefreshLayout.setRefreshing(false);
 
         if (videos == null)
             return false;
@@ -577,6 +642,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getInitialFeeds() {
+        Log.d("dtube9","getInitialFeeds()");
         steemWebView.getHotVideosFeed();
         steemWebView.getTrendingVideosFeed();
         steemWebView.getNewVideosFeed();
@@ -805,6 +871,9 @@ public class MainActivity extends AppCompatActivity {
             tab =0;
         if (tab<0)
             tab =4;
+
+        if (swipeRefreshLayout!=null)
+            swipeRefreshLayout.setRefreshing(false);
 
         switch (tab){
             case DtubeAPI.CAT_HISTORY:

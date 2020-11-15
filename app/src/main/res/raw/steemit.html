@@ -167,12 +167,12 @@ function commentPost(author, permlink, accountName, privateKey, comment, parentP
 
 
 
-
 //A callback function
 //gets video information required for playback & description
 function getVideoInfo(author, permlink, accountName){
 	steem.api.getContent(author, permlink,  function(err, b){
 		console.log(err, b);
+		console.log(JSON.stringify(getAdvancedVideoObject(b, accountName)))
 		androidAppProxy.getVideoInfoCallback(JSON.stringify(getAdvancedVideoObject(b, accountName)));
 	});
 }
@@ -436,7 +436,7 @@ function getSimpleVideoObject(r){
 				}else if (metadata.video.files.btfs){
 						video.provider = "BTFS";
 						if (metadata.video.files.btfs.vid){
-								video.hash = metadata.video.files.btfs.vid['480'];
+							video.hash = metadata.video.files.btfs.vid['480'];
 							if (!video.hash)
 								video.hash = metadata.video.files.btfs.vid['240'];
 							if (!video.hash)
@@ -448,7 +448,16 @@ function getSimpleVideoObject(r){
 						}
 				}else if (metadata.video.files.ipfs){
 						video.provider = "IPFS";
-						video.hash = metadata.video.files.ipfs;
+						if (metadata.video.files.ipfs.vid){
+							video.hash = metadata.video.files.ipfs.vid['480'];
+							if (!video.hash)
+								video.hash = metadata.video.files.ipfs.vid['240'];
+							if (!video.hash)
+								video.hash = metadata.video.files.ipfs.vid['src'];
+							if (!video.hash)
+								video.hash = metadata.video.files.ipfs.vid['1080'];
+						}else
+							video.hash = metadata.video.files.ipfs;
 				}else if (metadata.video.files.twitch){
 						video.provider = "Twitch";
 						video.hash = metadata.video.files.twitch;
@@ -507,6 +516,7 @@ function getSimpleVideoObject(r){
 function getAdvancedVideoObject(r, accountName){
 	var metadata = JSON.parse(r.json_metadata);
 
+
 	var video = new Object();
 	video.username = r.author;
 	video.title = r.title;
@@ -528,7 +538,7 @@ function getAdvancedVideoObject(r, accountName){
 
 	try{
 		var beginingIndex = r.body.lastIndexOf("<a href='")+9;
-	    	var stream = r.body.substring(beginingIndex,r.body.indexOf("'>",beginingIndex));
+	    var stream = r.body.substring(beginingIndex,r.body.indexOf("'>",beginingIndex));
 		if (stream.includes("ipfs")){
 			video.gateway = (stream.split("://")[1]);
 			video.gateway = video.gateway.substring(0, video.gateway.indexOf("/"))
@@ -568,7 +578,7 @@ function getAdvancedVideoObject(r, accountName){
 				}else if (metadata.video.files.btfs){
 						video.provider = "BTFS";
 						if (metadata.video.files.btfs.vid){
-								video.hash = metadata.video.files.btfs.vid['480'];
+							video.hash = metadata.video.files.btfs.vid['480'];
 							if (!video.hash)
 								video.hash = metadata.video.files.btfs.vid['240'];
 							if (!video.hash)
@@ -580,7 +590,16 @@ function getAdvancedVideoObject(r, accountName){
 						}
 				}else if (metadata.video.files.ipfs){
 						video.provider = "IPFS";
-						video.hash = metadata.video.files.ipfs;
+						if (metadata.video.files.ipfs.vid){
+							video.hash = metadata.video.files.ipfs.vid['480'];
+							if (!video.hash)
+								video.hash = metadata.video.files.ipfs.vid['240'];
+							if (!video.hash)
+								video.hash = metadata.video.files.ipfs.vid['src'];
+							if (!video.hash)
+								video.hash = metadata.video.files.ipfs.vid['1080'];
+						}else
+							video.hash = metadata.video.files.ipfs;
 				}else if (metadata.video.files.twitch){
 						video.provider = "Twitch";
 						video.hash = metadata.video.files.twitch;

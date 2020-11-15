@@ -135,7 +135,7 @@ public class MediaPlayerSingleton {
 
         if (videoToPlay.getProvider().equals(DtubeAPI.PROVIDER_YOUTUBE)) {
             Log.d("dtube2", "loading stream: " + videoToPlay.hash);
-            String url = "https://www.youtube.com/embed/"+videoToPlay.hash+"?autoplay=1&modestbranding=1&rel=0&showinfo=0";
+            String url = "https://www.youtube-nocookie.com/embed/"+videoToPlay.hash+"?autoplay=1&modestbranding=1&rel=0&showinfo=0";
             String html = "<html><body><iframe frameborder=0 allowfullscreen width=100% height=100% src=\"" + url + "\"  frameborder=0 allowfullscreen></iframe></body></html>";
             embeddedPlayer.loadData(html, "text/html", "utf-8");
             pauseNativePlayer();

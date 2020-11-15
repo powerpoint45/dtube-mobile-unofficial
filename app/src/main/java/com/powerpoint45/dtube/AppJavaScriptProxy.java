@@ -270,6 +270,7 @@ class AppJavaScriptProxy {
 
     @JavascriptInterface
     public void getSubscriptionsCallback(String[] usernames){
+        Log.d("dtube9", "getSubscriptionsCallback");
         ArrayList<Person> persons = new ArrayList<>();
         for (String username: usernames) {
             Person p = new Person();
