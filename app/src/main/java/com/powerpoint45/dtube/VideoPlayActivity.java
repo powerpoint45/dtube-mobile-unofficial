@@ -710,7 +710,10 @@ public class VideoPlayActivity extends AppCompatActivity {
     public final boolean useEmbeded = false;
     boolean hadErrorLoading;
     public void setupVideoView(){
-        Log.d("dtube9", videoToPlay.getVideoStreamURL());
+        Log.d("dtube9","getVideoInfo(\""+videoToPlay.user+"\",\""+videoToPlay.permlink+"\",\""+DtubeAPI.getAccountName(this)+"\");");
+        Log.d("dtube9","https://steemit.com/@"+videoToPlay.user+"/"+videoToPlay.permlink);
+
+        Log.d("dtube9", videoToPlay.permlink + ": "+videoToPlay.getVideoStreamURL());
         hadErrorLoading = false;
 
         videoLayoutHolder.removeView(MediaPlayerSingleton.getInstance(this).getEmbeddedPlayerView());

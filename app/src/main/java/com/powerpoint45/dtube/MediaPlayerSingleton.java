@@ -106,7 +106,7 @@ public class MediaPlayerSingleton {
      * @return playerView or youTubePlayerView based on provider
      */
     View getRightPlayerView(){
-        if(videoToPlay.getProvider().equals(DtubeAPI.PROVIDER_TWITCH)
+        if(videoToPlay.getProvider().equals(DtubeAPI.PROVIDER_TWITCH) || videoToPlay.getProvider().equals(DtubeAPI.PROVIDER_3SPEAK)
                 ||videoToPlay.getProvider().equals(DtubeAPI.PROVIDER_YOUTUBE))
             return  embeddedPlayer;
         else
@@ -131,7 +131,7 @@ public class MediaPlayerSingleton {
 
     void playVideo(Video videoToPlay, Context c){
         this.videoToPlay = videoToPlay;
-        Log.d("dtube","provider:  "+ videoToPlay.getProvider());
+        Log.d("dtube4","provider:"+ videoToPlay.getProvider());
 
         if (videoToPlay.getProvider().equals(DtubeAPI.PROVIDER_YOUTUBE)) {
             Log.d("dtube2", "loading stream: " + videoToPlay.hash);
@@ -140,7 +140,14 @@ public class MediaPlayerSingleton {
             embeddedPlayer.loadData(html, "text/html", "utf-8");
             pauseNativePlayer();
             startEmbeddedPlayer();
-        }else if (videoToPlay.getProvider().equals(DtubeAPI.PROVIDER_TWITCH)) {
+        }else if (videoToPlay.getProvider().equals(DtubeAPI.PROVIDER_3SPEAK)) {
+            Log.d("dtube9","PROVIDER_3SPEAK");
+            String url = "https://3speak.co/embed?v="+videoToPlay.hash;
+            String html = "<html><body><iframe src=\""+url+"\" frameborder=\"0\" width=100% height=100% allow=\"accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture\" allowfullscreen></iframe></body></html>";
+            embeddedPlayer.loadData(html, "text/html", "utf-8");
+            pauseNativePlayer();
+            startEmbeddedPlayer();
+        } else if (videoToPlay.getProvider().equals(DtubeAPI.PROVIDER_TWITCH)) {
             embeddedPlayer.loadUrl("https://player.twitch.tv/?video="+videoToPlay.hash);
             pauseNativePlayer();
             startEmbeddedPlayer();

@@ -84,7 +84,7 @@ public class WebViewVideoView extends WebView {
             }
 
             public boolean shouldOverrideUrlLoading (WebView view, String url) {
-                if (url.startsWith("https://m.youtube.com/"))
+                if (url.startsWith("https://m.youtube.com/") || url.startsWith("https://3speak.co/watch"))
                     return true; // reject loading this page
                 else
                     return false;

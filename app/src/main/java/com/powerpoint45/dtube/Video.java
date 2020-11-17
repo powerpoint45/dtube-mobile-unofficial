@@ -2,6 +2,7 @@ package com.powerpoint45.dtube;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.util.Log;
 
 import java.io.EOFException;
 import java.io.FileNotFoundException;
@@ -76,7 +77,9 @@ class Video implements Serializable{
 
 
     String getVideoStreamURL() {
-        if (getProvider().equals(DtubeAPI.PROVIDER_BTFS))
+        if (getProvider().equals(DtubeAPI.PROVIDER_SKYNET)){
+            return  "https://siasky.net/" + hash;
+        }if (getProvider().equals(DtubeAPI.PROVIDER_BTFS))
             return "https://player.d.tube/btfs/" + hash;
         //Ater about Dec 12 dtube started using the new video.dtube.top gateway
         if (getDate()>=1544653245000L && !getGateway().equals("video.oneloveipfs.com"))
@@ -166,7 +169,7 @@ class Video implements Serializable{
         }
     }
 
-    private static void saveRecentsList(VideoArrayList videos, Context c){
+    public static void saveRecentsList(VideoArrayList videos, Context c){
         FileOutputStream fos;
         try {
             fos = c.openFileOutput("recentsVideos", Context.MODE_PRIVATE);
@@ -181,6 +184,7 @@ class Video implements Serializable{
     }
 
     void saveVideoToRecents(Context c){
+        Log.d("dtube4","saving video to recents: "+this.title);
         VideoArrayList videos = getRecentVideos(c);
         if (videos==null)
             videos = new VideoArrayList();

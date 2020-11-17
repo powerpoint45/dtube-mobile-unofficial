@@ -154,6 +154,7 @@ class AppJavaScriptProxy {
     public void getVideoInfoCallback(String json) {
         try {
             if (activity instanceof MainActivity) {
+                Log.d("dtube4", json);
                 JSONObject o = new JSONObject(json);
                 Video video = getVideoFromJsonObject(o);
                 Log.d("dtube4", video.getVideoStreamURL());

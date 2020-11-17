@@ -166,7 +166,6 @@ function commentPost(author, permlink, accountName, privateKey, comment, parentP
 }
 
 
-
 //A callback function
 //gets video information required for playback & description
 function getVideoInfo(author, permlink, accountName){
@@ -409,7 +408,7 @@ function getSimpleVideoObject(r){
 		if (metadata.video.ipfs){
 			video.snaphash = metadata.video.ipfs.snaphash;
 			video.hash = metadata.video.ipfs.video480hash;
-		}else if (metadata.video.info && metadata.video.info){
+		}else if (metadata.video.info){
 			video.snaphash = metadata.video.info.snaphash;
 			video.hash = metadata.video.content.video480hash;
 		}else if (metadata.video.thumbnailUrl){
@@ -420,6 +419,7 @@ function getSimpleVideoObject(r){
 		if (metadata.video.providerName){
 			video.provider = metadata.video.providerName;
 		}
+
 
 
 		if (!video.hash){
@@ -446,6 +446,10 @@ function getSimpleVideoObject(r){
 						}else{
 							video.hash = metadata.video.files.btfs;
 						}
+				}else if (metadata.video.files.sia && metadata.video.files.sia.vid){
+					//Skynet
+					video.hash = metadata.video.files.sia.vid['src'];
+					video.provider = "Sia Skynet"
 				}else if (metadata.video.files.ipfs){
 						video.provider = "IPFS";
 						if (metadata.video.files.ipfs.vid){
@@ -461,12 +465,23 @@ function getSimpleVideoObject(r){
 				}else if (metadata.video.files.twitch){
 						video.provider = "Twitch";
 						video.hash = metadata.video.files.twitch;
+				}else if (metadata.video && metadata.video.info && metadata.video.info.platform){
+					if (metadata.video.info.platform == "3speak"){
+						video.provider = "3speak"
+						video.hash = metadata.video.info.author + "/" + metadata.video.info.permlink;
+					}
 				}
+
 
 				if (metadata.video.files.ipfs){
 						if (metadata.video.files.ipfs.img){
 								video.snaphash = metadata.video.files.ipfs.img['118'];
 						}
+				}
+			}else if (metadata.video && metadata.video.info){
+				if (metadata.video.info.platform == "3speak" || metadata.app.includes("3speak")){
+					video.provider = "3speak";
+					video.hash = metadata.video.info.author + "/" + metadata.video.info.permlink;
 				}
 			}
 		}
@@ -552,7 +567,7 @@ function getAdvancedVideoObject(r, accountName){
 		if (metadata.video.ipfs){
 			video.snaphash = metadata.video.ipfs.snaphash;
 			video.hash = metadata.video.ipfs.video480hash;
-		}else if (metadata.video.info && metadata.video.info){
+		}else if (metadata.video.info){
 			video.snaphash = metadata.video.info.snaphash;
 			video.hash = metadata.video.content.video480hash;
 		}else if (metadata.video.thumbnailUrl){
@@ -568,7 +583,7 @@ function getAdvancedVideoObject(r, accountName){
 			if (metadata.video.ipfs){
 				video.hash = metadata.video.ipfs.videohash;
 				video.provider = "IPFS";
-			}else if (metadata.video.content){
+			}else if (metadata.video.content && metadata.video.content.videohash){
 				video.hash = metadata.video.content.videohash;
 				video.provider = "IPFS";
 			}else if (metadata.video.files){
@@ -588,6 +603,10 @@ function getAdvancedVideoObject(r, accountName){
 						}else{
 							video.hash = metadata.video.files.btfs;
 						}
+				}else if (metadata.video.files.sia && metadata.video.files.sia.vid){
+					//Skynet
+					video.hash = metadata.video.files.sia.vid['src'];
+					video.provider = "Sia Skynet"
 				}else if (metadata.video.files.ipfs){
 						video.provider = "IPFS";
 						if (metadata.video.files.ipfs.vid){
@@ -610,8 +629,16 @@ function getAdvancedVideoObject(r, accountName){
 								video.snaphash = metadata.video.files.ipfs.img['118'];
 						}
 				}
+			}else if (metadata.video && metadata.video.info){
+				if (metadata.video.info.platform == "3speak" || metadata.app.includes("3speak")){
+					video.provider = "3speak";
+					video.hash = metadata.video.info.author + "/" + metadata.video.info.permlink;
+				}
 			}
+
 		}
+
+		console.log(video.hash);
 
 		if ((metadata.links && (metadata.links.includes("https://oneloveipfs.com") || metadata.links.includes("https://oneloved.tube/")))
 				|| metadata.app.includes("onelovedtube/"))

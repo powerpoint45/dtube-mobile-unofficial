@@ -1,5 +1,6 @@
 package com.powerpoint45.dtube;
 
+import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -7,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -33,6 +35,7 @@ class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
 
     static final int TYPE_VIDEO = 1;
     static final int TYPE_LOADER = 2;
+    static final int TYPE_HISTORY_HEADER = 3;
 
     private int lastPosition = -1;
 
@@ -64,8 +67,10 @@ class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
                 userView = v.findViewById(R.id.item_user);
                 removeButton = v.findViewById(R.id.item_remove);
                 durationText = v.findViewById(R.id.duration_text);
-            }else {
+            }else if (type == TYPE_LOADER){
                 progressBar = (ProgressBar)v;
+            }else if (type == TYPE_HISTORY_HEADER){
+
             }
         }
         public void clearAnimation()
@@ -107,8 +112,7 @@ class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
                 v.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
             // set the view's size, margins, paddings and layout parameters
             return new ViewHolder(v, TYPE_VIDEO);
-        }else {
-
+        }else if (viewType == TYPE_LOADER){
             ProgressBar pb = new ProgressBar(c);
             if (tvMode)
                 pb.setLayoutParams(new LinearLayout.LayoutParams(Tools.numtodp(400, c), Tools.numtodp(267, c)));
@@ -116,7 +120,13 @@ class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
                 pb.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
             }
             return new ViewHolder(pb, TYPE_LOADER);
+        }else if (viewType == TYPE_HISTORY_HEADER){
+            LinearLayout v = (LinearLayout) LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.history_header, parent, false);
+            return new ViewHolder(v, TYPE_HISTORY_HEADER);
         }
+
+        return null;
     }
 
     private View.OnFocusChangeListener onFocusChangeListener = new View.OnFocusChangeListener() {
@@ -130,6 +140,8 @@ class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         if (getItemViewType(position)==TYPE_VIDEO && videos.size()>0) {
+            if (c.selectedTab == DtubeAPI.CAT_HISTORY && c.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT)
+                position = position-1;
 
             holder.itemView.setTag(position);
             holder.itemView.setOnClickListener(v -> c.onItemClick((Integer) v.getTag()));
@@ -169,6 +181,7 @@ class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
                 holder.durationText.setVisibility(View.INVISIBLE);
 
 
+            int finalPosition = position;
             Picasso.get().load(videos.get(position).getImageURL()).placeholder(placeholderDrawable)
                     .resize(720, 720).centerInside()//prevents image to be shown to be larger than 720px w or h. Makes scrolling smoother
                     .noFade()
@@ -179,16 +192,16 @@ class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
 
                         @Override
                         public void onError(Exception e) {
-                            if (videos.size()>0) {
-                                Picasso.get().load(videos.get(position).getBackupImageURL()).placeholder(placeholderDrawable)
+                            if (videos.size()>0 && finalPosition < videos.size()) {
+                                Picasso.get().load(videos.get(finalPosition).getBackupImageURL()).placeholder(placeholderDrawable)
                                         .resize(720, 720).centerInside()//prevents image to be shown to be larger than 720px w or h. Makes scrolling smoother
                                         .noFade()
                                         .into(holder.thumbView);
                             }
                         }
                     });
-        }else {
 
+        }else if (getItemViewType(position)==TYPE_LOADER) {
             if (videos.size()>0
                     && (videos.get(videos.size()-1).categoryId==DtubeAPI.CAT_SUBSCRIBED
                     ||videos.get(videos.size()-1).categoryId==DtubeAPI.CAT_SUBSCRIBED
@@ -196,6 +209,14 @@ class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
                 holder.progressBar.setVisibility(View.GONE);
             }else
                 holder.progressBar.setVisibility(View.VISIBLE);
+        }else if (getItemViewType(position)==TYPE_HISTORY_HEADER){
+            if (videos.size()==0) {
+                holder.itemView.findViewById(R.id.clear_history).setEnabled(false);
+                ((Button) holder.itemView.findViewById(R.id.clear_history)).setText(R.string.no_history);
+            }else {
+                holder.itemView.findViewById(R.id.clear_history).setEnabled(true);
+                ((Button) holder.itemView.findViewById(R.id.clear_history)).setText(R.string.clear_history);
+            }
         }
 
         if (!tvMode)
@@ -205,7 +226,12 @@ class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
     // Return the size of your dataset (invoked by the layout manager)
     @Override
     public int getItemCount() {
-        if (videos.size() == 0 && c.findViewById(R.id.login_for_subs)==null)
+        if (c.selectedTab == DtubeAPI.CAT_HISTORY) {
+            if (c.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT)
+                return videos.size()+1;
+            else
+                return videos.size();
+        }if (videos.size() == 0 && c.findViewById(R.id.login_for_subs)==null)
             return 1;
         else {
             return videos.size();
@@ -215,7 +241,12 @@ class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
 
     @Override
     public int getItemViewType(int position) {
-        if (position == videos.size()-1 || videos.size() == 0)
+        if (c.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT && c.selectedTab == DtubeAPI.CAT_HISTORY)
+            if (position == 0)
+                return TYPE_HISTORY_HEADER;
+            else
+                return TYPE_VIDEO;
+        else if (position == videos.size()-1 || videos.size() == 0)
             return TYPE_LOADER;
         else
             return TYPE_VIDEO;
@@ -223,8 +254,16 @@ class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
 
     @Override
     public long getItemId(int position) {
-        if (videos.size()>0)
+        if (c.selectedTab == DtubeAPI.CAT_HISTORY) {
+            if (c.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT)
+                if (position == 0)
+                    return TYPE_HISTORY_HEADER;
+                else
+                    return videos.get(position-1).hashCode();
+        }
+        else if (videos.size()>0 && position<videos.size())
             return videos.get(position).hashCode();
+
         return super.getItemId(position);
     }
 

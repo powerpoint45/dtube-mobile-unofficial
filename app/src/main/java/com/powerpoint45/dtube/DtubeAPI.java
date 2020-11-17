@@ -20,6 +20,9 @@ public class DtubeAPI {
     static final String PROVIDER_BTFS = "BTFS";
     static final String PROVIDER_YOUTUBE = "YouTube";
     static final String PROVIDER_TWITCH = "Twitch";
+    static final String PROVIDER_SKYNET = "Sia Skynet";
+    static final String PROVIDER_3SPEAK = "3speak";
+
 
 
     //public static String PROFILE_IMG_URL = "https://img.busy.org/@";//https://img.busy.org/@lukewearechange//too slow, useing steemitimages

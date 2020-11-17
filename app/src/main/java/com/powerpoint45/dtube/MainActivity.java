@@ -498,6 +498,23 @@ public class MainActivity extends AppCompatActivity {
             steemWebView.getVideoInfo(videos.get(pos).user, videos.get(pos).permlink, DtubeAPI.getAccountName(this));
     }
 
+    public void clearHistoryClicked(View v){
+        if (selectedTab == DtubeAPI.CAT_HISTORY) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+            builder.setTitle(R.string.clear_history);
+            builder.setPositiveButton(android.R.string.yes, (dialog, id) -> {
+                Video.saveRecentsList(new VideoArrayList(),this);
+                allVideos.removeAll(videos.getCategorizedVideos(DtubeAPI.CAT_HISTORY));
+                initFeed();
+            });
+            builder.setNegativeButton(android.R.string.cancel, null);
+
+            AlertDialog dialog = builder.create();
+            dialog.show();
+        }
+    }
+
     public void onItemLongClick(final int pos){
         if (selectedTab == DtubeAPI.CAT_HISTORY) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
