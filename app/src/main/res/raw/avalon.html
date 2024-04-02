@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<html>
+<script src="hive.js"></script>
+<script src="bluebird.js"></script>
+<script src="dateformat.js"></script>
+<script src="showdown.js"></script>
+<script src="javalon.js"></script>
+<script language="javascript">
+
+const PLATFORM_STEEMIT = 'https://api.steemit.com'
+const PLATFORM_HIVE = 'https://api.hive.blog'
+const PLATFORM_DTUBE = "https://dtube.tekraze.com/"
+
+const NET_SELECT_AVION = 1;
+const NET_SELECT_HIVE = 2;
+const NET_SELECT_STEEM = 3;
+
+const USING_BROWSER = false;
+
+const CATEGORY_HOT = "hot";
+const CATEGORY_TRENDING = "trending";
+const CATEGORY_NEW = "new";
+
+const SORT_DATE = "ts";
+const SORT_RELEVANCE = "_score";
+const SORT_POPULAR = "votes.gross";
+
+var platform = PLATFORM_DTUBE;
+
+setPlatform(platform);
+
+
+
+function setPlatform(url){
+	platform = url;
+	// javalon.setOptions({
+	//     url: platform
+	// });
+
+    javalon.init({api: platform})
+
+	console.log('loaded platform: ' + platform);
+}
+
+
+//this is how many posts are returned when when using calls for hot videos, trending videos, and new videos
+const numQuerries = 30;
+
+
+
+//this is a common querry for calls for hot videos, trending videos, and new videos
+var querry = {
+    limit: numQuerries,
+    tag: 'dtube',
+};
+
+//login("immawake", "5KeXsMHGZ88KdytGdNCYZ2k8khwUEmeHRdeBY1pcguPHuRqyRe2", false, false);
+//getSubscriptions("immawake");
+
+//A callback function
+//checks the user credintials At login
+//upvotes intro post if initial login and user has opted for the upvote
+//follows me if initial login and user has opted to follow me
+function login(username, password, upvote, follow) {
+    javalon.getAccounts([username], function(err, result) {
+
+            if (err)
+                androidAppProxy.loginCallback(false);
+
+            try {
+                console.log(JSON.stringify(result));
+
+                if (follow) {
+                    var newTx = {
+                        type: javalon.TransactionType.FOLLOW,
+                        data: {
+                            target: 'luciddevteam01'
+                        }
+                    }
+
+                    newTx = javalon.sign(password, username, newTx);
+                    javalon.sendRawTransaction(newTx, function(err, res) {
+                        
+                        //console.log(JSON.stringify(err));
+
+                        if (err){
+                            if (JSON.stringify(err).includes("already following")){
+
+                            }
+                        }
+
+                    })
+                }
+
+                //Check if private key is valid
+                if(javalon.privToPub(password) == result[0].pub)
+                    androidAppProxy.loginCallback(true);
+
+        
+            } catch (e) {
+                console.log(e);
+                if (!USING_BROWSER)
+                    androidAppProxy.loginCallback(false);
+            }
+        });
+    }
+
+
+//     //category can be CATEGORY_HOT, CATEGORY_TRENDING, or CATEGORY_NEW
+//     async function loadAvalonVideos(category) {
+
+//         fetch("https://avalon.d.tube/" + category)
+//         .then(response => response.json())
+//         .then(json_res => 
+//             {
+//                 console.log(json_res)
+
+//             var videos = [];
+//             for (var key in json_res) {
+//                 var json = json_res[key];
+                
+//                 if (isVideoViewable(json_res[key])) {
+//                     var videoObj = getAdvancedVideoObject(json_res[key],null);
+//                     videos.push(videoObj);
+//                     console.log("VIDEO:");
+//                     console.log(JSON.stringify(videoObj));
+//                 }
+//             }
+        
+//             if (!USING_BROWSER){
+//                 console.log("VIDEOS:");
+//                 console.log(JSON.stringify(videos));
+
+//                 if (category == CATEGORY_TRENDING)
+//                     androidAppProxy.getTrendingVideosFeedCallback(JSON.stringify(videos));
+//                 else if (category == CATEGORY_HOT)
+//                     androidAppProxy.getHotVideosFeedCallback(JSON.stringify(videos));
+//                 else if (category == CATEGORY_NEW)
+//                     androidAppProxy.getNewVideosFeedCallback(JSON.stringify(videos));
+
+//                 console.log(category+" loaded !!!!");
+//             }
+//             console.log(category+" loaded ");
+//         })
+// }
+
+
+//A callback function
+//gets a list of subscriptions the user is subscribed to
+function getSubscriptions(username) {
+    javalon.getFollowing(username, function(err, result) {
+        
+        var users = [];
+        for (u = 0; u < result.length; u++) {
+            users.push(result[u]);
+            //console.log(JSON.stringify(result[u]));
+        }
+        if (!USING_BROWSER)
+            androidAppProxy.getSubscriptionsCallback(users);
+    });
+}
+
+
+//A callback function
+//gets the number of subscribers the user has
+function getSubscriberCount(username) {
+    javalon.getFollowers(username, function(err, result) {
+        if (result)
+            if (!USING_BROWSER)
+                androidAppProxy.getSubscriberCountCallback(username, result.length);
+    });
+}
+
+//returns to appProxy your balance, dollar balance, and voting power
+function getBalance(accountName) {
+    javalon.getAccount(accountName, function(err, result) {
+        console.log(result.balance,"-", result.dtc_balance);
+        console.log(result);
+        androidAppProxy.getBalanceCallback(accountName, insertDecimal(javalon.availableBalance(result))+" DTC", result.bw.v +" bytes", javalon.votingPower(result) +" VP");
+    });
+}
+
+function insertDecimal(num) {
+   return (num / 100).toFixed(2);
+}
+
+
+
+
+
+//A callback function
+//gets weather the user is following a specific author
+function getIsFollowing(author, accountName) {
+
+    javalon.getFollowing(accountName,function(err, result) {
+        console.log("getIsFollowing" +accountName+"Sss"+ JSON.stringify(result));
+
+        androidAppProxy.getIsFollowingCallback(result.includes(accountName), author);
+    });
+}
+
+
+
+//A special callback function getIsFollowingCallback
+//follows an author and then sends getIsFollowingCallback true
+function followAuthor(author, accountName, privateKey) {
+
+    var newTx = {
+        type: javalon.TransactionType.FOLLOW,
+        data: {
+            target: author
+        }
+    }
+
+    newTx = javalon.sign(privateKey, accountName, newTx);
+
+    javalon.sendRawTransaction(newTx, function(err, res) {
+        //console.log(err, res)
+        //console.log(JSON.stringify(err));
+
+        if (!USING_BROWSER){
+            if (err &&JSON.stringify(err).includes("already following")){
+                console.log(JSON.stringify(err));
+                androidAppProxy.getIsFollowingCallback(true , author);
+            }else
+                androidAppProxy.getIsFollowingCallback(res && !err , author);
+        }
+    });
+}
+
+
+
+//A special callback function getIsFollowingCallback
+//follows an author and then sends getIsFollowingCallback false
+function unfollowAuthor(author, accountName, privateKey) {
+    var newTx = {
+        type: javalon.TransactionType.UNFOLLOW,
+        data: {
+            target: author
+        }
+    }
+
+    newTx = javalon.sign(privateKey, accountName, newTx);
+
+    javalon.sendRawTransaction(newTx, function(err, res) {
+        //console.log(err, res)
+        //console.log(JSON.stringify(err));
+
+        if (err &&JSON.stringify(err).includes("already following")){
+            console.log(JSON.stringify(err));
+            androidAppProxy.getIsFollowingCallback(true , author);
+        }else if (!USING_BROWSER)
+            androidAppProxy.getIsFollowingCallback(res && !err , author);
+
+    });
+}
+
+
+//A callback function
+//votes on a specific post/video/reply then sends back voteWeight and the permlink
+function votePost(author, permlink, accountName, privateKey, weight) {
+
+    var yourVote = 0;
+
+    if (weight>0)
+        yourVote = 5;
+    else
+        yourVote = -5;
+
+
+    var newTx = {
+        type: javalon.TransactionType.VOTE,
+        data: {
+            author: author,
+            link: permlink,
+            vt: yourVote,
+            tag: "dtube"
+        }
+    }
+
+    newTx = javalon.sign(privateKey, accountName, newTx);
+
+    javalon.sendRawTransaction(newTx, function(err, res) {
+        console.log(err, res)
+        if (err)
+            console.log(JSON.stringify(err));
+
+        if (!USING_BROWSER){
+            androidAppProxy.votePostCallback(weight, permlink);
+        }
+    });
+}
+
+
+
+//A special callback function
+//Adds a comment to a post/video/reply and then sends getAllRepliesCallback for new comment
+//indent: is the depth of the comment tree
+function commentPost(author, permlink, accountName, privateKey, comment, parentPermlink, parentAuthor, indent) {
+    var newPermlink = new Date().toISOString().replace(/[^a-zA-Z0-9]+/g, '').toLowerCase();
+
+    console.log("comment="+comment);
+
+    var commentJsonObject = new Object();
+    commentJsonObject.description = comment;
+    commentJsonObject.desc = comment;
+    commentJsonObject.title = "comment";
+    commentJsonObject.tag = "dtube";
+
+
+    var newTx = {
+        type: javalon.TransactionType.COMMENT,
+        data: {
+            link: newPermlink,
+            pa:author,
+            pp:permlink,
+            json: commentJsonObject, 
+            vt:5,
+            tag: "dtube"
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+    newTx = javalon.sign(privateKey, accountName, newTx);
+    console.log(JSON.stringify(Date.now()));
+    javalon.sendRawTransaction(newTx, function(err, res) {
+        console.log(err, res)
+
+        if (err){
+            console.log(JSON.stringify(err));
+
+            //{"error":"need more bandwidth (353 B)"}
+            //You lack 301 bytes to broadcast that blockchain transaction. Keep more DTC in your account to have more bandwidth power. 1 DTC generates +10 bytes / hour.
+            if (JSON.stringify(err).includes("more bandwidth")){
+                //TODO: handle bandwidth error. Tell user they need more voting power
+
+            }
+        }else
+            {
+                //format for mobile app
+                var commentObject = new Object();
+                commentObject.permlink = newPermlink;
+                commentObject.parent = permlink;
+                commentObject.author = accountName;
+
+                commentObject.indent = indent;
+                commentObject.date = Date.now();
+                commentObject.children = 0;;
+
+
+                var converter = new showdown.Converter()
+                converter.setOption('simplifiedAutoLink', true);
+                htmlBody = converter.makeHtml(comment);
+                commentObject.comment = htmlBody;
+
+                //Send comment to mobile app
+                androidAppProxy.getRepliesCallback(JSON.stringify(commentObject));
+            }
+
+        androidAppProxy.commentPostCallback();
+    });
+
+
+
+
+    // hive.broadcast.comment(
+    //     privateKey,
+    //     author, // Parent Author
+    //     permlink, // Parent Permlink
+    //     accountName, // Author
+    //     newPermlink, // Permlink
+    //     '', // Title
+    //     comment, // Body,
+    //     {
+    //         tags: [],
+    //         app: 'steemjs/dtubemobileapp'
+    //     }, // Json Metadata
+    //     function(err, result) {
+    //         console.log(err, result);
+    //         getReplies(author, permlink, accountName);
+    //     }
+    // );
+}
+
+
+
+
+
+
+//A callback function
+//gets video information required for playback & description
+function getVideoInfo(author, permlink, accountName) {
+    //setPlatform(PLATFORM_STEEMIT);
+
+    javalon.getContent(author, permlink, function(err, b) {
+        androidAppProxy.getVideoInfoCallback(JSON.stringify(getAdvancedVideoObject(b, accountName)));
+    });
+}
+
+
+//A callback function
+//gets video information required for playback & description
+function getVideoThumbnail(author, permlink) {
+    //setPlatform(PLATFORM_STEEMIT);
+
+    javalon.getContent(author, permlink, function(err, b) {
+        if (b)
+            console.log(JSON.stringify(b));
+
+        var video = getAdvancedVideoObject(b, null);
+
+        androidAppProxy.getVideoThumbnailCallback(video.thumbnailUrl);
+    });
+}
+
+
+
+
+//A callback function
+//gets root replies on a permlink
+//and sends easy workable reply objects one at a time
+function getReplies(author, permlink, accountName) {
+    console.log("getReplies: "+ author, permlink, accountName);
+    
+    javalon.getContent(author, permlink, function(err, content) {
+        //get tree of comments
+        
+        //var commentTree = javalon.generateCommentTree(content, content.author, permlink);
+        //console.log("UMMMMM "+content, content.author, permlink);
+        
+        console.log(JSON.stringify(content));
+
+        var commentTree = javalon.generateCommentTree(content,content.author,permlink);
+        console.log(JSON.stringify(commentTree));
+
+         var commentObjects = sendCommentTreeTransformed(commentTree, 0, accountName);
+
+    });
+
+        // console.log("getreplies" + JSON.stringify(commentTree));
+        
+
+        // var commentObject = getCommentObject(reply, accountName);
+        
+        
+
+        // var replies = content.comments;
+
+        // for (var key in replies) {
+        //     (function(reply) {
+
+
+        //         javalon.getVotesByAccount(reply.author, reply.link, function(err, votes) {
+
+        //             var replyObject = getCommentObject(reply, votes, accountName);
+        //             var replyString = JSON.stringify(replyObject);
+        //             console.log(replyString);
+        //             androidAppProxy.getRepliesCallback(JSON.stringify(replyObject));
+
+        //         });
+
+
+
+        //     })(replies[key]);
+        // }
+
+
+
+    //     for (var key in replies) {
+            
+
+
+
+    //         var reply = replies[key];
+           
+    //         console.log("comment:", JSON.stringify(reply));
+
+
+    //         var replyObject = getCommentObject(reply, accountName);
+
+
+    //         console.log(replyObject);
+    //         androidAppProxy.getRepliesCallback(JSON.stringify(replyObject));    
+    //     }
+     
+}
+
+
+function sendCommentTreeTransformed(commentTree, depth, accountName){
+    console.log("sendCommentTreeTransformed");
+    for (comment in commentTree){
+        var commentObject = getCommentObject(commentTree[comment], accountName);
+        commentObject.indent = depth;
+
+        androidAppProxy.getRepliesCallback(JSON.stringify(commentObject));
+        
+        if (commentTree[comment].child && commentTree[comment].child.length> 0) {
+            console.log("replies: "+JSON.stringify(commentTree[comment].replies));
+            sendCommentTreeTransformed(commentTree[comment].replies, depth + 1, accountName);
+        }
+    }
+
+}
+
+function getCommentObject(reply, accountName){
+    //console.log("Comment:"+accountName+JSON.stringify(reply));
+    
+
+    var commentObject = new Object();
+    commentObject.permlink = reply.link;
+    commentObject.parent = reply.pp;
+    commentObject.author = reply.author;
+
+    commentObject.indent = 0; //reply.depth - 1;
+    commentObject.date = reply.ts;
+    commentObject.children = reply.child;
+
+
+    var converter = new showdown.Converter()
+    converter.setOption('simplifiedAutoLink', true);
+    textBody = reply.json.description;
+    htmlBody = converter.makeHtml(textBody);
+
+    commentObject.comment = htmlBody;
+    //console.log(commentObject.comment);
+
+
+
+    // var pendingValue = parseFloat(reply.pending_payout_value.substring(0, reply.pending_payout_value.indexOf(" ")));
+    // var payoutValue = parseFloat(reply.total_payout_value.substring(0, reply.total_payout_value.indexOf(" ")));
+    // var curatorValue = parseFloat(reply.curator_payout_value.substring(0, reply.curator_payout_value.indexOf(" ")));
+
+    // var totalPrice = pendingValue + payoutValue + curatorValue;
+    // totalPrice = totalPrice.toFixed(3);
+
+    
+
+    var likes = 0;
+    var dislikes = 0;
+
+    //0=no vote
+    //1=vote up
+    //-1=vote down
+    //user has voted up or down
+    var voteType = 0;
+    var voteSum = 0;
+
+    if (reply.votes){
+        for (voteIndex in reply.votes) {
+
+            voteSum += reply.votes[voteIndex].vt;
+            if (reply.votes[voteIndex].vt>0){
+                likes++;
+            }else{
+                dislikes++;
+            }
+
+            if (reply.votes[voteIndex].u == accountName){
+                if (reply.votes[voteIndex].vt>0){
+                    voteType = 1;
+                }else{
+                    voteType = -1;
+                }
+            }
+        }
+    }
+
+    commentObject.likes = likes;
+    commentObject.dislikes = dislikes;
+    commentObject.voteType = voteType;
+
+    commentObject.price = "👍 "+reply.total  +"  $"+voteSum;
+
+    return commentObject;
+    
+}
+
+//getAuthorVideos("immawake", "");
+
+
+
+//A callback function
+//gets 20 posts from an author and filters non-dtube posts
+//if dtube posts length is 0 then it gets the next set of posts without notification
+//to start getting videos have lastPermlink=''
+//sends videoObjects array and the last permlink in post list
+function getAuthorVideos(author, lastPermlink, lastAuthor, accountName) {
+    javalon.getDiscussionsByAuthor(author, lastAuthor, lastPermlink, function(err, result) {
+        if (result.length > 0) {
+            var newLastPermlink = result[result.length - 1].link;
+            var newLastAuthor = result[result.length - 1].author;
+            
+            if (newLastPermlink != lastPermlink) {
+                //remove first element because it is a duplicate of lastPermlink
+                if (lastPermlink != "")
+                    result.shift()
+
+                var videos = [];
+
+                for (i in result) {
+                    //dtube permlinks have a length of 8
+                    var video = getAdvancedVideoObject(result[i], null);
+                    videos.push(video);   
+                }
+                console.log(err, "found " + videos.length + " videos from author");
+
+                //let client know of new posts and the last permlink
+                //if (videos.length == 0)
+                    //getAuthorPosts(author, newLastPermlink);
+                //else{
+                if (!USING_BROWSER)
+                    androidAppProxy.getAuthorVideosCallback(JSON.stringify(videos), newLastAuthor, newLastPermlink);
+                //}
+
+            } else {
+                //let client know nothing else needs to load
+                if (!USING_BROWSER)
+                    androidAppProxy.getAuthorVideosCallback(null, "last", "last");
+            }
+        }
+    });
+}
+
+
+
+
+//A callback function
+//gets 6 of the latest videos from a specific author
+function getSuggestedVideos(author) {
+    // fetch("https://avalon.d.tube/blog/" + author)
+    //     .then(response => response.json())
+    //     .then(json_res => 
+    //         {
+    //             console.log(json_res)
+
+    //         var videos = [];
+    //         for (var key in json_res) {
+    //             var json = json_res[key];
+                
+    //             var videoObj = getAdvancedVideoObject(json_res[key],null);
+    //             videos.push(videoObj);
+    //             console.log("VIDEO:");
+    //             console.log(JSON.stringify(videoObj));
+                
+
+    //             if (videos.length == 6)
+    //                 break;
+    //         }
+        
+    //         if (!USING_BROWSER){
+    //             console.log("VIDEOS:");
+    //             androidAppProxy.getSuggestedVideosCallback(JSON.stringify(videos));
+    //             console.log(author+" loaded !!!!");
+    //         }            
+        
+        
+    //     })
+
+
+
+
+
+
+    
+    javalon.getDiscussionsByAuthor(author, null, null, function(err, result) {
+        console.log("suggested videos for" + author + " loaded");
+
+        var videos = [];
+
+        for (i in result) {
+                videos.push(getAdvancedVideoObject(result[i], null));
+                if (videos.length == 6)
+                    break;
+        }
+
+        if (videos.length > 0) {
+            console.log("suggested" + videos.length + " videos");
+            androidAppProxy.getSuggestedVideosCallback(JSON.stringify(videos));
+        }
+
+    });
+}
+
+
+
+//A callback function
+//gets a set of videos from each subscription and sends them as chunks
+// function getSubscriptionFeed(username) {
+//     //first get a list of subscriptions
+//     javalon.getFollowing(username, 0, "blog", 100, function(err, result) {
+//         console.log(err)
+
+//         //the more the subscribers the less videos from each sub
+//         var numberOfVideosToGetFromEachSub = 50 / result.length;
+//         var numberOfItemsToProcess = 100 / (result.length / 2);
+
+//         if (numberOfVideosToGetFromEachSub < 4)
+//             numberOfVideosToGetFromEachSub = 4;
+
+//         if (numberOfItemsToProcess < 20)
+//             numberOfItemsToProcess = 20;
+
+//         if (numberOfItemsToProcess > 100)
+//             numberOfItemsToProcess = 100;
+
+
+//         for (u = 0; u < result.length; u++) {
+//             //get some videos from all subscriptions result[u].following
+//             var d = new Date();
+//             d.setTime(d.getTime() + d.getTimezoneOffset() * 60 * 1000);
+//             var dateString = dateFormat(d, "yyyy-mm-dd'T'HH:MM:ss");
+
+//             javalon.getDiscussionsByAuthorBeforeDate(result[u].following, "", dateString, numberOfItemsToProcess, function(err, result) {
+//                 var videos = [];
+//                 for (i in result) {
+//                     if (isVideoViewable(result[i])) {
+//                         videos.push(getAdvancedVideoObject(result[i], null));
+//                         if (videos.length == numberOfVideosToGetFromEachSub)
+//                             break;
+//                     }
+//                 }
+//                 if (videos.length > 0) {
+//                     console.log("subscription feed for" + videos[0].username + "loaded");
+//                     //app will load one set of subscriptions at a time
+//                     androidAppProxy.getSubscriptionFeedCallback(JSON.stringify(videos));
+//                 }
+//             });
+//         }
+//     });
+// }
+
+
+//A callback function
+//gets a set of videos and sends as a single chunk
+function getSubscriptionFeed(username, start_author, start_permlink) {
+        // if (start_permlink == "" || start_permlink == null)
+        //     loadAvalonVideos(CATEGORY_HOT);
+        // else{
+            console.log("getSubscriptionFeed");
+            querry.start_author = start_author;
+            querry.start_permlink = start_permlink;
+
+            if (!start_author)
+                start_author = "";
+
+            if (!start_permlink)
+                start_permlink = "";
+
+            javalon.getFeedDiscussions(username,start_author, start_permlink, function(err, json_res) {
+                //console.log(err,r)
+                if (err)
+                    console.log(JSON.stringify(err));
+
+                var videos = [];
+                for (var key in json_res) {
+                    if (json_res[key]){
+                        //console.log(JSON.stringify(json_res[key]));
+                        videos.push(getAdvancedVideoObject(json_res[key],null));
+                    }
+                }
+                console.log("sub feed loaded ");
+                androidAppProxy.getSubscriptionFeedCallback(JSON.stringify(videos));
+            });
+       // }
+}
+
+
+
+//A callback function
+//gets a set of videos and sends as a single chunk
+function getHotVideosFeed(start_author, start_permlink) {
+
+            javalon.getHotDiscussions(start_author,start_permlink, function(err, json_res) {
+                //console.log(err,r)
+                if (json_res)
+                    console.log(JSON.stringify(json_res));
+
+                var videos = [];
+                for (var key in json_res) {
+                    if (json_res[key]){
+                        //console.log(JSON.stringify(json_res[key]));
+                        videos.push(getAdvancedVideoObject(json_res[key],null));
+                    }
+                }
+                console.log("hot loaded ");
+                androidAppProxy.getHotVideosFeedCallback(JSON.stringify(videos));
+            });
+       // }
+}
+
+
+
+
+
+//A callback function
+//gets a set of videos and sends as a single chunk
+function getTrendingVideosFeed(start_author, start_permlink) {
+    //loadAvalonVideos(CATEGORY_TRENDING);
+
+    querry.start_author = start_author;
+    querry.start_permlink = start_permlink;
+
+    javalon.getTrendingDiscussions(start_author,start_permlink, function(err, json_res) {
+        //console.log(err)
+        var videos = [];
+        for (var key in json_res) {
+            videos.push(getAdvancedVideoObject(json_res[key],null));
+        }
+        console.log("trending loaded");
+        androidAppProxy.getTrendingVideosFeedCallback(JSON.stringify(videos));
+    });
+}
+
+
+
+//A callback function
+//gets a set of videos and sends as a single chunk
+function getNewVideosFeed(start_author, start_permlink) {
+    //loadAvalonVideos(CATEGORY_NEW);
+    console.log("getNewVideosFeed");
+
+    querry.start_author = start_author;
+    querry.start_permlink = start_permlink;
+
+    javalon.getNewDiscussions(start_author, start_permlink, function(err, r) {
+        var videos = [];
+        for (var key in r) {
+            //console.log(r[key]);
+            videos.push(getAdvancedVideoObject(r[key],null));
+        }
+        console.log("new loaded");
+        androidAppProxy.getNewVideosFeedCallback(JSON.stringify(videos));
+    });
+}
+
+//getVideoInfo("dollarvigilante","appics-v1-appics-im-364886","immawake");
+
+
+
+
+// //turns a video object from steemit API into something more workable
+// function getSimpleVideoObject(r) {
+//     console.log(r);
+//     var metadata = JSON.parse(r.json_metadata);
+
+//     var video = new Object();
+//     video.username = r.author;
+//     video.title = r.title;
+
+//     var pendingValue = parseFloat(r.pending_payout_value.substring(0, r.pending_payout_value.indexOf(" ")));
+//     var payoutValue = parseFloat(r.total_payout_value.substring(0, r.total_payout_value.indexOf(" ")));
+//     var curatorValue = parseFloat(r.curator_payout_value.substring(0, r.curator_payout_value.indexOf(" ")));
+
+//     var totalPrice = pendingValue + payoutValue + curatorValue;
+//     totalPrice = totalPrice.toFixed(3);
+
+//     //video.price = r.pending_payout_value;
+//     //video.price = video.price.substring(0,video.price.indexOf(" "));
+//     video.price = "$" + totalPrice;
+
+//     video.permlink = r.permlink;
+//     video.date = r.created;
+
+//     if (r.body.includes("https://appics.com/referenced.html?ref=steemit.com&type=video&id=")) {
+//         //video is using appics to host video
+//         console.log("appics");
+//         video.provider = "Appics";
+
+
+
+
+//         var beginingIndex = r.body.lastIndexOf("https://appics.com/referenced.html?ref=steemit.com&type=video&id=");
+
+//         var endIndex = r.body.lastIndexOf(")", beginingIndex + 66);
+
+//         console.log(r.body.substring(beginingIndex))
+
+
+//         video.hash = r.body.substring(beginingIndex, r.body.length - 1);
+//         console.log(video.hash)
+
+//     }
+
+
+
+//     if (metadata && metadata.video) {
+
+//         if (metadata.video.ipfs) {
+//             video.snaphash = metadata.video.ipfs.snaphash;
+//             video.hash = metadata.video.ipfs.video480hash;
+//         } else if (metadata.video.info) {
+//             video.snaphash = metadata.video.info.snaphash;
+//             video.hash = metadata.video.content.video480hash;
+//         } else if (metadata.video.thumbnailUrl) {
+//             video.thumbnailUrl = metadata.video.thumbnailUrl;
+//             video.hash = metadata.video.videoId;
+//         }
+
+//         if (metadata.video.providerName) {
+//             video.provider = metadata.video.providerName;
+//         }
+
+
+
+//         if (!video.hash) {
+//             if (metadata.video.ipfs) {
+//                 video.hash = metadata.video.ipfs.videohash;
+//                 video.provider = "IPFS";
+//             } else if (metadata.video.content) {
+//                 video.hash = metadata.video.content.videohash;
+//                 video.provider = "IPFS";
+//             } else if (metadata.video.files) {
+//                 if (metadata.video.files.youtube) {
+//                     video.provider = "YouTube";
+//                     video.hash = metadata.video.files.youtube;
+//                 } else if (metadata.video.files.btfs) {
+//                     video.provider = "BTFS";
+//                     if (metadata.video.files.btfs.vid) {
+//                         video.hash = metadata.video.files.btfs.vid['480'];
+//                         if (!video.hash)
+//                             video.hash = metadata.video.files.btfs.vid['240'];
+//                         if (!video.hash)
+//                             video.hash = metadata.video.files.btfs.vid['src'];
+//                         if (!video.hash)
+//                             video.hash = metadata.video.files.btfs.vid['1080'];
+//                     } else {
+//                         video.hash = metadata.video.files.btfs;
+//                     }
+//                 } else if (metadata.video.files.sia && metadata.video.files.sia.vid) {
+//                     //Skynet
+//                     video.hash = metadata.video.files.sia.vid['src'];
+//                     video.provider = "Sia Skynet"
+//                 } else if (metadata.video.files.ipfs) {
+//                     video.provider = "IPFS";
+//                     if (metadata.video.files.ipfs.vid) {
+//                         video.hash = metadata.video.files.ipfs.vid['480'];
+//                         if (!video.hash)
+//                             video.hash = metadata.video.files.ipfs.vid['240'];
+//                         if (!video.hash)
+//                             video.hash = metadata.video.files.ipfs.vid['src'];
+//                         if (!video.hash)
+//                             video.hash = metadata.video.files.ipfs.vid['1080'];
+//                     } else
+//                         video.hash = metadata.video.files.ipfs;
+
+//                     if (metadata.video.files.ipfs.gw) {
+//                         video.gateway = metadata.video.files.ipfs.gw;
+//                     }
+//                 } else if (metadata.video.files.twitch) {
+//                     video.provider = "Twitch";
+//                     video.hash = metadata.video.files.twitch;
+//                 } else if (metadata.video && metadata.video.info && metadata.video.info.platform) {
+//                     if (metadata.video.info.platform == "3speak") {
+//                         video.provider = "3speak"
+//                         video.hash = metadata.video.info.author + "/" + metadata.video.info.permlink;
+//                     }
+//                 }
+
+
+//                 if (metadata.video.files.ipfs) {
+//                     if (metadata.video.files.ipfs.img) {
+//                         video.snaphash = metadata.video.files.ipfs.img['118'];
+//                     }
+//                 }
+//             } else if (metadata.video && metadata.video.info) {
+//                 if (metadata.video.info.platform == "3speak" || metadata.app.includes("3speak")) {
+//                     video.provider = "3speak";
+//                     video.hash = metadata.video.info.author + "/" + metadata.video.info.permlink;
+//                 }
+//             }
+//         }
+
+//         if (!video.snaphash && !video.thumbnailUrl) {
+//             if (metadata.image) {
+//                 video.thumbnailUrl = metadata.image[0];
+//             }
+//         }
+
+
+
+//         if ((metadata.links && (metadata.links.includes("https://oneloveipfs.com") || metadata.links.includes("https://oneloved.tube/"))) ||
+//             metadata.app.includes("onelovedtube/"))
+//             video.gateway = "video.oneloveipfs.com";
+
+//         if (metadata.video.dur)
+//             var duration = metadata.video.dur;
+//         else if (metadata.video.duration)
+//             var duration = metadata.video.duration;
+//         else if (metadata.video.info && metadata.video.info.duration)
+//             var duration = metadata.video.info.duration;
+//         else //sometimes duration can be null
+//             console.log("Unknown duration:" + video.permlink + " " + video.username + " " + video.title);
+
+
+
+//         if (duration) {
+//             console.log("Duration:");
+//             console.log(duration);
+//             console.log(metadata);
+//             if (typeof duration == "string" && duration.includes(":"))
+//                 video.duration = duration;
+//             else {
+//                 try {
+//                     var date = new Date(null);
+//                     date.setSeconds(duration); // specify value for SECONDS here
+//                     var timeString = date.toISOString().substr(11, 8);
+//                     video.duration = timeString;
+//                 } catch (err) {
+//                     video.duration = "unknown";
+//                 }
+//             }
+//         }
+//     }
+//     return (video);
+// }
+
+
+
+
+//turns a video object from steemit API into something more workable
+function getAdvancedVideoObject(r, accountName) {
+
+
+    //Avalon formatting
+    if (!r.json.tags && r.tags)
+        r.json.tags = Object.keys(r.tags);
+
+    if (!r.desc && r.json.desc)
+        r.desc = r.json.desc;
+
+    if (!r.permlink && r.link) 
+        r.permlink = r.link;
+
+    if (!r.time && r.ts)
+        r.time= r.ts;
+
+    if (!r.json.video && r.json)
+        r.json.video = JSON.parse(JSON.stringify(r.json));
+    
+    if (!r.json_metadata && r.json)
+        r.json_metadata = JSON.stringify(r.json);
+
+
+    // console.log("MD:");
+    // console.log(r.json_metadata);
+    var metadata = JSON.parse(r.json_metadata);
+    //metadata.video.files = metadata.files;
+    //console.log(JSON.stringify(metadata.video));
+
+
+
+    var video = new Object();
+    video.username = r.author;
+    if (r.title)
+        video.title = r.title;
+     else if (metadata.title)
+        video.title = metadata.title;
+
+    video.platform = platform;
+
+
+    if (r.pending_payout_value){
+        var pendingValue = parseFloat(r.pending_payout_value.substring(0, r.pending_payout_value.indexOf(" ")));
+        var payoutValue = parseFloat(r.total_payout_value.substring(0, r.total_payout_value.indexOf(" ")));
+        var curatorValue = parseFloat(r.curator_payout_value.substring(0, r.curator_payout_value.indexOf(" ")));
+
+        var totalPrice = pendingValue + payoutValue + curatorValue;
+        totalPrice = totalPrice.toFixed(3);
+
+        video.price = "$" + totalPrice;
+    }
+    
+
+    if (!r.body)
+        r.body = metadata.desc;
+
+    
+    video.permlink = r.permlink;
+
+    if(r.created)
+        video.date = r.created;
+    else if (r.ts)
+        video.datelong = r.ts;
+    
+
+
+    if (r.body.includes("https://appics.com/referenced.html?ref=steemit.com&type=video&id=")) {
+        //video is using appics to host video
+        console.log("appics");
+        video.provider = "Appics";
+
+        var beginingIndex = r.body.lastIndexOf("https://appics.com/referenced.html?ref=steemit.com&type=video&id=");
+        var endIndex = r.body.lastIndexOf(")", beginingIndex + 66);
+        
+        video.hash = r.body.substring(beginingIndex, r.body.length - 1);
+    }
+
+
+    try {
+        var beginingIndex = r.body.lastIndexOf("<a href='") + 9;
+        var stream = r.body.substring(beginingIndex, r.body.indexOf("'>", beginingIndex));
+        if (stream.includes("ipfs")) {
+            video.gateway = (stream.split("://")[1]);
+            video.gateway = video.gateway.substring(0, video.gateway.indexOf("/"))
+        }
+    } catch (e) {
+        console.log(e);
+    }
+
+    if (metadata && metadata.video) {
+
+        if (metadata.video.ipfs) {
+            video.snaphash = metadata.video.ipfs.snaphash;
+            video.hash = metadata.video.ipfs.video480hash;
+        }else if (metadata.video.btfs) {
+            if (metadata.video.btfs) {
+                if (metadata.video.files.btfs.img) {
+                    video.snaphash = metadata.video.btfs.img['480'];
+                    if (!video.snaphash)
+                        video.snaphash = metadata.video.btfs.img['src'];
+                }
+                
+            }
+        } else if (metadata.video.info) {
+            video.snaphash = metadata.video.info.snaphash;
+            video.hash = metadata.video.content.video480hash;
+        } else if (metadata.video.thumbnailUrl) {
+            video.thumbnailUrl = metadata.video.thumbnailUrl;
+            video.hash = metadata.video.videoId;
+        }
+
+        if (metadata.video.providerName) {
+            video.provider = metadata.video.providerName;
+        }
+
+        if (!video.hash) {
+            if (metadata.video.ipfs) {
+                video.hash = metadata.video.ipfs.videohash;
+                video.provider = "IPFS";
+            } else if (metadata.video.content && metadata.video.content.videohash) {
+                video.hash = metadata.video.content.videohash;
+                video.provider = "IPFS";
+            } else if (metadata.video.files) {
+                if (metadata.video.files.youtube) {
+                    video.provider = "YouTube";
+                    video.hash = metadata.video.files.youtube;
+                } else if (metadata.video.files.btfs) {
+                    video.provider = "BTFS";
+                    if (metadata.video.files.btfs.vid) {
+                        video.hash = metadata.video.files.btfs.vid['480'];
+                        if (!video.hash)
+                            video.hash = metadata.video.files.btfs.vid['240'];
+                        if (!video.hash)
+                            video.hash = metadata.video.files.btfs.vid['src'];
+                        if (!video.hash)
+                            video.hash = metadata.video.files.btfs.vid['1080'];
+                    } else {
+                        video.hash = metadata.video.files.btfs;
+                    }
+                } else if (metadata.video.files.sia && metadata.video.files.sia.vid) {
+                    //Skynet
+                    video.hash = metadata.video.files.sia.vid['src'];
+                    video.provider = "Sia Skynet"
+                } else if (metadata.video.files.ipfs) {
+                    video.provider = "IPFS";
+                    if (metadata.video.files.ipfs.vid) {
+                        video.hash = metadata.video.files.ipfs.vid['480'];
+                        if (!video.hash)
+                            video.hash = metadata.video.files.ipfs.vid['240'];
+                        if (!video.hash)
+                            video.hash = metadata.video.files.ipfs.vid['src'];
+                        if (!video.hash)
+                            video.hash = metadata.video.files.ipfs.vid['1080'];
+                    } else {
+                        video.hash = metadata.video.files.ipfs;
+                    }
+
+                    if (metadata.video.files.ipfs.gw) {
+                        video.priority_gw = metadata.video.files.ipfs.gw;
+                        video.gateway = metadata.video.files.ipfs.gw;
+
+                    }
+                } else if (metadata.video.files.twitch) {
+                    video.provider = "Twitch";
+                    video.hash = metadata.video.files.twitch;
+                }
+
+                if (metadata.video.files.ipfs) {
+                    if (metadata.video.files.ipfs.img) {
+                        video.snaphash = metadata.video.files.ipfs.img['118'];
+                    }
+                }
+            } else if (metadata.video && metadata.video.info) {
+                if (metadata.video.info.platform == "3speak" || metadata.app.includes("3speak")) {
+                    video.provider = "3speak";
+                    video.hash = metadata.video.info.author + "/" + metadata.video.info.permlink;
+                }
+            }
+
+        }
+
+
+        if (!video.snaphash && !video.thumbnailUrl) {
+            if (metadata.image) {
+                video.thumbnailUrl = metadata.image[0];
+            }
+        }
+
+
+        if ((metadata.links && (metadata.links.includes("https://oneloveipfs.com") || metadata.links.includes("https://oneloved.tube/"))) ||
+            (metadata.app && metadata.app.includes("onelovedtube/")))
+            video.gateway = "video.oneloveipfs.com";
+
+        var converter = new showdown.Converter()
+        converter.setOption('simplifiedAutoLink', true);
+
+        var textDescription;
+
+        if (r.desc) {
+            textDescription = r.desc;
+        }
+        if (metadata.video.desc) {
+            textDescription = metadata.video.desc;
+        }
+        if (metadata.video.description) {
+            textDescription = metadata.video.description;
+        } else if (metadata.video.content) {
+            textDescription = metadata.video.content.description;
+        }
+        if (!textDescription)
+            textDescription = "No Description";
+        htmlDescription = converter.makeHtml(textDescription);
+
+        video.description = htmlDescription;
+    }
+    //video.description = r.body;
+
+    var likes = 0;
+    var dislikes = 0;
+
+    //0=no vote
+    //1=vote up
+    //-1=vote down
+    var voteType = 0;
+    var voteSum = 0;
+
+    var vote;
+    for (voteIndex in r.votes) {
+        vote = r.votes[voteIndex];
+
+        if (vote.vt)
+            voteSum+=vote.vt;
+
+        if (vote.vt > 0)
+            likes++;
+        else if (vote.vt < 0)
+            dislikes++;
+
+        if (vote.u == accountName) {
+            if (vote.vt > 0)
+                voteType = 1;
+            else if (vote.vt < 0)
+                voteType = -1;
+        }
+
+    }
+
+    video.price = "👍 "+likes;
+
+    video.likes = likes;
+    video.dislikes = dislikes;
+    video.voteType = voteType;
+
+    video.blockchain = NET_SELECT_AVION;
+
+    return (video);
+}
+
+
+//turnes a reply object from Steemit API into something more workable
+// function getCommentObject(reply, votes, accountName) {
+//     var commentObject = new Object();
+//     commentObject.permlink = reply.permlink;
+//     commentObject.parent = reply.parent_permlink;
+//     commentObject.author = reply.author;
+//     commentObject.indent = reply.depth - 1;
+//     commentObject.date = reply.created;
+//     commentObject.children = reply.children;
+
+
+//     var converter = new showdown.Converter()
+//     converter.setOption('simplifiedAutoLink', true);
+//     textBody = reply.body,
+//         htmlBody = converter.makeHtml(textBody);
+
+//     commentObject.comment = htmlBody;
+
+
+//     // var pendingValue = parseFloat(reply.pending_payout_value.substring(0, reply.pending_payout_value.indexOf(" ")));
+//     // var payoutValue = parseFloat(reply.total_payout_value.substring(0, reply.total_payout_value.indexOf(" ")));
+//     // var curatorValue = parseFloat(reply.curator_payout_value.substring(0, reply.curator_payout_value.indexOf(" ")));
+
+//     // var totalPrice = pendingValue + payoutValue + curatorValue;
+//     // totalPrice = totalPrice.toFixed(3);
+
+//     // commentObject.price = "$" + totalPrice;
+
+//     var likes = 0;
+//     var dislikes = 0;
+
+//     //0=no vote
+//     //1=vote up
+//     //-1=vote down
+//     var voteType = 0;
+
+//     var vote;
+//     for (voteIndex in votes) {
+//         vote = votes[voteIndex];
+
+//         if (vote.percent > 0)
+//             likes++;
+//         else if (vote.percent < 0)
+//             dislikes++;
+
+//         if (vote.voter == accountName) {
+//             if (vote.percent > 0)
+//                 voteType = 1;
+//             else if (vote.percent < 0)
+//                 voteType = -1;
+//         }
+
+//     }
+
+//     commentObject.likes = likes;
+//     commentObject.dislikes = dislikes;
+//     commentObject.voteType = voteType;
+
+//     return commentObject;
+// }
+
+
+//turnes a reply object from Steemit API into something more workable
+// function getCommentsObject(replies, indent){
+// 	var commentsObject = [];
+//
+// 	for (i in replies){
+// 		var commentObject = new Object();
+// 		commentObject.permlink = replies[i].permlink;
+// 		commentObject.parentPermlink = replies[i].parent_permlink;
+//
+//
+// 		var converter = new showdown.Converter()
+// 		converter.setOption('simplifiedAutoLink', true);
+// 	  textBody     = replies[i].body,
+// 	  htmlBody      = converter.makeHtml(textBody);
+//
+// 		commentObject.comment = htmlBody;
+// 		commentObject.author = replies[i].author;
+// 		commentObject.indent = indent
+// 		commentObject.date = replies[i].created;
+//
+// 		var pendingValue = parseFloat(replies[i].pending_payout_value.substring(0,replies[i].pending_payout_value.indexOf(" ")));
+// 		var payoutValue = parseFloat(replies[i].total_payout_value.substring(0,replies[i].total_payout_value.indexOf(" ")));
+// 		var curatorValue = parseFloat(replies[i].curator_payout_value.substring(0,replies[i].curator_payout_value.indexOf(" ")));
+//
+// 		var totalPrice = pendingValue + payoutValue + curatorValue;
+// 		totalPrice = totalPrice.toFixed(3);
+//
+// 		//video.price = r.pending_payout_value;
+// 		//video.price = video.price.substring(0,video.price.indexOf(" "));
+// 		commentObject.price = "$" +totalPrice;
+//
+// 		commentsObject.push(commentObject);
+// 		if (replies[i].replies.length>0)
+// 			commentsObject.push.apply(commentsObject, getCommentsObject(replies[i].replies, indent+1));
+// 	}
+// 	return commentsObject;
+// }
+
+//detects if appropriate dtube video information exists and detects any NSFW
+function isVideoViewable(r) {
+    if (r.json_metadata){
+        var metadata = JSON.parse(r.json_metadata);
+        if (metadata && ((metadata.video && (metadata.video.ipfs || metadata.video.info || metadata.video.files)) || metadata.files)) {
+            if (!metadata.tags.includes("nsfw") && !metadata.tags.includes("dtube-NSFW") && !metadata.tags.includes("NSFW")) {
+                //blacklisted accounts with inappropriate content
+                var BLACKLIST = ["aroused", "godfather123", "arabebtc", "elibella", "anarchyandporn"];
+                if (!BLACKLIST.includes(r.author)) {
+
+                    //check if video was downvoted by cheetah.
+                    //cheetah detects improper content posted on steem
+                    for (voteIndex in r.active_votes) {
+                        vote = r.active_votes[voteIndex];
+
+                        if (vote.voter == "cheetah" && vote.percent < 0) {
+                            console.log("blocked video by cheetah");
+                            return false;
+                        }
+                    }
+
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+</script>
+
+
+<body>
+This is the api page for Dtube Mobile
+</body>
+
+</html>

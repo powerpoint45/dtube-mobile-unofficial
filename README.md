@@ -75,6 +75,12 @@ I did not reinvent wheels. I am very appreciative of all those devs who make thi
    * [Bluebird JS](http://bluebirdjs.com/docs/getting-started.html)
    * [DateFormat JS](https://github.com/felixge/node-dateformat)
 
+# APIS
+   * [DTube Repositories](https://github.com/dtube/docs/blob/master/contribute.md)
+   * [HiveSearcher](https://hivesearcher.com/)
+   * [Hive JS API](https://github.com/openhive-network/hive-js)
+
+
 # Download
 Just in case you missed the download link mentioned in the article. 
 [Download From Play Store](https://play.google.com/store/apps/details?id=com.powerpoint45.dtube)
