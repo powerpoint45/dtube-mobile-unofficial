@@ -1,15 +1,14 @@
 package com.powerpoint45.dtube;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.UiModeManager;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.media.AudioManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
@@ -28,13 +27,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatImageView;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -47,13 +45,19 @@ import com.github.javiersantos.appupdater.enums.UpdateFrom;
 import com.github.javiersantos.appupdater.objects.Update;
 import com.google.android.material.navigation.NavigationView;
 import com.makeramen.roundedimageview.RoundedTransformationBuilder;
+import com.skydoves.powerspinner.IconSpinnerAdapter;
+import com.skydoves.powerspinner.IconSpinnerItem;
+import com.skydoves.powerspinner.OnSpinnerItemSelectedListener;
+import com.skydoves.powerspinner.PowerSpinnerView;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Transformation;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Properties;
 
 public class MainActivity extends AppCompatActivity {
     NavigationView navigationView;
@@ -74,6 +78,7 @@ public class MainActivity extends AppCompatActivity {
     final int REQUEST_CODE_SEARCH = 3;
     final int REQUEST_CODE_UPLOAD = 4;
     final int REQUEST_CODE_SETTINGS = 5;
+    final int REQUEST_CODE_LOGIN_SELECT = 6;
 
     final int FILES_REQUEST_PERMISSION = 10;
 
@@ -135,27 +140,21 @@ public class MainActivity extends AppCompatActivity {
 
         findViewById(R.id.search_btn).setOnClickListener(this::searchButtonClicked);
 
-        if (!runningOnTV)
+        if (!runningOnTV) {
             findViewById(R.id.upload_btn).setOnClickListener(v -> {
-                if (accountInfo!=null) {
-                    if (ContextCompat.checkSelfPermission(MainActivity.this,
-                            Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                            != PackageManager.PERMISSION_GRANTED) {
-
-                        ActivityCompat.requestPermissions(MainActivity.this,
-                                new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                                FILES_REQUEST_PERMISSION);
-                    }else {
-                        startActivityForResult(new Intent(MainActivity.this, UploadActivity.class), REQUEST_CODE_UPLOAD);
-                    }
-
-                }else
+                Log.d("dtube", "upload clicked");
+                if (accountInfo != null) {
+                    Log.d("dtube", "upload clicked");
+                    startActivityForResult(new Intent(MainActivity.this, UploadActivity.class), REQUEST_CODE_UPLOAD);
+                } else
                     loginButtonClicked(v);
             });
 
+        }
+
 
         if (Preferences.darkMode) {
-            ((AppCompatImageView) findViewById(R.id.logo)).setImageResource(R.drawable.logo_white);
+            ((AppCompatImageView) findViewById(R.id.logo)).setImageResource(R.drawable.ic_play_arrow_large_white);
             ((AppCompatImageView) findViewById(R.id.search_btn)).setImageResource(R.drawable.ic_search_white);
             if (!runningOnTV)
                 ((AppCompatImageView) findViewById(R.id.upload_btn)).setImageResource(R.drawable.ic_file_upload_white);
@@ -348,10 +347,15 @@ public class MainActivity extends AppCompatActivity {
 //            drawerToggle.getDrawerArrowDrawable().setColor(getResources().getColor(R.color.colorAccent));
 //        }
 
-        steemWebView = new SteemitWebView(this);
+        steemWebView = new SteemitWebView(this, null);
 
         bottomBar = findViewById(R.id.bottom_bar);
         toolbar = findViewById(R.id.toolbar);
+
+//        toolbar.setTouchscreenBlocksFocus(false);
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            toolbar.setKeyboardNavigationCluster(false);
+//        }
 
         recyclerView = findViewById(R.id.feed_rv);
 
@@ -386,7 +390,7 @@ public class MainActivity extends AppCompatActivity {
                 if(((LinearLayoutManager)layoutManager).findLastVisibleItemPosition() == feedAdapter.getItemCount()-1){
 
                     if (feedAdapter.getItemCount()>0 && !gettingMoreVideos
-                            && selectedTab != DtubeAPI.CAT_HISTORY && selectedTab != DtubeAPI.CAT_SUBSCRIBED){
+                            && selectedTab != DtubeAPI.CAT_HISTORY){
                         //endless scrolling. Get more videos here
                         if (getResources().getBoolean(R.bool.debug)) {
                             Toast.makeText(MainActivity.this, "getting more videos", Toast.LENGTH_SHORT).show();
@@ -409,6 +413,10 @@ public class MainActivity extends AppCompatActivity {
                                 case DtubeAPI.CAT_TRENDING:
                                     steemWebView.getTrendingVideosFeed(lastVideo.user, lastVideo.permlink);
                                     break;
+
+                                case DtubeAPI.CAT_SUBSCRIBED:
+                                    steemWebView.getSubscriptionFeed( accountInfo.userName, lastVideo.user, lastVideo.permlink);
+                                    break;
                             }
                         }else{
                             switch (selectedTab) {
@@ -422,6 +430,9 @@ public class MainActivity extends AppCompatActivity {
 
                                 case DtubeAPI.CAT_TRENDING:
                                     steemWebView.getTrendingVideosFeed();
+                                    break;
+                                case DtubeAPI.CAT_SUBSCRIBED:
+                                    steemWebView.getSubscriptionFeed( accountInfo.userName);
                                     break;
                             }
                             Log.d("dtube9", "get Feeds");
@@ -456,6 +467,8 @@ public class MainActivity extends AppCompatActivity {
             updateCheck();
         }
 
+        setupPlatformSelector();
+
 //        //init Builder
 //        SteemConnect.InstanceBuilder instanceBuilder = new SteemConnect.InstanceBuilder();
 //
@@ -480,22 +493,132 @@ public class MainActivity extends AppCompatActivity {
 //        }
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case FILES_REQUEST_PERMISSION: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    startActivityForResult(new Intent(MainActivity.this,UploadActivity.class), REQUEST_CODE_UPLOAD);
+
+    IconSpinnerAdapter iconSpinnerAdapter;
+    public void setupPlatformSelector(){
+        if (findViewById(R.id.platform_spinner)!=null) {
+            int iconsize = 40;
+            iconSpinnerAdapter = new IconSpinnerAdapter(((PowerSpinnerView) findViewById(R.id.platform_spinner)));
+            IconSpinnerItem avalon = new IconSpinnerItem(getResources().getText(R.string.avalon)
+                    , Tools.resizeSquare(getDrawable(R.drawable.dtube_circle), iconsize, this));
+
+            IconSpinnerItem hive = new IconSpinnerItem(getResources().getText(R.string.hive), Tools.resizeSquare(getDrawable(R.drawable.hive_circle), iconsize, this));
+            IconSpinnerItem steemit = new IconSpinnerItem(getResources().getText(R.string.steemit), Tools.resizeSquare(getDrawable(R.drawable.steem_circle), iconsize, this));
+            ArrayList<IconSpinnerItem> items = new ArrayList<>();
+            items.add(avalon);
+            items.add(hive);
+            items.add(steemit);
+
+            iconSpinnerAdapter.setItems(items);
+            if (Preferences.selectedAPI.equals(DtubeAPI.PROVIDER_API_URL_AVALON))
+                iconSpinnerAdapter.notifyItemSelected(0);
+
+            else if (Preferences.selectedAPI.equals(DtubeAPI.PROVIDER_API_URL_HIVE))
+                iconSpinnerAdapter.notifyItemSelected(1);
+
+            else if (Preferences.selectedAPI.equals(DtubeAPI.PROVIDER_API_URL_STEEM))
+                iconSpinnerAdapter.notifyItemSelected(2);
+
+            ((PowerSpinnerView) findViewById(R.id.platform_spinner)).setSpinnerAdapter(iconSpinnerAdapter);
+
+            ((PowerSpinnerView) findViewById(R.id.platform_spinner)).setOnKeyListener(new View.OnKeyListener() {
+                @Override
+                public boolean onKey(View v, int keyCode, KeyEvent event) {
+                    if (event.getAction() == KeyEvent.ACTION_DOWN){
+                        if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN){
+                            int index = ((PowerSpinnerView) findViewById(R.id.platform_spinner)).getSelectedIndex();
+                            if (index <2)
+                                index++;
+                            else
+                                index=0;
+
+                            ((PowerSpinnerView) findViewById(R.id.platform_spinner)).selectItemByIndex(index);
+
+                            Log.d("dtubez","down");
+                        }else if (keyCode == KeyEvent.KEYCODE_DPAD_UP){
+                            Log.d("dtubez","up");
+                            int index = ((PowerSpinnerView) findViewById(R.id.platform_spinner)).getSelectedIndex();
+                            if (index >0)
+                                index--;
+                            else
+                                index=2;
+                            ((PowerSpinnerView) findViewById(R.id.platform_spinner)).selectItemByIndex(index);
+                        }
+                    }
+
+                    return false;
                 }
-            }
+            });
+
+            ((PowerSpinnerView) findViewById(R.id.platform_spinner)).setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                @Override
+                public void onFocusChange(View v, boolean hasFocus) {
+                    Log.d("dtubez","onFocusChange"+hasFocus);
+
+                }
+            });
+
+            ((PowerSpinnerView) findViewById(R.id.platform_spinner)).setOnSpinnerItemSelectedListener(new OnSpinnerItemSelectedListener<IconSpinnerItem>() {
+                @Override public void onItemSelected(int oldIndex, @Nullable IconSpinnerItem oldItem, int newIndex, IconSpinnerItem newItem) {
+                    switch (newIndex){
+                        case 0:
+                            Preferences.selectedAPI = DtubeAPI.PROVIDER_API_URL_AVALON;
+                            break;
+                        case 1:
+                            Preferences.selectedAPI = DtubeAPI.PROVIDER_API_URL_HIVE;
+                            break;
+                        case 2:
+                            Preferences.selectedAPI = DtubeAPI.PROVIDER_API_URL_STEEM;
+                            break;
+                    }
+                    switchApi(Preferences.selectedAPI);
+                    DtubeAPI.saveSelectedAPI(MainActivity.this, Preferences.selectedAPI);
+                }
+            });
         }
     }
 
+    public void switchApi(String api){
+        Preferences.selectedAPI = api;
+        steemWebView.stopLoading();
+        steemWebView.loadedPage = false;
+        steemWebView.loadUrl(api);
+        videos.clear();
+        allVideos.clear();
+        gettingMoreVideos = false;
+        Log.d("dtubez","switchApi:"+api);
+        feedAdapter.notifyDataSetChanged();
+        mainFrame.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                getInitialFeeds();
+                setProfileInfoUI();
+                addVideos(Video.getRecentVideos(MainActivity.this));
+                Log.d("dtubez","run1");
+            }
+        },100);
+
+    }
+
     public void onItemClick(int pos){
-        if (!activityPaused)
-            steemWebView.getVideoInfo(videos.get(pos).user, videos.get(pos).permlink, DtubeAPI.getAccountName(this));
+        Log.d("ddd","B:"+videos.get(pos).blockchain);
+
+        Video v = videos.get(pos);
+        SteemitWebView wv = null;
+
+        if (v!=null) {
+            if (v.blockchain == DtubeAPI.NET_SELECT_AVION)
+                wv = new SteemitWebView(this, DtubeAPI.PROVIDER_API_URL_AVALON);
+            else if (v.blockchain == DtubeAPI.NET_SELECT_HIVE) {
+                wv = new SteemitWebView(this, DtubeAPI.PROVIDER_API_URL_HIVE);
+            }else if (v.blockchain == DtubeAPI.NET_SELECT_STEEM) {
+                wv = new SteemitWebView(this, DtubeAPI.PROVIDER_API_URL_STEEM);
+            }
+            Log.d("ddd", "REQUEST_CODE_SEARCH "+v.title);
+
+            playVideo(v);
+            wv.getVideoInfo(v.user, v.permlink, DtubeAPI.getAccountName(this, v.blockchain));
+        }
     }
 
     public void clearHistoryClicked(View v){
@@ -547,6 +670,8 @@ public class MainActivity extends AppCompatActivity {
                 videoPlayIntent.putExtra("clientprofileimage", accountInfo.getImageURL());
 
             startActivityForResult(videoPlayIntent, REQUEST_CODE_PLAY_VIDEO);
+        }else {
+            Log.d("dt","activity pused. won't play");
         }
     }
 
@@ -602,24 +727,64 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode){
+            case REQUEST_CODE_LOGIN_SELECT:
+                if (resultCode == RESULT_OK) {
+                    if (data.hasExtra("logintype")) {
+                        int loginType = data.getIntExtra("logintype", -1);
+                        if (loginType!=-1) {
+                            if (DtubeAPI.getAccountName(this,loginType)!=null){
+
+
+                                if (iconSpinnerAdapter!=null){
+                                    Preferences.selectedAPI = DtubeAPI.getAPIString(loginType);
+
+                                    if (Preferences.selectedAPI.equals(DtubeAPI.PROVIDER_API_URL_AVALON))
+                                        iconSpinnerAdapter.notifyItemSelected(0);
+
+                                    else if (Preferences.selectedAPI.equals(DtubeAPI.PROVIDER_API_URL_HIVE))
+                                        iconSpinnerAdapter.notifyItemSelected(1);
+
+                                    else if (Preferences.selectedAPI.equals(DtubeAPI.PROVIDER_API_URL_STEEM))
+                                        iconSpinnerAdapter.notifyItemSelected(2);
+
+                                }else {
+                                    //Account already logged in with this network
+                                    switchApi(DtubeAPI.getAPIString(loginType));
+                                }
+
+                            }else {
+                                Intent loginIntent = new Intent(MainActivity.this, LoginActivity.class);
+                                loginIntent.putExtra("logintype", loginType);
+                                startActivityForResult(loginIntent, REQUEST_CODE_LOGIN);
+                            }
+
+                        }
+                    }
+                }
+                break;
             case REQUEST_CODE_PLAY_VIDEO:
                 addVideos(Video.getRecentVideos(this));
                 if (accountInfo!=null)
                     steemWebView.getSubscriptions(accountInfo.userName);
+
                 if (accountInfo!=null)
-                    steemWebView.getSubscriptionFeed(accountInfo.userName);
+                    steemWebView.getSubscriptionFeed(accountInfo.userName, null, null);
 
                 //load any new videos
                 steemWebView.getNewVideosFeed();
                 break;
 
             case REQUEST_CODE_LOGIN:
-                setProfileInfoUI();
+                switchApi(DtubeAPI.getSelectedAPI(this));
+                //setProfileInfoUI();
+
 
                 if (accountInfo!=null)
                     steemWebView.getSubscriptionFeed(accountInfo.userName);
+
                 getInitialFeeds();
                 initFeed();
+
                 break;
             case REQUEST_CODE_PROFILE:
                 if (resultCode == RESULT_OK){
@@ -631,15 +796,27 @@ public class MainActivity extends AppCompatActivity {
             case REQUEST_CODE_SEARCH:
                 if (resultCode == RESULT_OK){
                     Video v = (Video)data.getBundleExtra("video").getSerializable("video");
-                    if (v!=null)
-                        steemWebView.getVideoInfo(v.user, v.permlink, DtubeAPI.getAccountName(this));
+                    SteemitWebView wv = null;
+                    if (v!=null) {
+                        if (v.blockchain == DtubeAPI.NET_SELECT_AVION)
+                            wv = new SteemitWebView(this, DtubeAPI.PROVIDER_API_URL_AVALON);
+                        else if (v.blockchain == DtubeAPI.NET_SELECT_HIVE) {
+                            wv = new SteemitWebView(this, DtubeAPI.PROVIDER_API_URL_HIVE);
+                        }else if (v.blockchain == DtubeAPI.NET_SELECT_STEEM) {
+                            wv = new SteemitWebView(this, DtubeAPI.PROVIDER_API_URL_STEEM);
+                        }
+                        Log.d("ddd", "REQUEST_CODE_SEARCH "+v.title);
+
+                        playVideo(v);
+                        wv.getVideoInfo(v.user, v.permlink, DtubeAPI.getAccountName(this));
+                    }
                 }
                 break;
             case REQUEST_CODE_UPLOAD:
                 if (resultCode == RESULT_OK){
                     Video v = (Video)data.getBundleExtra("video").getSerializable("video");
                     if (v!=null)
-                        steemWebView.getVideoInfo(v.user, v.permlink, DtubeAPI.getAccountName(this));
+                        steemWebView.getVideoInfo(v.user, v.permlink, DtubeAPI.getAccountName(this, v.blockchain));
                 }
                 break;
             case REQUEST_CODE_SETTINGS:
@@ -647,9 +824,9 @@ public class MainActivity extends AppCompatActivity {
                     if (data.getBooleanExtra("logout",false)) {
                         finish();
                         startActivity(new Intent(MainActivity.this, MainActivity.class));
+                    }else if (data.getBooleanExtra("accounts",false)){
+                        startActivityForResult(new Intent(new Intent(MainActivity.this, LoginSelectActivity.class)), REQUEST_CODE_LOGIN_SELECT);
                     }
-
-
                 }
                 break;
             default:
@@ -682,11 +859,12 @@ public class MainActivity extends AppCompatActivity {
             SubMenu topChannelMenu = m.addSubMenu(0,R.id.subscriptions_id,0,getResources().getString(R.string.subscriptions)+" ("+persons.size()+")");
             for (int i = 0; i< persons.size(); i++){
                 topChannelMenu.add(0,R.id.subscription_id,0,persons.get(i).userName);
-
                 CustomMenuTarget target = new CustomMenuTarget(topChannelMenu.getItem(i),MainActivity.this, targets);
                 targets.add(target);
-                Picasso.get().load(DtubeAPI.PROFILE_IMAGE_SMALL_URL.replace("username",persons.get(i).userName))
-                        .into(target);
+
+                if (persons.get(i)!=null && persons.get(i).userName!=null) {
+                    Picasso.get().load(DtubeAPI.getProfileImage(persons.get(i).userName)).into(target);
+                }
             }
         });
 
@@ -694,16 +872,15 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void setProfileInfoUI(){
+        Log.d("dtubez", "NN:"+DtubeAPI.getNetworkNumber(Preferences.selectedAPI));
+        String accountName = DtubeAPI.getAccountName(this, DtubeAPI.getNetworkNumber(Preferences.selectedAPI));
 
-        String accountName = DtubeAPI.getAccountName(this);
+        Log.d("dtubez", "LOGGING inz:" +accountName);
+
         if (accountName!=null){
             accountInfo = new Person();
             accountInfo.userName = accountName;
-
-            steemWebView.login(DtubeAPI.getAccountName(MainActivity.this),DtubeAPI.getUserPrivateKey(MainActivity.this),false, false);
-        }
-
-        if (accountInfo!=null) {
+            steemWebView.login(accountName,DtubeAPI.getUserPrivateKey(MainActivity.this, DtubeAPI.getNetworkNumber(Preferences.selectedAPI)),false, false);
 
             Transformation transformation = new RoundedTransformationBuilder()
                     .cornerRadiusDp(30)
@@ -713,7 +890,7 @@ public class MainActivity extends AppCompatActivity {
             Picasso.get().load(accountInfo.getImageURL()).placeholder(R.drawable.login).transform(transformation).into(
                     ((ImageView) findViewById(R.id.profile_image)));
 
-            Picasso.get().load(DtubeAPI.PROFILE_IMAGE_MEDIUM_URL.replace("username",accountInfo.userName)).placeholder(R.drawable.login).transform(transformation).into(
+            Picasso.get().load(DtubeAPI.getProfileImage(accountInfo.userName)).placeholder(R.drawable.login).transform(transformation).into(
                     (ImageView)navigationHeader.findViewById(R.id.header_icon));
 
             ((TextView)navigationHeader.findViewById(R.id.header_name)).setText(accountInfo.userName);
@@ -722,7 +899,17 @@ public class MainActivity extends AppCompatActivity {
 
             steemWebView.getSubscriberCount(accountInfo.userName);
             steemWebView.getSubscriptions(accountInfo.userName);
+
+        }else {
+            accountInfo = null;
+            Log.d("dtubez","no acct");
+            ((ImageView) findViewById(R.id.profile_image)).setImageResource(R.drawable.login);
+            navigationHeader.findViewById(R.id.header_login_iv).setVisibility(View.VISIBLE);
+            ((TextView)navigationHeader.findViewById(R.id.header_name)).setText(R.string.not_logged_in);
+            ((TextView)navigationHeader.findViewById(R.id.header_status)).setText(R.string.login);
         }
+
+
 
     }
 
@@ -733,7 +920,8 @@ public class MainActivity extends AppCompatActivity {
             i.putExtra("userurl", "/#!/c/" + accountInfo.userName);
             startActivityForResult(i, REQUEST_CODE_PROFILE);
         }else {
-            startActivityForResult(new Intent(MainActivity.this, LoginActivity.class), REQUEST_CODE_LOGIN);
+            startActivityForResult(new Intent(new Intent(MainActivity.this, LoginSelectActivity.class)), REQUEST_CODE_LOGIN_SELECT);
+
         }
     }
 
@@ -764,8 +952,6 @@ public class MainActivity extends AppCompatActivity {
             MainActivity.this.runOnUiThread(() -> {
                 feedAdapter.setVideos(videos);
                 feedAdapter.notifyDataSetChanged();
-                if (videos.size()>0)
-                Log.d("dtube4","added vids ending with "+videos.get(videos.size()-1).title);
             });
         }).start();
 

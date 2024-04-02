@@ -19,8 +19,12 @@
             android:data="https://2314472.wixsite.com/adtubeclient" />
     </header>
 
+    <header android:icon="@drawable/ic_account_circle_red"
+        android:title="@string/manage_accounts"
+        android:id="@+id/manage_accounts"/>
+
     <header android:icon="@drawable/ic_remove_circle_outline"
-        android:title="@string/logout"
+        android:title="@string/logout_all"
         android:id="@+id/logout"/>
 
 </preference-headers>

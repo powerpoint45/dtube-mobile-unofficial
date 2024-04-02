@@ -8,7 +8,7 @@ public class Person {
     String userName;
 
     public String getImageURL(){
-        return DtubeAPI.PROFILE_IMAGE_SMALL_URL.replace("username",userName);
+        return DtubeAPI.getProfileImage(userName);
     }
 
     public String getURL(){

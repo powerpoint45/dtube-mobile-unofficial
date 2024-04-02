@@ -61,6 +61,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:id="@+id/upvote_project"
         android:orientation="horizontal">
 
 
@@ -158,6 +159,7 @@
             android:background="?attr/selectableItemBackground"
             android:clickable="true"
             android:focusable="true"
+            android:id="@+id/help_holder"
             android:gravity="center"
             android:onClick="helpButtonClicked">
 
@@ -217,11 +219,11 @@
         android:gravity="center">
 
         <ImageView
-            android:id="@+id/imageView2"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:id="@+id/login_network_logo"
+            android:layout_width="300dp"
+            android:layout_height="30dp"
             android:layout_weight="1"
-            app:srcCompat="@drawable/steemit" />
+            app:srcCompat="@drawable/hive" />
     </LinearLayout>
 
 </LinearLayout>

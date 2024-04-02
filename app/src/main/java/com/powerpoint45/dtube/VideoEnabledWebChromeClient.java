@@ -1,6 +1,7 @@
 package com.powerpoint45.dtube;
 
 import android.media.MediaPlayer;
+import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
@@ -190,6 +191,16 @@ public class VideoEnabledWebChromeClient extends WebChromeClient implements Medi
     public void onShowCustomView(View view, int requestedOrientation, CustomViewCallback callback) // Available in API level 14+, deprecated in API level 18+
     {
         onShowCustomView(view, callback);
+    }
+
+    public void playPause(){
+
+        if (videoViewContainer!=null) {
+            MotionEvent motionEvent = MotionEvent.obtain(200, 200, MotionEvent.ACTION_DOWN, videoViewContainer.getWidth() / 2, videoViewContainer.getHeight() / 2, 0);
+            videoViewContainer.dispatchTouchEvent(motionEvent);
+            MotionEvent motionEvent2 = MotionEvent.obtain(200, 200, MotionEvent.ACTION_UP, videoViewContainer.getWidth() / 2, videoViewContainer.getHeight() / 2, 0);
+            videoViewContainer.dispatchTouchEvent(motionEvent2);
+        }
     }
 
     @Override

@@ -24,9 +24,15 @@ public class HelpActivity extends AppCompatActivity {
 
         markdownView = findViewById(R.id.markdown_view);
 
+        int loginType = getIntent().getIntExtra("logintype",0);
+        String helpPage = "file:///android_asset/login.md";
+
+        if (loginType == DtubeAPI.NET_SELECT_AVION)
+            helpPage = "file:///android_asset/createaccountavalon.md";
+
         if (Preferences.darkMode)
-            markdownView.loadMarkdownFile("file:///android_asset/login.md","file:///android_asset/dark.css");
+            markdownView.loadMarkdownFile(helpPage,"file:///android_asset/dark.css");
         else
-            markdownView.loadMarkdownFile("file:///android_asset/login.md","file:///android_asset/paperwhite.css");
+            markdownView.loadMarkdownFile(helpPage,"file:///android_asset/paperwhite.css");
     }
 }

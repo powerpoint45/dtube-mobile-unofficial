@@ -1,12 +1,20 @@
 package com.powerpoint45.dtube;
 
+import static com.powerpoint45.dtube.DtubeAPI.PROVIDER_YOUTUBE;
+
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
+import android.text.Html;
+import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
@@ -16,25 +24,25 @@ import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatImageView;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.DataOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.util.Objects;
 
 /**
@@ -42,8 +50,10 @@ import java.util.Objects;
  */
 
 public class SearchActivity extends AppCompatActivity {
-
-    final static String SEARCH_URL = "https://search.esteem.app/api/search";
+    final static String SEARCH_URL_HIVE = "https://api.hivesearcher.com/search";
+    final static String SEARCH_URL_AVALON = "https://search.d.tube/avalon.contents/_search/?";
+    private final static String APIKey = "DOUXSIWXDDUW24VJBJLLHIFYFBAWRJFYPWS9ZTKRSPOMH7DG33OANUK73ESB";
+    //final static String SEARCH_URL = "https://search.esteem.app/api/search";
     EditText searchBar;
     RecyclerView recyclerView;
     ImageView askSteemLogo;
@@ -54,7 +64,24 @@ public class SearchActivity extends AppCompatActivity {
     boolean hasMorePages;
     boolean gettingVideos;
     String querry;
-    int pageNumber = 0;
+    int scrollID;
+    String scrollIDString;
+    int totalHits;
+
+
+    int selectedPlatform = DtubeAPI.NET_SELECT_AVION;
+
+
+    final private static String SORT_POPULARITY_HIVE = "popularity";
+    final private static String SORT_RELEVANCE_HIVE = "relevance";
+    final private static String SORT_NEWEST_HIVE = "newest";
+
+
+    final private static String SORT_DATE_AVALON = "ts:desc";
+    final private static String SORT_RELEVANCE_AVALON = "_score";
+    final private static String SORT_POPULAR_AVALON = "votes.gross";
+
+    static String searchMode = SORT_DATE_AVALON;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -66,6 +93,46 @@ public class SearchActivity extends AppCompatActivity {
         setContentView(R.layout.activity_search);
         recyclerView = findViewById(R.id.search_list);
         askSteemLogo = findViewById(R.id.search_logo_asksteem);
+        searchBar = findViewById(R.id.searchView);
+
+        if (Preferences.darkMode){
+            ((AppCompatImageView)findViewById(R.id.filter_btn)).setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_ATOP);
+        }
+
+
+        ((TextView)findViewById(R.id.hivesearch_txt)).setText(Html.fromHtml(getString(R.string.hivesearcher_url)));
+        ((TextView)findViewById(R.id.hivesearch_txt)).setMovementMethod(LinkMovementMethod.getInstance());
+
+        ((ChipGroup)findViewById(R.id.platform_select_group)).setOnCheckedChangeListener(new ChipGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(ChipGroup chipGroup, int i) {
+                if (i == R.id.platform_select_avalon){
+
+                    selectedPlatform = DtubeAPI.NET_SELECT_AVION;
+                    setModes();
+                    videos.clear();
+                    adapter.notifyDataSetChanged();
+                    search(searchBar.getText().toString());
+                    findViewById(R.id.search_logo_asksteem).setVisibility(View.GONE);
+                    findViewById(R.id.hivesearch_txt).setVisibility(View.GONE);
+                    Log.d("dd","LOGIN_SELECT_AVION");
+                }else if (i == R.id.platform_select_hive){
+                    selectedPlatform = DtubeAPI.NET_SELECT_HIVE;
+                    setModes();
+                    videos.clear();
+                    adapter.notifyDataSetChanged();
+                    search(searchBar.getText().toString());
+                    Log.d("dd","LOGIN_SELECT_HIVE");
+                    findViewById(R.id.search_logo_asksteem).setVisibility(View.VISIBLE);
+                    findViewById(R.id.hivesearch_txt).setVisibility(View.VISIBLE);
+                }else {
+                    findViewById(R.id.search_logo_asksteem).setVisibility(View.GONE);
+                    findViewById(R.id.hivesearch_txt).setVisibility(View.GONE);
+                }
+            }
+        });
+
+
 
 //        if (Preferences.darkMode)
 //            askSteemLogo.setImageResource(R.drawable.asksteemwhite);
@@ -82,10 +149,14 @@ public class SearchActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
 
         Toolbar tb = findViewById(R.id.search_toolbar);
+        tb.setTouchscreenBlocksFocus(false);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            tb.setKeyboardNavigationCluster(false);
+        }
         setSupportActionBar(tb);
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
-        searchBar = findViewById(R.id.searchView);
+
         tb.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -114,12 +185,22 @@ public class SearchActivity extends AppCompatActivity {
             public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
                 if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                     if (searchBar.getText().toString().length()>0) {
-                        findViewById(R.id.search_progress).setVisibility(View.VISIBLE);
-                        esteemSearch(searchBar.getText().toString());
-                        InputMethodManager mgr = (InputMethodManager)SearchActivity.this.getSystemService(
-                                Context.INPUT_METHOD_SERVICE);
-                        assert mgr != null;
-                        mgr.hideSoftInputFromWindow(searchBar.getWindowToken(), 0);
+                        if (selectedPlatform == DtubeAPI.NET_SELECT_AVION) {
+                            scrollID = 0;
+                            avalonSearch(searchBar.getText().toString());
+                            InputMethodManager mgr = (InputMethodManager) SearchActivity.this.getSystemService(
+                                    Context.INPUT_METHOD_SERVICE);
+                            assert mgr != null;
+                            mgr.hideSoftInputFromWindow(searchBar.getWindowToken(), 0);
+                        }else if (selectedPlatform == DtubeAPI.NET_SELECT_HIVE){
+                            scrollIDString = null;
+                            hiveSearch(searchBar.getText().toString());
+                            InputMethodManager mgr = (InputMethodManager)SearchActivity.this.getSystemService(
+                                    Context.INPUT_METHOD_SERVICE);
+                            assert mgr != null;
+                            mgr.hideSoftInputFromWindow(searchBar.getWindowToken(), 0);
+
+                        }
 
                     }
 
@@ -136,22 +217,31 @@ public class SearchActivity extends AppCompatActivity {
 
                 if (hasMorePages && !gettingVideos) {
                     if (videos!=null && videos.size() - layoutManager.findLastVisibleItemPosition() < 5) {
-                        esteemSearch(querry);
+                        search(querry);
                     }
                 }
 
             }
         });
 
+        Log.d("ddd","tug");
+        if (Objects.equals(Preferences.selectedAPI, DtubeAPI.PROVIDER_API_URL_AVALON)){
+            ((Chip)findViewById(R.id.platform_select_avalon)).setChecked(true);
+            ((ChipGroup)findViewById(R.id.platform_select_group)).check(R.id.platform_select_avalon);
+        }else if (Preferences.selectedAPI.equals(DtubeAPI.PROVIDER_API_URL_HIVE)){
+            ((Chip)findViewById(R.id.platform_select_hive)).setChecked(true);
+            ((ChipGroup)findViewById(R.id.platform_select_group)).check(R.id.platform_select_hive);
+        }
+
     }
 
-
-    protected void esteemSearch(final String q) {
+    protected void hiveSearch(final String q) {
+        findViewById(R.id.search_progress).setVisibility(View.VISIBLE);
 
         if (q!=null && querry!=null && !q.equals(querry)) {
             videos.clear();
             adapter.notifyDataSetChanged();
-            pageNumber = 0;
+            scrollIDString = null;
         }
         querry = q;
 
@@ -159,29 +249,72 @@ public class SearchActivity extends AppCompatActivity {
             public void run() {
 
                 gettingVideos = true;
-                pageNumber++;
 
-                Log.d("dtube", "Loading Page "+pageNumber);
-                Looper.prepare(); //For Preparing Message Pool for the childThread
-                HttpClient httpclient = new DefaultHttpClient();
-                HttpPost httppost = new HttpPost(SEARCH_URL);
+                URL searchURL = null;
 
                 try {
-                    // Request parameters and other properties.
-                    List<NameValuePair> params = new ArrayList<>(3);
-                    params.add(new BasicNameValuePair("q", q+"\"▶️ DTube\""));
-                    params.add(new BasicNameValuePair("so", "newest"));
-                    //in the future search method can be an option
-                    //params.add(new BasicNameValuePair("so", "popularity"));
-                    params.add(new BasicNameValuePair("pa", pageNumber+""));
-                    httppost.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
+                    searchURL = new URL(SEARCH_URL_HIVE);
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                }
 
-                    //Execute and get the response.
-                    HttpResponse response = httpclient.execute(httppost);
-                    HttpEntity entity = response.getEntity();
+                Log.d("dtube", "Loading Page "+scrollIDString);
+                Looper.prepare(); //For Preparing Message Pool for the childThread
 
-                    if (entity != null) {
-                        try (InputStream in = entity.getContent()) {
+                //HttpClient httpclient = new DefaultHttpClient();
+                //HttpPost httppost = new HttpPost(SEARCH_URL);
+
+                try {
+                    HttpURLConnection urlConnection = (HttpURLConnection) searchURL.openConnection();
+                    urlConnection.setRequestMethod("POST");
+                    urlConnection.setDoInput(true); // Allow Inputs
+                    urlConnection.setDoOutput(true); // Allow Outputs
+                    urlConnection.setUseCaches(false); // Don't use a Cached Copy
+                    urlConnection.setRequestProperty("Authorization", APIKey);
+
+                    urlConnection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                    urlConnection.setRequestProperty("Accept", "application/json; charset=UTF-8");
+                    urlConnection.setRequestProperty("Accept-Charset", "UTF-8");
+
+                    DataOutputStream dos = new DataOutputStream(urlConnection.getOutputStream());
+
+                    String qStandardized = q+" \"▶️ DTube\"";
+                    //String qStandardized = q+" \"dtube\\/1.2\"";
+
+                    JSONObject job = new JSONObject();
+                    job.put("q", qStandardized);
+                    job.put("since", "2021-09-19T13:11:00");
+                    job.put("sort", searchMode);
+                    if (scrollIDString!=null)
+                        job.put("scroll_id", scrollIDString);
+
+                    Log.d("dtubej",job.toString());
+                    dos.write(job.toString().getBytes("UTF-8"));
+                    //dos.writeBytes(new String(job.toString().getBytes(),StandardCharsets.UTF_8));
+                    dos.flush();
+                    dos.close();
+                    //dos.writeBytes(myJson);
+//                    dos.writeBytes("Content-Disposition: form-data; name=\"q\";"+lineEnd);
+//                    dos.writeBytes(lineEnd+qStandardized);
+//                    dos.writeBytes(lineEnd+twoHyphens + boundary + twoHyphens+ lineEnd);
+//                    dos.writeBytes("Content-Disposition: form-data; name=\"so\";"+lineEnd);
+//                    dos.writeBytes(lineEnd+"newest");
+//                    dos.writeBytes(lineEnd+twoHyphens + boundary + twoHyphens+ lineEnd);
+//                    dos.writeBytes("Content-Disposition: form-data; name=\"pa\";"+lineEnd);
+//                    dos.writeBytes(lineEnd+pageNumber);
+//                    dos.writeBytes(lineEnd+twoHyphens + boundary + twoHyphens+ lineEnd);
+
+
+
+                    int serverResponseCode = urlConnection.getResponseCode();
+                    String serverResponseMessage = urlConnection.getResponseMessage();
+
+
+                    Log.i("uploadFile", "HTTP Response is : "
+                            + serverResponseMessage + ": " + serverResponseCode);
+
+                    if (serverResponseMessage != null) {
+                        try (InputStream in = urlConnection.getInputStream()) {
                             InputStreamReader cin = new InputStreamReader(in);
                             StringBuilder buffer = new StringBuilder();
                             int c;
@@ -192,21 +325,27 @@ public class SearchActivity extends AppCompatActivity {
                                 }
                             } while(c !=-1);
 
-                            JSONObject resultsObj = new JSONObject(buffer.toString());
+                            String json = buffer.toString();
 
-                            if (resultsObj.has("pages")){
-                                hasMorePages = pageNumber < resultsObj.getInt("pages");
-                            }
+                            JSONObject resultsObj = new JSONObject(json);
+
+                            hasMorePages = true;
+
+                            if (resultsObj.has("scroll_id"))
+                                scrollIDString = resultsObj.getString("scroll_id");
 
 
                             if (resultsObj.has("results")){
                                 JSONArray resultsArr = resultsObj.getJSONArray("results");
 
+
                                 for (int i = 0; i<resultsArr.length(); i++) {
                                     JSONObject videoObject = resultsArr.getJSONObject(i);
 
+                                    Log.d("dtubev",i+": "+videoObject.toString());
+
                                     if (!videoObject.toString().contains("nsfw")) {
-                                        if (videoObject.toString().contains("dtube\\/0.")
+                                        if (videoObject.toString().contains("dtube\\/0.")||videoObject.toString().contains("dtube\\/1.")
                                                 || videoObject.toString().contains("oneloveipfs")) {
 
                                             Video v = new Video();
@@ -226,18 +365,24 @@ public class SearchActivity extends AppCompatActivity {
                                                     imageURL = imageURL.substring(0,imageURL.length()-1);
                                                 v.setImageURL(imageURL);
                                             }else {
-                                                Log.d("dtube", "invalid snap. Replacing img");
+
 
                                                 imgTagIndex = body.indexOf("(https://cdn.steemitimages.com/");
 
-                                                String imgURL = body.substring(imgTagIndex+1, body.indexOf(".png",imgTagIndex)+4);
-                                                v.setImageURL(imgURL);
+                                                if (imgTagIndex!=-1) {
+                                                    String imgURL = body.substring(imgTagIndex + 1, body.indexOf(".png", imgTagIndex) + 4);
+                                                    v.setImageURL(imgURL);
+                                                }else{
+                                                    if (videoObject.has("img_url")){
+                                                        v.setImageURL(videoObject.getString("img_url"));
+                                                    }
+                                                }
                                             }
 
 
                                             videos.add(v);
 
-                                            Log.d("dtube", v.user+","+v.snapHash);
+                                            Log.d("dtube", v.user+","+v.imageURL);
                                         }
                                     }
                                 }
@@ -248,8 +393,10 @@ public class SearchActivity extends AppCompatActivity {
                                 public void run() {
                                     if (videos.size()>0)
                                         askSteemLogo.setVisibility(View.GONE);
-                                    else
-                                        askSteemLogo.setVisibility(View.VISIBLE);
+                                    else {
+                                        if (selectedPlatform == DtubeAPI.NET_SELECT_HIVE)
+                                            askSteemLogo.setVisibility(View.VISIBLE);
+                                    }
                                     adapter.setVideos(videos);
                                     findViewById(R.id.search_progress).setVisibility(View.GONE);
                                 }
@@ -260,6 +407,146 @@ public class SearchActivity extends AppCompatActivity {
                 }catch (Exception e){
                     e.printStackTrace();
                     Log.d("dtube",e.getMessage());
+                    SearchActivity.this.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            findViewById(R.id.search_progress).setVisibility(View.GONE);
+                        }
+                    });
+                }
+                finally {
+                    gettingVideos = false;
+                }
+
+
+
+                Looper.loop(); //Loop in the message queue
+            }
+        };
+        t.start();
+    }
+
+    protected void avalonSearch(final String q) {
+
+        findViewById(R.id.search_progress).setVisibility(View.VISIBLE);
+
+        if (q!=null && querry!=null && !q.equals(querry)) {
+            videos.clear();
+            adapter.notifyDataSetChanged();
+            scrollID = 0;
+        }
+        querry = q;
+
+        Thread t = new Thread() {
+            public void run() {
+                gettingVideos = true;
+
+                Log.d("dtube", "Loading Page "+scrollID);
+                Looper.prepare(); //For Preparing Message Pool for the childThread
+
+                //HttpClient httpclient = new DefaultHttpClient();
+                //HttpPost httppost = new HttpPost(SEARCH_URL);
+
+
+                try {
+
+                    JSONObject resultsObj = JSONParser.makeHttpsRequest(SEARCH_URL_AVALON+"q="+ URLEncoder.encode(q)
+                        + "&sort=" +searchMode+"&from="+scrollID+"&size=50");
+
+                    JSONObject hitsObj =  resultsObj.getJSONObject("hits");
+
+                    totalHits =hitsObj.getJSONObject("total").getInt("value");
+                    JSONArray resultsArr = hitsObj.getJSONArray("hits");
+
+
+                    hasMorePages = (videos.size() + resultsArr.length())<=totalHits;
+                    scrollID = (videos.size() + resultsArr.length());
+
+
+
+
+                    for (int i = 0; i<resultsArr.length(); i++) {
+                        JSONObject videoObject = resultsArr.getJSONObject(i).getJSONObject("_source");
+
+                        Log.d("dtubev",i+": "+videoObject.toString());
+
+                        //if (!videoObject.toString().contains("nsfw")) {
+
+
+                        Video v = new Video();
+
+
+
+                        v.user = videoObject.getString("author");
+
+                        v.setTimeLong(videoObject.getLong("ts"));
+                        v.permlink = videoObject.getString("link");
+
+                        JSONObject body = videoObject.getJSONObject("json");
+
+                        if (body.has("files")) {
+                            JSONObject filesJ = body.getJSONObject("files");
+
+                            if (filesJ.has("ipfs")) {
+                                JSONObject ipfsObj = filesJ.getJSONObject("ipfs");
+                                if (ipfsObj.has("img")){
+                                    JSONObject imgObj = ipfsObj.getJSONObject("img");
+                                    if (imgObj.has("360"))
+                                        v.snapHash = imgObj.getString("360");
+                                    else if (imgObj.has("spr"))
+                                        v.snapHash = imgObj.getString("spr");
+                                }
+                            }
+
+                            if (filesJ.has("youtube")) {
+                                v.setProvider(PROVIDER_YOUTUBE);
+                                v.hash = filesJ.getString("youtube");
+                            }
+
+
+                        }
+
+
+                        v.title = body.getString("title");
+
+
+
+                        if (body.has("thumbnailUrl") && body.getString("thumbnailUrl").length()>0){
+                            v.setImageURL(body.getString("thumbnailUrl"));
+                        }else {
+                            String bodyString = body.toString();
+                            //Extract img Hash from HTML such as <img src='https://ipfs.io/ipfs/QmQG6gPe6hnT8aTRvH3hskMiWbbn9HR6gVf2TH3vXYV71Q' >
+                            int imgTagIndex = body.toString().indexOf("<img src='");
+                            if (imgTagIndex != -1) {
+                                String imageURL = bodyString.substring(imgTagIndex + 10, bodyString.indexOf(">", imgTagIndex) - 1);
+                                if (imageURL.endsWith("'"))
+                                    imageURL = imageURL.substring(0, imageURL.length() - 1);
+                                v.setImageURL(imageURL);
+                            }
+                        }
+
+                        videos.add(v);
+
+                        Log.d("dtube", v.user+","+v.imageURL);
+
+                        //}
+                    }
+
+                    SearchActivity.this.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (videos.size()>0)
+                                askSteemLogo.setVisibility(View.GONE);
+                            else if (selectedPlatform == DtubeAPI.NET_SELECT_HIVE)
+                                askSteemLogo.setVisibility(View.VISIBLE);
+                            adapter.setVideos(videos);
+                            findViewById(R.id.search_progress).setVisibility(View.GONE);
+                        }
+                    });
+
+                }catch (Exception e){
+                    e.printStackTrace();
+                    //Log.d("dtube",e.getMessage());
                     SearchActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -369,15 +656,74 @@ public class SearchActivity extends AppCompatActivity {
         Bundle b = new Bundle();
         b.putSerializable("video", videos.get(pos));
         data.putExtra("video",b);
+        videos.get(pos).blockchain = selectedPlatform;
+        data.putExtra("platform",selectedPlatform);
         setResult(RESULT_OK, data);
         finish();
     }
 
 
+    public void search(String q){
+        if (selectedPlatform == DtubeAPI.NET_SELECT_AVION)
+            avalonSearch(searchBar.getText().toString());
+        else
+            hiveSearch(searchBar.getText().toString());
+    }
 
 
-    public void subscribeButtonClicked(View v){
+    public void setModes(){
+        if (searchMode == SORT_DATE_AVALON || searchMode == SORT_NEWEST_HIVE) {
+            SearchActivity.searchMode = selectedPlatform == DtubeAPI.NET_SELECT_AVION ? SORT_DATE_AVALON:SORT_NEWEST_HIVE;
+        }else if (searchMode == SORT_POPULAR_AVALON || searchMode == SORT_POPULARITY_HIVE) {
+            SearchActivity.searchMode = selectedPlatform == DtubeAPI.NET_SELECT_AVION ? SORT_RELEVANCE_AVALON:SORT_RELEVANCE_HIVE;
+        }else if (searchMode == SORT_RELEVANCE_AVALON || searchMode == SORT_RELEVANCE_HIVE) {
+            SearchActivity.searchMode = selectedPlatform == DtubeAPI.NET_SELECT_AVION ? SORT_POPULAR_AVALON:SORT_POPULARITY_HIVE;
+        }
+    }
 
+
+
+    public void filterClicked(View v){
+        // Initializing the popup menu and giving the reference as current context
+        PopupMenu popupMenu = new PopupMenu(SearchActivity.this, v);
+
+        // Inflating popup menu from popup_menu.xml file
+        popupMenu.getMenuInflater().inflate(R.menu.filter_menu, popupMenu.getMenu());
+        if (searchMode == SORT_DATE_AVALON || searchMode == SORT_NEWEST_HIVE)
+            popupMenu.getMenu().findItem(R.id.newest).setEnabled(false);
+        else if (searchMode == SORT_POPULAR_AVALON || searchMode == SORT_POPULARITY_HIVE)
+            popupMenu.getMenu().findItem(R.id.popularity).setEnabled(false);
+        else if (searchMode == SORT_RELEVANCE_AVALON || searchMode == SORT_RELEVANCE_HIVE)
+            popupMenu.getMenu().findItem(R.id.relevance).setEnabled(false);
+
+        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem menuItem) {
+                // Toast message on menu item clicked
+                switch (menuItem.getItemId()){
+                    case R.id.newest:
+                        SearchActivity.searchMode = selectedPlatform == DtubeAPI.NET_SELECT_AVION ? SORT_DATE_AVALON:SORT_NEWEST_HIVE;
+                        break;
+                    case R.id.relevance:
+                        SearchActivity.searchMode = selectedPlatform == DtubeAPI.NET_SELECT_AVION ? SORT_RELEVANCE_AVALON:SORT_RELEVANCE_HIVE;
+                        break;
+                    case R.id.popularity:
+                        SearchActivity.searchMode = selectedPlatform == DtubeAPI.NET_SELECT_AVION ? SORT_POPULAR_AVALON:SORT_POPULARITY_HIVE;
+                        break;
+                }
+
+                videos.clear();
+                adapter.notifyDataSetChanged();
+                scrollID = 0;
+
+
+                search((searchBar.getText().toString()));
+
+                return true;
+            }
+        });
+        // Showing the popup menu
+        popupMenu.show();
     }
 
 }

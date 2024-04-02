@@ -9,21 +9,29 @@ import android.os.Build;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.BillingClientStateListener;
 import com.android.billingclient.api.BillingResult;
 import com.android.billingclient.api.Purchase;
+import com.android.billingclient.api.PurchaseHistoryResponseListener;
+import com.android.billingclient.api.PurchasesResponseListener;
 import com.android.billingclient.api.PurchasesUpdatedListener;
+import com.android.billingclient.api.QueryPurchaseHistoryParams;
+import com.android.billingclient.api.QueryPurchasesParams;
 
 import java.util.List;
+import java.util.Objects;
 
 import static android.content.Context.UI_MODE_SERVICE;
 
 public class Preferences {
     public static boolean darkMode;
     public static boolean hasUpgrade;
+    static String selectedAPI = DtubeAPI.PROVIDER_API_URL_AVALON;
+
 
 
     public static void loadPreferences(Context c){
@@ -31,9 +39,9 @@ public class Preferences {
         if (!prefs.contains("dark_mode"))
             prefs.edit().putBoolean("dark_mode",false).apply();
         else
-            darkMode = PreferenceManager.getDefaultSharedPreferences(c).getBoolean("dark_mode",false);
-        hasUpgrade = PreferenceManager.getDefaultSharedPreferences(c).getBoolean("upgraded",false);
-
+            darkMode = prefs.getBoolean("dark_mode",false);
+        hasUpgrade = prefs.getBoolean("upgraded",false);
+        selectedAPI = DtubeAPI.getSelectedAPI(c);
 
 
         UiModeManager uiModeManager = (UiModeManager) c.getSystemService(UI_MODE_SERVICE);
@@ -59,14 +67,31 @@ public class Preferences {
                     if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
                         Log.d("bill", "onBillingSetupFinished");
 
-                        for (Purchase p : billingClient.queryPurchases("inapp").getPurchasesList()) {
-                            Log.d("billp", "purchases: " + p.getPurchaseToken());
-                            //already purchased
-                            PreferenceManager.getDefaultSharedPreferences(c)
-                                    .edit().putBoolean("upgraded", true).apply();
-                            Preferences.hasUpgrade = true;
-                        }
-                        billingClient.endConnection();
+
+
+                        billingClient.queryPurchasesAsync(QueryPurchasesParams.newBuilder().setProductType(BillingClient.ProductType.INAPP).build(), new PurchasesResponseListener() {
+                            @Override
+                            public void onQueryPurchasesResponse(@NonNull BillingResult billingResult, @NonNull List<Purchase> list) {
+                                for (Purchase p : list) {
+                                    Log.d("billp", "purchases: " + p.toString());
+                                    //already purchased
+                                    PreferenceManager.getDefaultSharedPreferences(c)
+                                            .edit().putBoolean("upgraded", true).apply();
+                                    Preferences.hasUpgrade = true;
+                                    billingClient.endConnection();
+                                }
+                            }
+                        });
+
+
+//                        for (Purchase p : billingClient.queryPurchases("inapp").getPurchasesList()) {
+//                            Log.d("billp", "purchases: " + p.getPurchaseToken());
+//                            //already purchased
+//                            PreferenceManager.getDefaultSharedPreferences(c)
+//                                    .edit().putBoolean("upgraded", true).apply();
+//                            Preferences.hasUpgrade = true;
+//                        }
+
                     }
                 }
 

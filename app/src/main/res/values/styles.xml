@@ -1,7 +1,7 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+    <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
@@ -9,6 +9,7 @@
         <item name="windowActionBar">false</item>
         <item name="colorControlHighlight">@color/colorAccent</item>
     </style>
+
 
     <style name="AppThemeDark" parent="ThemeOverlay.AppCompat.Dark">
         <!-- Customize your theme here. -->
@@ -19,7 +20,7 @@
         <item name="colorControlHighlight">@color/colorAccent</item>
     </style>
 
-    <style name="AppThemeWAB" parent="Theme.AppCompat.Light">
+    <style name="AppThemeWAB" parent="Theme.MaterialComponents.Light">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
@@ -39,7 +40,7 @@
         <item name="colorControlHighlight">@color/colorAccent</item>
     </style>
 
-    <style name="VideoPlayTheme" parent="Theme.AppCompat.Light.NoActionBar">
+    <style name="VideoPlayTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@android:color/black</item>
@@ -48,7 +49,14 @@
         <item name="colorControlHighlight">@color/colorAccent</item>
     </style>
 
-    <style name="UploadStyle" parent="Theme.AppCompat.Light">
+    <style name="PowerSpinnerStyle">
+        <item name="android:scrollbarAlwaysDrawVerticalTrack">true</item>
+        <item name="android:scrollbars">vertical</item>
+        <item name="android:fadeScrollbars">false</item>
+        <item name="android:scrollbarSize">2dp</item>
+    </style>
+
+    <style name="UploadStyle" parent="Theme.MaterialComponents.Light">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>

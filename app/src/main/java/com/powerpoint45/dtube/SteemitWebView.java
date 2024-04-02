@@ -1,12 +1,18 @@
 package com.powerpoint45.dtube;
 
+import static com.powerpoint45.dtube.Preferences.selectedAPI;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.util.Log;
 import android.webkit.WebChromeClient;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
+
+import androidx.annotation.Nullable;
 
 /**
  * Created by michael on 11/11/17.
@@ -16,16 +22,31 @@ import android.widget.Toast;
 public class SteemitWebView extends WebView {
 
     boolean loadedPage;
+    public String api;
 
     @SuppressLint("SetJavaScriptEnabled")
-    public SteemitWebView(Activity context) {
+    /**
+     * context: Activity Context
+     * api: API url selection. pass null for already selected login type
+     */
+    public SteemitWebView(Activity context, String api) {
         super(context);
+        this.api = api;
 
         if (getResources().getBoolean(R.bool.debug)) {
             WebView.setWebContentsDebuggingEnabled(true);
         }
 
         setWebViewClient(new WebViewClient() {
+
+            @Nullable
+            @Override
+            public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+                Log.d("dtube", "shouldInterceptRequest");
+                request.getRequestHeaders().remove("Access-Control-Allow-Origin");
+                request.getRequestHeaders().put("Access-Control-Allow-Origin", "*");
+                return super.shouldInterceptRequest(view, request);
+            }
 
             public void onPageFinished(WebView view, String url) {
                 loadedPage = true;
@@ -43,23 +64,28 @@ public class SteemitWebView extends WebView {
 
                 if(newProgress == 100){
                     // Page loading finish
-                    if (view.getUrl().equals("file:///android_res/raw/steemit.html"))
-                    loadedPage = true;
+                    if (view.getUrl().equals(selectedAPI))
+                        loadedPage = true;
                 }
             }
         });
 
 
+
         getSettings().setJavaScriptEnabled(true);
-        loadUrl("file:///android_res/raw/steemit.html");
+
+        if (api == null)
+            api = selectedAPI;
+        this.api = api;
+        loadUrl(api);
+
 
         //the javascript interface helps me get results from steemit javascript library
         addJavascriptInterface(new AppJavaScriptProxy(context), "androidAppProxy");
     }
 
-    public void commentPost(String author, String permlink, String accountName, String privateKey, String comment,
-                            String parentPermlink, String parentAuthor){
-        queURL("javascript:commentPost('"+author+"','"+permlink+"','"+accountName+"','"+privateKey+"','"+comment+"','"+parentPermlink+"','"+parentAuthor+"');");
+    public void commentPost(String author, String permlink, String accountName, String privateKey, String comment, String parentPermlink, String parentAuthor, int indent){
+        queURL("javascript:commentPost('"+author+"','"+permlink+"','"+accountName+"','"+privateKey+"','"+comment+"','"+parentPermlink+"','"+parentAuthor+"','"+indent+"');");
     }
 
     public void votePost(String author, String permlink, String accountName, String privateKey, int weight) {
@@ -88,12 +114,23 @@ public class SteemitWebView extends WebView {
     }
 
     public void getSubscriptions(String userName){
+        Log.d("DT", "getSubscriptions0");
         queURL("javascript:getSubscriptions('"+userName+"');");
     }
 
     //loads a set of videos at a time and sent to proxy
-    public void getSubscriptionFeed(String username){
-        queURL("javascript:getSubscriptionFeed('"+username+"');");
+    public void getSubscriptionFeed(String username, String StartAuthor, String StartPermlink){
+        if (StartAuthor == null)
+            StartAuthor = "";
+
+        if (StartPermlink == null)
+            StartPermlink = "";
+
+        queURL("javascript:getSubscriptionFeed('"+username+"','"+StartAuthor+"','"+StartPermlink+"');");
+    }
+
+    public void getSubscriptionFeed(String userName){
+        queURL("javascript:getSubscriptionFeed('"+userName+"', '', '');");
     }
 
     public void getHotVideosFeed(String StartAuthor, String StartPermlink){
@@ -126,7 +163,8 @@ public class SteemitWebView extends WebView {
 
 
     public void getVideoInfo(String author, String permlink, String accountName){
-        loadUrl("javascript:getVideoInfo('"+author+"','"+permlink+"','"+accountName+"');");
+        Log.d("dtubez","javascript:getVideoInfo('"+author+"','"+permlink+"','"+accountName+"');");
+        queURL("javascript:getVideoInfo('"+author+"','"+permlink+"','"+accountName+"');");
     }
 
     public void getReplies(String author, String permlink, String accountName){
@@ -137,8 +175,14 @@ public class SteemitWebView extends WebView {
 //        queURL("javascript:getAllReplies('"+author+"','"+permlink+"','"+accountName+"');");
 //    }
 
-    public void getChannelVideos(String author, String lastPermlink){
-        queURL("javascript:getAuthorVideos('"+author+"','"+lastPermlink+"');");
+    public void getChannelVideos(String author, String lastPermlink, String lastAuthor, String accountName){
+        Log.d("dt","getChannelVideos");
+        queURL("javascript:getAuthorVideos('"+author+"','"+lastPermlink+"','"+lastAuthor+"','"+accountName+"');");
+    }
+
+    public void getChannelVideos2(String author, String lastPermlink, String accountName){
+        Log.d("dt","getChannelVideos2");
+        queURL("javascript:getAuthorVideos('"+author+"','"+lastPermlink+"','"+accountName+"',1);");
     }
 
     public void getSuggestedVideos(String username){
@@ -184,8 +228,10 @@ public class SteemitWebView extends WebView {
             }
 
             new Thread(new LoadRunner(url)).start();
-
         }
     }
 
+    public void getBalance(String channelName) {
+        queURL("javascript:getBalance('"+channelName+"');");
+    }
 }

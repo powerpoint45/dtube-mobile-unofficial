@@ -32,11 +32,12 @@ class Comment implements Serializable {
     CommentsList childComments;
 
     String getImageURL(){
-        return DtubeAPI.PROFILE_IMAGE_SMALL_URL.replace("username",userName);
+        return DtubeAPI.getProfileImage(userName);
     }
 
     @SuppressLint("SimpleDateFormat")
     public void setTime(String timeUnformatted){
+
         DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"); //2011-07-27T06:41:11+00:00
         formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
         Date date = null;
@@ -48,6 +49,10 @@ class Comment implements Serializable {
 
         if (date!=null)
             time = date.getTime();
+    }
+
+    public void setTimeLong(long timeUnformatted){
+        time = timeUnformatted;
     }
 
     long getDate(){

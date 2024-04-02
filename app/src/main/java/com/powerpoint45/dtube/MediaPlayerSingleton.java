@@ -1,5 +1,8 @@
 package com.powerpoint45.dtube;
 
+import static android.content.Context.UI_MODE_SERVICE;
+import static com.google.android.exoplayer2.ui.PlayerView.SHOW_BUFFERING_ALWAYS;
+
 import android.app.Activity;
 import android.app.UiModeManager;
 import android.content.Context;
@@ -9,11 +12,14 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.widget.Toast;
 
 import com.google.android.exoplayer2.ExoPlaybackException;
+import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
@@ -27,18 +33,18 @@ import com.google.android.exoplayer2.video.VideoListener;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
-import static android.content.Context.UI_MODE_SERVICE;
-import static com.google.android.exoplayer2.ui.PlayerView.SHOW_BUFFERING_ALWAYS;
-
 public class MediaPlayerSingleton {
 
     private static MediaPlayerSingleton mediaPlayer;
     private PlayerView playerView;
     private SimpleExoPlayer player;
     private Video videoToPlay;
-    private Context c;
+
+    boolean triedLoadingSecondarySource = false;
 
     WebViewVideoView embeddedPlayer;
+
+    Activity c;
 
     private MediaPlayerSingleton(){
 
@@ -80,7 +86,14 @@ public class MediaPlayerSingleton {
             @Override
             public void onPlayerError(ExoPlaybackException error) {
                 //hadErrorLoading = true;
+                if (triedLoadingSecondarySource== false) {
+                    triedLoadingSecondarySource = true;
+                    playVideo(videoToPlay, c);
+                    Log.d("dtsgd", "loading secondary");
+                }
+
                 if (!videoToPlay.hasTriedLoadingBackupGateway()){
+                    Log.d("dtsgd", "loading backup");
                     //try loading backup stream
                     Log.d("dtube3","BACKUP LOAD "+videoToPlay.getBackupVideoStreamURL());
                     player.prepare(getMediaSource(videoToPlay.getBackupVideoStreamURL()));
@@ -107,9 +120,9 @@ public class MediaPlayerSingleton {
      */
     View getRightPlayerView(){
         if(videoToPlay.getProvider().equals(DtubeAPI.PROVIDER_TWITCH) || videoToPlay.getProvider().equals(DtubeAPI.PROVIDER_3SPEAK)
-                ||videoToPlay.getProvider().equals(DtubeAPI.PROVIDER_YOUTUBE))
-            return  embeddedPlayer;
-        else
+                ||videoToPlay.getProvider().equals(DtubeAPI.PROVIDER_YOUTUBE)||videoToPlay.getProvider().equals(DtubeAPI.PROVIDER_APPICS)) {
+            return embeddedPlayer;
+        }else
             return playerView;
     }
 
@@ -142,19 +155,39 @@ public class MediaPlayerSingleton {
             startEmbeddedPlayer();
         }else if (videoToPlay.getProvider().equals(DtubeAPI.PROVIDER_3SPEAK)) {
             Log.d("dtube9","PROVIDER_3SPEAK");
-            String url = "https://3speak.co/embed?v="+videoToPlay.hash;
-            String html = "<html><body><iframe src=\""+url+"\" frameborder=\"0\" width=100% height=100% allow=\"accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture\" allowfullscreen></iframe></body></html>";
+            String url = "https://3speak.tv/embed?v="+videoToPlay.hash;
+            Log.d("dtube9",url);
+            String html = "<html><body><iframe src=\""+url+"\""+"  frameborder=\"0\" width=100% height=100% allow=\"accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture\" allowfullscreen></iframe></body></html>";
+            Log.d("dtube9",html);
+            //embeddedPlayer.loadUrl(url);
             embeddedPlayer.loadData(html, "text/html", "utf-8");
+            embeddedPlayer.queClickCenter();
             pauseNativePlayer();
             startEmbeddedPlayer();
         } else if (videoToPlay.getProvider().equals(DtubeAPI.PROVIDER_TWITCH)) {
             embeddedPlayer.loadUrl("https://player.twitch.tv/?video="+videoToPlay.hash);
             pauseNativePlayer();
             startEmbeddedPlayer();
+        }else if (videoToPlay.getProvider().equals(DtubeAPI.PROVIDER_APPICS)) {
+            //embeddedPlayer.loadUrl(videoToPlay.hash);
+
+            //embeddedPlayer.setBackgroundColor(Color.RED);
+            //Log.d("dfegwaf","PROVIDER_APPICS " + videoToPlay.hash);
+
+            String url = videoToPlay.hash;
+            String html = "<html><body><iframe frameborder=0 allowfullscreen width=100% height=100% src=\"" + url + "\"  frameborder=0 allowfullscreen></iframe></body></html>";
+            embeddedPlayer.loadData(html, "text/html", "utf-8");
+
+            pauseNativePlayer();
+            startEmbeddedPlayer();
+
+
         } else {
             Log.d("dtube", "loading stream: " + videoToPlay.getVideoStreamURL());
 
             player.prepare(getMediaSource(videoToPlay.getVideoStreamURL()));
+
+
             player.setPlayWhenReady(true);
             playerView.showController();
 
@@ -233,6 +266,11 @@ public class MediaPlayerSingleton {
         }
     }
 
+    public void resetVideoLoadFlags(){
+        triedLoadingSecondarySource=false;
+        Log.d("dtsgd","reset loadinfo flags");
+    }
+
     void startNativePlayer(){
         if (player!=null){
             player.setPlayWhenReady(true);
@@ -245,14 +283,35 @@ public class MediaPlayerSingleton {
             embeddedPlayer.onResume();
         }
     }
-    
 
+
+
+
+    boolean playing = true;
     void togglePlayPause(){
-        if (playerView.findViewById(R.id.exo_play).getVisibility()==View.VISIBLE)
-            playerView.findViewById(R.id.exo_play).performClick();
-        else if (playerView.findViewById(R.id.exo_pause).getVisibility()==View.VISIBLE)
-            playerView.findViewById(R.id.exo_pause).performClick();
+
+        ViewGroup player = (ViewGroup) getRightPlayerView();
+
+        if (player instanceof PlayerView){
+
+            if (playerView.findViewById(R.id.exo_play).getVisibility()==View.VISIBLE) {
+                playerView.findViewById(R.id.exo_play).performClick();
+                playing = true;
+            }
+            else if (playerView.findViewById(R.id.exo_pause).getVisibility()==View.VISIBLE) {
+                playerView.findViewById(R.id.exo_pause).performClick();
+                playing = false;
+            }
+
+        }else if (player instanceof WebViewVideoView){
+            ((WebViewVideoView)player).clickCenter();
+        }
+
+
+
+
     }
+
 
     void rewind(){
         long pos = player.getCurrentPosition();

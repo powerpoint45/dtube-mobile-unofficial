@@ -22,7 +22,7 @@ class Video implements Serializable{
     String user;
     String price;
     String permlink;
-    private long time;
+    private long time = 0;
     int categoryId;
     String hash;
     String snapHash;
@@ -33,7 +33,11 @@ class Video implements Serializable{
     String longDescriptionHTML;
     String subscribers;
     private String gateway;
+    private String priorityGateway;
     private boolean triedLoadingBackupGateway;
+    private String platform;
+
+    int blockchain = DtubeAPI.NET_SELECT_AVION;
 
 
     //0=no vote
@@ -51,15 +55,29 @@ class Video implements Serializable{
     //private static String VIDEO_FRAME_URL = "https://skzap.github.io/embedtube/#!/AUTHOR/PERMLINK/true/true/GATEWAY";
 
     private final String[] GATEWAYS = new String[]{
-            "https://ipfs.infura.io",
-            "https://ipfs.io",
-            "https://gateway.ipfs.io",
-            "https://scrappy.i.ipfs.io",
-            "https://chappy.i.ipfs.io"
+            "https://player.d.tube/ipfs/",
+            "https://ipfs.d.tube/ipfs/",
+            "https://video.oneloveipfs.com/ipfs/",
+            "https://ipfs.infura.io/ipfs/",
+            "https://gateway.temporal.cloud/ipfs/",
+            "https://gateway.pinata.cloud/ipfs/",
+            "https://ipfs.eternum.io/ipfs/",
+            "https://ipfs.io/ipfs/"
     };
 
     void setGateway(String gw){
-        gateway = gw;
+        if (gw.startsWith("https://") || gw.startsWith("http://"))
+            gateway = gw;
+        else
+            gateway = "https://" + gw;
+    }
+
+    void setPriorityGateway(String gw){
+        priorityGateway = gw;
+    }
+
+    private String getPriorityGateway(){
+        return priorityGateway;
     }
 
     private String getGateway(){
@@ -67,7 +85,7 @@ class Video implements Serializable{
             return gateway;
         }else {
             int g = hash.charAt(hash.length() - 1) % GATEWAYS.length;
-            return GATEWAYS[g].split("://")[1];
+            return GATEWAYS[g];
         }
     }
 
@@ -75,22 +93,59 @@ class Video implements Serializable{
         return VIDEO_FRAME_URL.replace("AUTHOR",user).replace("PERMLINK",permlink);
     }
 
+//    String getVideoStreamURL(int attempt){
+//        if (getPriorityGateway()==null)
+//            attempt++;
+//
+//        switch (attempt){
+//            case 0:
+//                return getPriorityGateway()+"/ipfs/" +hash;
+//            case 1:
+//                break;
+//            case 2:
+//                break;
+//            case 3:
+//                break;
+//            case 4:
+//                break;
+//            case 5:
+//                break;
+//        }
+//
+//        return null;
+//    }
+
 
     String getVideoStreamURL() {
+        Log.d("dtsgd", "getVideoStreamURL");
         if (getProvider().equals(DtubeAPI.PROVIDER_SKYNET)){
             return  "https://siasky.net/" + hash;
-        }if (getProvider().equals(DtubeAPI.PROVIDER_BTFS))
+        }else if (getProvider().equals(DtubeAPI.PROVIDER_BTFS)) {
             return "https://player.d.tube/btfs/" + hash;
-        //Ater about Dec 12 dtube started using the new video.dtube.top gateway
-        if (getDate()>=1544653245000L && !getGateway().equals("video.oneloveipfs.com"))
-            return "https://video.dtube.top/ipfs/" + hash;
-        else
+        }else
+
+        if (getPriorityGateway()!=null)
+            return getPriorityGateway()+"/ipfs/"+hash;
+
+        if (gateway!=null)
+            return gateway + "/ipfs/" + hash;
+
+        else if (getDate()>=1544653245000L && !getGateway().equals("video.oneloveipfs.com")) {
+            //Ater about Dec 12 dtube started using the new video.dtube.top gateway
+            return getPrimaryIPFSURL() + "/ipfs/" + hash;
+        }else
             return getBackupVideoStreamURL();
     }
 
+    String getPrimaryIPFSURL(){
+        Log.d("dtsgd", "getPrimaryIPFSURL");
+        return "https://player.d.tube"+hash;
+    }
+
     String getBackupVideoStreamURL(){
+        Log.d("dtsgd", "getBackupVideoStreamURL");
         triedLoadingBackupGateway = true;
-        return "https://" + getGateway() + "/ipfs/" + hash;
+        return getGateway() + "/ipfs/" + hash;
     }
 
     public boolean hasTriedLoadingBackupGateway(){
@@ -106,6 +161,18 @@ class Video implements Serializable{
         if (duration.startsWith("00:"))
             duration = duration.substring(3);
         this.duration = duration;
+    }
+
+    public String getPlatform() {
+        return platform;
+    }
+
+    public void setPlatform(String platform) {
+        this.platform = platform;
+    }
+
+    public void setTimeLong(long timeUnformatted){
+        time = timeUnformatted;
     }
 
     @SuppressLint("SimpleDateFormat")
@@ -148,12 +215,15 @@ class Video implements Serializable{
 
     String getImageURL(){
 
-        if (imageURL!=null)
+        if (imageURL!=null) {
             return imageURL;
-        else if (getProvider().equals(DtubeAPI.PROVIDER_YOUTUBE)) {
-            return "https://img.youtube.com/vi/" + hash + "/hqdefault.jpg";
-        }else
+        }else if (getProvider().equals(DtubeAPI.PROVIDER_YOUTUBE)) {
+            return "https://img.youtube.com/vi/" + hash + "/mqdefault.jpg";
+        }else if (gateway!=null) {
+            return gateway + "/ipfs/" + snapHash;
+        }else {
             return DtubeAPI.CONTENT_IMAGE_URL + snapHash;
+        }
     }
 
     String getBackupImageURL(){
@@ -188,6 +258,7 @@ class Video implements Serializable{
         VideoArrayList videos = getRecentVideos(c);
         if (videos==null)
             videos = new VideoArrayList();
+
 
         if (!videos.containsVideo(this)) {
             videos.add(0, this);

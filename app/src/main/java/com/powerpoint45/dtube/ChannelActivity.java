@@ -2,6 +2,7 @@ package com.powerpoint45.dtube;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -11,6 +12,7 @@ import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatImageView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -32,6 +34,8 @@ public class ChannelActivity extends AppCompatActivity {
     boolean gotAllItems = false;
     boolean gettingMoreVideos = false;
     String lastPermlink = "";
+
+    String lastAuthor = "";
     LinearLayoutManager layoutManager;
     String channelName;
     String accountName;
@@ -57,8 +61,7 @@ public class ChannelActivity extends AppCompatActivity {
         String profileURL =  getIntent().getExtras().getString("userurl");
         String profileImageURL = getIntent().getExtras().getString("profileimage");
 
-
-        Picasso.get().load(DtubeAPI.PROFILE_IMAGE_MEDIUM_URL.replace("username",channelName)).placeholder(R.drawable.ic_account_circle).transform(new RoundedTransformationBuilder()
+        Picasso.get().load(DtubeAPI.getProfileImage(channelName)).placeholder(R.drawable.ic_account_circle).transform(new RoundedTransformationBuilder()
                 .cornerRadiusDp(50)
                 .oval(false)
                 .build())
@@ -107,7 +110,10 @@ public class ChannelActivity extends AppCompatActivity {
                 if (!gotAllItems && !gettingMoreVideos) {
                     if (videos!=null && videos.size() - layoutManager.findLastVisibleItemPosition() < VIDEO_LIMIT) {
                         gettingMoreVideos = true;
-                        steemitWebView.getChannelVideos(channelName, lastPermlink);
+                        if (Preferences.selectedAPI.equals(DtubeAPI.PROVIDER_API_URL_AVALON))
+                            steemitWebView.getChannelVideos(channelName, lastPermlink, lastAuthor, accountName);
+                        else
+                            steemitWebView.getChannelVideos2(channelName, lastPermlink, accountName);
                     }
                 }
 
@@ -116,8 +122,12 @@ public class ChannelActivity extends AppCompatActivity {
 
         ((TextView)findViewById(R.id.item_user)).setText(getResources().getString(R.string.videos_by)+" " + channelName);
 
-        steemitWebView = new SteemitWebView(this);
-        steemitWebView.getChannelVideos(channelName, lastPermlink);
+        steemitWebView = new SteemitWebView(this, null);
+        if (Preferences.selectedAPI.equals(DtubeAPI.PROVIDER_API_URL_AVALON))
+            steemitWebView.getChannelVideos(channelName, lastPermlink, lastAuthor, accountName);
+        else
+            steemitWebView.getChannelVideos2(channelName, lastPermlink, accountName);
+
         gettingMoreVideos = true;
 
         accountName = DtubeAPI.getAccountName(this);
@@ -126,6 +136,7 @@ public class ChannelActivity extends AppCompatActivity {
         }else if(accountName!=null)
             steemitWebView.getIsFollowing(channelName, accountName);
         steemitWebView.getSubscriberCount(channelName);
+        steemitWebView.getBalance(channelName);
     }
 
     public void setIsFollowing(boolean b){
@@ -147,7 +158,7 @@ public class ChannelActivity extends AppCompatActivity {
         ((TextView)findViewById(R.id.subscribers)).setText(""+count);
     }
 
-    public void addVideos(VideoArrayList videos, String lastPermlink){
+    public void addVideos(VideoArrayList videos, String lastPermlink, String lastAuthor){
         if (!gotAllItems) {
             if (videos == null && lastPermlink.equals("last")) {
                 gotAllItems = true;
@@ -156,6 +167,8 @@ public class ChannelActivity extends AppCompatActivity {
                     this.videos = new VideoArrayList();
 
                 this.lastPermlink = lastPermlink;
+                this.lastAuthor = lastAuthor;
+
                 assert videos != null;
                 this.videos.addAll(videos);
                 gettingMoreVideos = false;
@@ -175,6 +188,37 @@ public class ChannelActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
     }
 
+    public void updateBalances(String accountName, String balance, String dollarBalance, String votingPower){
+        //verify callback is for correct account
+        if (this.channelName.equals(accountName)){
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    ((TextView)findViewById(R.id.balance_text)).setText(balance);
+                    ((TextView)findViewById(R.id.balance_dollar_text)).setText(dollarBalance);
+                    ((TextView)findViewById(R.id.voting_power_text)).setText(votingPower);
+
+
+                    if (Preferences.selectedAPI.equals(DtubeAPI.PROVIDER_API_URL_HIVE)){
+                        ((AppCompatImageView)findViewById(R.id.balance_image)).setImageResource(R.drawable.balancehive);
+                        ((AppCompatImageView)findViewById(R.id.balance_dollar_image)).setImageResource(R.drawable.balancehbd);
+                        ((AppCompatImageView)findViewById(R.id.voting_power_image)).setImageResource(R.drawable.votingpower);
+                    }else if (Preferences.selectedAPI.equals(DtubeAPI.PROVIDER_API_URL_STEEM)){
+                        ((AppCompatImageView)findViewById(R.id.balance_image)).setImageResource(R.drawable.balance_steem);
+                        ((AppCompatImageView)findViewById(R.id.balance_dollar_image)).setImageResource(R.drawable.balance_steem_dollar);
+                        ((AppCompatImageView)findViewById(R.id.voting_power_image)).setImageResource(R.drawable.votingpower);
+                    } else if (Preferences.selectedAPI.equals(DtubeAPI.PROVIDER_API_URL_AVALON)) {
+                        ((AppCompatImageView)findViewById(R.id.balance_image)).setImageResource(R.drawable.balanceavalon);
+                        ((AppCompatImageView)findViewById(R.id.balance_dollar_image)).setImageResource(R.drawable.votingpower);
+                        ((AppCompatImageView)findViewById(R.id.voting_power_image)).setImageResource(R.drawable.votingpower);
+                    }
+                }
+            });
+
+
+        }
+    }
+
     public void onItemClick(int pos){
         Intent data = new Intent();
         Bundle b = new Bundle();
@@ -189,9 +233,9 @@ public class ChannelActivity extends AppCompatActivity {
         findViewById(R.id.item_subscribe).setClickable(false);
 
         if (subscribed)
-            steemitWebView.unfollowUser(channelName, accountName, DtubeAPI.getUserPrivateKey(this));
+            steemitWebView.unfollowUser(channelName, accountName, DtubeAPI.getUserPrivateKey(this, DtubeAPI.getNetworkNumber(steemitWebView.api)));
         else
-            steemitWebView.followUser(channelName, accountName, DtubeAPI.getUserPrivateKey(this));
+            steemitWebView.followUser(channelName, accountName, DtubeAPI.getUserPrivateKey(this, DtubeAPI.getNetworkNumber(steemitWebView.api)));
     }
 
 }

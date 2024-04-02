@@ -2,6 +2,6 @@
 <resources>
     <dimen name="toolbar_size">48dp</dimen>
     <dimen name="toolbar_size_tv">54dp</dimen>
-    <dimen name="toolbar_size_large">100dp</dimen>
-    <dimen name="toolbar_size_mixed">148dp</dimen>
+    <dimen name="toolbar_size_large">130dp</dimen>
+    <dimen name="toolbar_size_mixed">178dp</dimen>
 </resources>

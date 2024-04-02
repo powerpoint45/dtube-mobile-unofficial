@@ -56,10 +56,12 @@ class Encryption {
         }
     }
 
-    void encryptString(String alias, String data) {
+    void encryptString(String alias, String data, int networkNum) {
         try {
             KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
             keyStore.load(null);
+            if (networkNum!=0)
+                alias = alias+networkNum;
 
             createNewKeys(alias,keyStore);
 
@@ -77,14 +79,14 @@ class Encryption {
 
             byte [] vals = outputStream.toByteArray();
             SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(c);
-            sharedPref.edit().putString("cypher", Base64.encodeToString(vals, Base64.DEFAULT)).apply();
+            sharedPref.edit().putString("cypher"+networkNum, Base64.encodeToString(vals, Base64.DEFAULT)).apply();
 
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    String decryptString(String alias) {
+    String decryptString(String alias, int networkNum) {
         try {
             KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
             keyStore.load(null);
@@ -94,7 +96,7 @@ class Encryption {
             output.init(Cipher.DECRYPT_MODE, privateKeyEntry.getPrivateKey());
 
             SharedPreferences sharedPref =PreferenceManager.getDefaultSharedPreferences(c);
-            String cipherText = sharedPref.getString("cypher",null);
+            String cipherText = sharedPref.getString("cypher"+networkNum,null);
             CipherInputStream cipherInputStream = new CipherInputStream(
                     new ByteArrayInputStream(Base64.decode(cipherText, Base64.DEFAULT)), output);
             ArrayList<Byte> values = new ArrayList<>();

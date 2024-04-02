@@ -20,6 +20,8 @@ import android.webkit.WebViewClient;
 
 import static android.app.Activity.RESULT_OK;
 
+import java.util.Objects;
+
 public class UploadWebView extends WebView {
     private boolean loadedPage;
 
@@ -43,7 +45,7 @@ public class UploadWebView extends WebView {
 
         WebView.setWebContentsDebuggingEnabled(true);
         getSettings().setJavaScriptEnabled(true);
-        getSettings().setAppCacheEnabled(true);
+        //getSettings().setAppCacheEnabled(true);
         getSettings().setDatabaseEnabled(true);
         getSettings().setAllowContentAccess(true);
         getSettings().setAllowFileAccess(true);
@@ -82,12 +84,12 @@ public class UploadWebView extends WebView {
                             postDelayed(new Runnable() {
                                 @Override
                                 public void run() {
-                                    setUsername(DtubeAPI.getAccountName(getContext()));
-                                    setPassword(DtubeAPI.getUserPrivateKey(getContext()));
+                                    setUsername(DtubeAPI.getAccountName(getContext(),DtubeAPI.getNetworkNumber(Preferences.selectedAPI)));
+                                    setPassword(DtubeAPI.getUserPrivateKey(getContext(),DtubeAPI.getNetworkNumber(Preferences.selectedAPI)));
 
                                     clickLogin();
                                 }
-                            },100);
+                            },500);
 
 
                         }
@@ -161,9 +163,29 @@ public class UploadWebView extends WebView {
     }
 
     public void goToSteemitLogin(){
-        Log.d("dtube","goToSteemitLogin");
-        loadUrl(JS_PRE+"for (i = 0; i < 3; i++) {if (document.getElementsByClassName('loginOption')[i].getAttribute(\"data-network\") == \"Steem\"){document.getElementsByClassName('loginOption')[i].click();}}"+JS_POST);
-        loadUrl(JS_PRE+"document.getElementsByClassName('submit')[1].click();"+JS_POST);
+        String network = null;
+
+        if (Objects.equals(Preferences.selectedAPI, DtubeAPI.PROVIDER_API_URL_STEEM)) {
+            network = "Steem";
+        }else if (Objects.equals(Preferences.selectedAPI, DtubeAPI.PROVIDER_API_URL_HIVE)) {
+            network = "Hive";
+        }else if (Objects.equals(Preferences.selectedAPI, DtubeAPI.PROVIDER_API_URL_AVALON)) {
+            network = "Avalon";
+        }
+
+
+
+        loadUrl(JS_PRE + "document.getElementsByClassName('otherNetwork')[0].click();" + JS_POST);
+        final String finalNetwork = network;
+        postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                String urlData = JS_PRE + "for (i = 0; i < 3; i++) {if (document.getElementsByClassName('loginOption')[i].getAttribute(\"data-network\") == \""+finalNetwork+"\"){document.getElementsByClassName('loginOption')[i].click();}}" + JS_POST;
+                Log.d("dtubx",urlData);
+                loadUrl(urlData);
+            }
+        }, 200);
+
     }
 
     public void setDarkMode(){
@@ -183,7 +205,7 @@ public class UploadWebView extends WebView {
     }
 
     public void clickLogin(){
-        loadUrl(JS_PRE+"document.getElementsByName('button')[0].click();"+JS_POST);
+        loadUrl(JS_PRE+"document.getElementsByClassName('submit')[0].click();"+JS_POST);
     }
 
     public void queURL(String url){

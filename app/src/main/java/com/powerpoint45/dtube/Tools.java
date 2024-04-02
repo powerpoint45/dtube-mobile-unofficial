@@ -6,8 +6,12 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.text.Html;
+import android.text.SpannableString;
 import android.text.Spanned;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
@@ -20,8 +24,17 @@ import static android.content.Context.UI_MODE_SERVICE;
 
 public class Tools {
 
+    public static Drawable resizeSquare(Drawable image, int size, Context c) {
+        Bitmap b = ((BitmapDrawable)image).getBitmap();
+        size = numtodp(size,c);
+        Bitmap bitmapResized = Bitmap.createScaledBitmap(b, size, size, false);
+        return new BitmapDrawable(c.getResources(), bitmapResized);
+    }
+
     @SuppressWarnings("deprecation")
     static Spanned fromHtml(String source) {
+        if (source == null)
+            return new SpannableString("");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             return Html.fromHtml(source, Html.FROM_HTML_MODE_LEGACY);
         } else {
@@ -29,7 +42,7 @@ public class Tools {
         }
     }
 
-    static int numtodp(int in, Activity activity) {
+    static int numtodp(int in, Context activity) {
         int out = (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, in, activity.getResources()
                         .getDisplayMetrics());

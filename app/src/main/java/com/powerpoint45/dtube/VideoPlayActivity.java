@@ -34,6 +34,7 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatImageView;
 
 import com.github.curioustechizen.ago.RelativeTimeTextView;
 import com.makeramen.roundedimageview.RoundedTransformationBuilder;
@@ -128,15 +129,22 @@ public class VideoPlayActivity extends AppCompatActivity {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         commentsListView = findViewById(R.id.comments_lv);
-
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
 
         Bundle videoBundle = getIntent().getBundleExtra("video");
         videoToPlay = ((Video)videoBundle.getSerializable("video"));
         clientProfileImageURL = getIntent().getStringExtra("clientprofileimage");
-        accountName = DtubeAPI.getAccountName(this);
+        accountName = DtubeAPI.getAccountName(this, videoToPlay.blockchain);
 
-        steemWebView = new SteemitWebView(this);
+
+        if (videoToPlay.blockchain == DtubeAPI.NET_SELECT_AVION){
+            steemWebView = new SteemitWebView(this, DtubeAPI.PROVIDER_API_URL_AVALON);
+        }else {
+            steemWebView = new SteemitWebView(this, DtubeAPI.PROVIDER_API_URL_HIVE);
+        }
+
+
+
         steemWebView.getReplies(videoToPlay.user, videoToPlay.permlink, accountName);
         if (accountName!=null)
             steemWebView.getIsFollowing(videoToPlay.user, accountName);
@@ -177,12 +185,15 @@ public class VideoPlayActivity extends AppCompatActivity {
 
     @Override
     public void onPictureInPictureModeChanged (boolean isInPictureInPictureMode, Configuration newConfig) {
-        if (isInPictureInPictureMode){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig);
+        }
+        if (isInPictureInPictureMode) {
             MediaPlayerSingleton.getInstance(this).removeControls();
-        }else {
+        } else {
             if (onStopCalled) {
                 finish();
-            }else {
+            } else {
                 MediaPlayerSingleton.getInstance(this).restoreControls();
                 videoLayoutHolder.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                         Tools.numtodp(250, this)));
@@ -202,22 +213,25 @@ public class VideoPlayActivity extends AppCompatActivity {
                 String comment = v.getText().toString().replaceAll("'","’");
                 String permlink = null;
                 String author = null;
+                int depth = 0;
 
                 switch (v.getId()){
                     case R.id.item_comment_edittext:
                         permlink = videoToPlay.permlink;
                         author = videoToPlay.user;
+                        depth = 0;
                         break;
 
                     case R.id.item_comment_reply_edittext:
                         permlink = v.getTag().toString();
                         author = commentsList.getCommentByID(permlink).userName;
+                        depth = commentsList.getCommentByID(permlink).indent+1;
                         break;
                 }
 
                 if (permlink!=null && comment.length()>0){
                     steemWebView.commentPost(author, permlink, DtubeAPI.getAccountName(VideoPlayActivity.this),
-                            DtubeAPI.getUserPrivateKey(VideoPlayActivity.this), comment, videoToPlay.permlink, videoToPlay.user);
+                            DtubeAPI.getUserPrivateKey(VideoPlayActivity.this,videoToPlay.blockchain), comment, videoToPlay.permlink, videoToPlay.user, depth);
                 }
 
                 v.setText("");
@@ -366,7 +380,12 @@ public class VideoPlayActivity extends AppCompatActivity {
         steemWebView = null;
     }
 
+    public boolean isOnStopCalled() {
+        return onStopCalled;
+    }
+
     boolean onStopCalled;
+
 
     @Override
     protected void onStop() {
@@ -531,6 +550,24 @@ public class VideoPlayActivity extends AppCompatActivity {
 
         } else {
 
+
+            if (videoToPlay.getPlatform().equals(DtubeAPI.PLATFORM_STEEMIT)) {
+                Log.d("player", "STEEMIT");
+                ((AppCompatImageView) findViewById(R.id.platform_logo)).setImageResource(R.drawable.hive);
+            }else {
+                Log.d("player", "HIVE");
+                ((AppCompatImageView) findViewById(R.id.platform_logo)).setImageResource(R.drawable.hive);
+            }
+
+            Log.d("dddurl",steemWebView.getUrl());
+            if (steemWebView.getUrl().equals(DtubeAPI.PROVIDER_API_URL_STEEM)){
+                ((AppCompatImageView) findViewById(R.id.platform_logo)).setImageResource(R.drawable.steemit);
+            }else if (steemWebView.getUrl().equals(DtubeAPI.PROVIDER_API_URL_HIVE)){
+                ((AppCompatImageView) findViewById(R.id.platform_logo)).setImageResource(R.drawable.hive);
+            }else if (steemWebView.getUrl().equals(DtubeAPI.PROVIDER_API_URL_AVALON)){
+                ((AppCompatImageView) findViewById(R.id.platform_logo)).setImageResource(R.drawable.logo_black);
+            }
+
             findViewById(R.id.undervideo_contents).setVisibility(View.VISIBLE);
 
 
@@ -581,7 +618,10 @@ public class VideoPlayActivity extends AppCompatActivity {
                 ((ImageView) findViewById(R.id.video_dislike)).setColorFilter(Color.RED, PorterDuff.Mode.SRC_ATOP);
 
             if (videoToPlay.user != null) {
-                Picasso.get().load(DtubeAPI.PROFILE_IMAGE_SMALL_URL.replace("username", videoToPlay.user)).placeholder(R.drawable.login).transform(transformation)
+
+                Log.d("DDD",DtubeAPI.getProfileImage(videoToPlay.user));
+
+                Picasso.get().load(DtubeAPI.getProfileImage( videoToPlay.user)).placeholder(R.drawable.login).transform(transformation)
                         .into((ImageView) findViewById(R.id.item_profileimage));
             }
 
@@ -620,9 +660,9 @@ public class VideoPlayActivity extends AppCompatActivity {
         findViewById(R.id.item_subscribe).setClickable(false);
 
         if (subscribed)
-            steemWebView.unfollowUser(videoToPlay.user, DtubeAPI.getAccountName(this), DtubeAPI.getUserPrivateKey(this));
+            steemWebView.unfollowUser(videoToPlay.user, DtubeAPI.getAccountName(this), DtubeAPI.getUserPrivateKey(this, videoToPlay.blockchain));
         else
-            steemWebView.followUser(videoToPlay.user, DtubeAPI.getAccountName(this), DtubeAPI.getUserPrivateKey(this));
+            steemWebView.followUser(videoToPlay.user, DtubeAPI.getAccountName(this), DtubeAPI.getUserPrivateKey(this, videoToPlay.blockchain));
     }
 
     //Called from proxy
@@ -663,25 +703,25 @@ public class VideoPlayActivity extends AppCompatActivity {
     public void videoDislikeClicked(View v){
         likedislikeLoader.setVisibility(View.VISIBLE);
         steemWebView.votePost(videoToPlay.user, videoToPlay.permlink, DtubeAPI.getAccountName(this),
-                DtubeAPI.getUserPrivateKey(this),-10000);
+                DtubeAPI.getUserPrivateKey(this, videoToPlay.blockchain),-10000);
     }
 
     public void videoLikeClicked(View v){
         likedislikeLoader.setVisibility(View.VISIBLE);
         steemWebView.votePost(videoToPlay.user, videoToPlay.permlink, DtubeAPI.getAccountName(this),
-                DtubeAPI.getUserPrivateKey(this),10000);
+                DtubeAPI.getUserPrivateKey(this, videoToPlay.blockchain),10000);
     }
 
     public void dislikeCommentButtonClicked(View v){
         String permlink = v.getTag().toString();
         steemWebView.votePost(commentsList.getCommentByID(permlink).userName, permlink, DtubeAPI.getAccountName(this),
-                DtubeAPI.getUserPrivateKey(this),-10000);
+                DtubeAPI.getUserPrivateKey(this, videoToPlay.blockchain),-10000);
     }
 
     public void likeCommentButtonClicked(View v){
         String permlink = v.getTag().toString();
         steemWebView.votePost(commentsList.getCommentByID(permlink).userName, permlink, DtubeAPI.getAccountName(this),
-                DtubeAPI.getUserPrivateKey(this),10000);
+                DtubeAPI.getUserPrivateKey(this, videoToPlay.blockchain),10000);
     }
 
     public void replyToCommentButtonClicked(View v){
@@ -710,9 +750,7 @@ public class VideoPlayActivity extends AppCompatActivity {
     public final boolean useEmbeded = false;
     boolean hadErrorLoading;
     public void setupVideoView(){
-        Log.d("dtube9","getVideoInfo(\""+videoToPlay.user+"\",\""+videoToPlay.permlink+"\",\""+DtubeAPI.getAccountName(this)+"\");");
-        Log.d("dtube9","https://steemit.com/@"+videoToPlay.user+"/"+videoToPlay.permlink);
-
+        MediaPlayerSingleton.getInstance(this).resetVideoLoadFlags();
         Log.d("dtube9", videoToPlay.permlink + ": "+videoToPlay.getVideoStreamURL());
         hadErrorLoading = false;
 
@@ -737,8 +775,15 @@ public class VideoPlayActivity extends AppCompatActivity {
             });
 
 
-            if (videoLayoutHolder.findViewById(R.id.exo_content_frame)==null)
+            if (videoLayoutHolder.findViewById(R.id.exo_content_frame)==null) {
+
+                //remove view from old parent
+                if (MediaPlayerSingleton.getInstance(this).getRightPlayerView().getParent()!=null){
+                    ((ViewGroup)MediaPlayerSingleton.getInstance(this).getRightPlayerView().getParent()).removeView(MediaPlayerSingleton.getInstance(this).getRightPlayerView());
+                }
+
                 videoLayoutHolder.addView(MediaPlayerSingleton.getInstance(this).getRightPlayerView());
+            }
 
         }
     }
@@ -778,11 +823,20 @@ public class VideoPlayActivity extends AppCompatActivity {
 
         updateUI();
 
-        steemWebView.getReplies(videoToPlay.user, videoToPlay.permlink, DtubeAPI.getAccountName(VideoPlayActivity.this));
+        loadReplies();
         steemWebView.getIsFollowing(videoToPlay.user, DtubeAPI.getAccountName(VideoPlayActivity.this));
         steemWebView.getSuggestedVideos(videoToPlay.user);
         steemWebView.getSubscriberCount(videoToPlay.user);
+    }
 
+    public void loadReplies() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+
+                steemWebView.getReplies(videoToPlay.user, videoToPlay.permlink, DtubeAPI.getAccountName(VideoPlayActivity.this));
+            }
+        });
     }
 
     public void makeFullscreen(View v){
@@ -941,9 +995,16 @@ public class VideoPlayActivity extends AppCompatActivity {
                     }
                     break;
                 case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
+                case KeyEvent.KEYCODE_MEDIA_PAUSE:
+                case KeyEvent.KEYCODE_MEDIA_PLAY:
+
+                    Log.d("ava","KEYCODE_MEDIA_PLAY_PAUSE");
+
                     wakeMediaControls();
                     MediaPlayerSingleton.getInstance(this).togglePlayPause();
+
                     break;
+
 
                 case KeyEvent.KEYCODE_MEDIA_REWIND:
                 case KeyEvent.KEYCODE_MEDIA_STEP_BACKWARD:

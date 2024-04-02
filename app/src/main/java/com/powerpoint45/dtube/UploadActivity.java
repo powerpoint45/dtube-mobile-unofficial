@@ -111,7 +111,7 @@ public class UploadActivity extends AppCompatActivity {
             public void run() {
                 uploadWebView.loadUrl(DtubeAPI.DTUBE_PUBLISH_URL);
             }
-        },100);
+        },200);
 
 
 

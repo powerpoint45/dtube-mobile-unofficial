@@ -122,11 +122,25 @@
                     android:id="@+id/logo"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:layout_marginLeft="-15dp"
-                    android:padding="13dp"
-                    app:srcCompat="@drawable/logo_black"
-                    android:adjustViewBounds="true"/>
+                    android:adjustViewBounds="true"
+                    android:padding="8dp"
 
+                    app:srcCompat="@drawable/ic_play_arrow_large" />
+
+                <com.skydoves.powerspinner.PowerSpinnerView
+                    app:spinner_popup_animation="normal"
+                    android:id="@+id/platform_spinner"
+                    android:layout_width="150dp"
+                    android:textSize="19dp"
+                    app:spinner_divider_show="true"
+                    app:spinner_divider_size="1dp"
+                    android:paddingStart="2dp"
+                    android:text="platform"
+                    android:gravity="center|start"
+                    app:spinner_item_height="50dp"
+                    app:spinner_popup_focusable="true"
+                    app:spinner_popup_background="?colorPrimaryDark"
+                    android:layout_height="match_parent"/>
 
                 <LinearLayout
                     android:layout_width="match_parent"

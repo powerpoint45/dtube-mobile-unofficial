@@ -16,6 +16,7 @@ import android.view.inputmethod.BaseInputConnection;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.webkit.JavascriptInterface;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
@@ -26,7 +27,7 @@ import android.webkit.WebViewClient;
 public class WebViewVideoView extends WebView {
     private boolean loadedPage;
     private boolean isPlaying;
-    private boolean runningTVMode;
+    private final boolean runningTVMode;
 
     @SuppressLint("SetJavaScriptEnabled")
     public WebViewVideoView(Activity context, boolean tvMode) {
@@ -46,7 +47,6 @@ public class WebViewVideoView extends WebView {
         setBackgroundColor(Color.BLACK);
 
         getSettings().setJavaScriptEnabled(true);
-        getSettings().setAppCacheEnabled(true);
         getSettings().setDatabaseEnabled(true);
         getSettings().setAllowContentAccess(true);
         getSettings().setAllowFileAccess(true);
@@ -54,6 +54,12 @@ public class WebViewVideoView extends WebView {
         getSettings().setAllowFileAccessFromFileURLs(true);
         getSettings().setDomStorageEnabled(true);
         getSettings().setMediaPlaybackRequiresUserGesture(false);
+        getSettings().setRenderPriority(WebSettings.RenderPriority.HIGH);
+
+        getSettings().setUserAgentString(getSettings().getUserAgentString().replace("; wv", ""));
+        getSettings().setSaveFormData(true);
+        //setLayerType(WebView.LAYER_TYPE_SOFTWARE, null);
+        getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
 
 
         setLongClickable(false);
@@ -84,13 +90,13 @@ public class WebViewVideoView extends WebView {
             }
 
             public boolean shouldOverrideUrlLoading (WebView view, String url) {
-                if (url.startsWith("https://m.youtube.com/") || url.startsWith("https://3speak.co/watch"))
-                    return true; // reject loading this page
-                else
-                    return false;
+                return url.startsWith("https://m.youtube.com/") || url.startsWith("https://3speak.co/watch"); // reject loading this page
             }
 
             public void onPageFinished(WebView view, String url) {
+                if (clickWhenReady)
+                    clickCenter();
+
                 if (url.startsWith("https://m.youtube.com/"))
                     goBack();
                 else {
@@ -98,25 +104,6 @@ public class WebViewVideoView extends WebView {
                     loadedPage = true;
                     if (runningTVMode)
                         removeControlBarChildren();
-
-                    //autoplay youTube
-                    long delta = 100;
-                    long downTime = SystemClock.uptimeMillis();
-                    float x = view.getLeft() + (view.getWidth() / 2);
-                    float y = view.getTop() + (view.getHeight() / 2);
-
-                    view.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            MotionEvent tapDownEvent = MotionEvent.obtain(downTime, downTime + delta, MotionEvent.ACTION_DOWN, x, y, 0);
-                            tapDownEvent.setSource(InputDevice.SOURCE_CLASS_POINTER);
-                            MotionEvent tapUpEvent = MotionEvent.obtain(downTime, downTime + delta + 2, MotionEvent.ACTION_UP, x, y, 0);
-                            tapUpEvent.setSource(InputDevice.SOURCE_CLASS_POINTER);
-
-                            view.dispatchTouchEvent(tapDownEvent);
-                            view.dispatchTouchEvent(tapUpEvent);
-                        }
-                    }, 100);
                 }
             }
         });
@@ -174,13 +161,26 @@ public class WebViewVideoView extends WebView {
         loadUrl("javascript:removeControlBarChildren();");
     }
 
-    public void pauseVideo(){
-        loadUrl("javascript:document.getElementsByTagName('video')[0].pause();");
-    }
-
-    public void playVideo(){
-        loadUrl("javascript:document.getElementsByTagName('video')[0].play();");
-    }
+//    public void pauseVideo(){
+//        Log.d("Avalon", "pauseVideo called");
+//
+//        loadUrl("javascript:(function(){document.getElementsByClassName('html5-video-player')[0].pauseVideo();})()");
+//        //loadUrl("javascript:document.getElementsByClassName('html5-video-player')[0].pauseVideo();");
+//
+//        //loadUrl("javascript:document.getElementsByTagName('video')[0].pause();");
+//    }
+//
+//    public void playVideo(){
+//
+//        Log.d("Avalon", "playVideo called");
+//
+//        loadUrl("javascript:(function(){document.getElementsByClassName('html5-video-player')[0].playVideo();})()");
+//
+//        //loadUrl("javascript:(function(){document.getElementsByClassName('html5-video-player')[0].playVideo();})()");
+//
+//        //loadUrl("javascript:document.getElementsByClassName('html5-video-player')[0].playVideo();");
+//        //loadUrl("javascript:document.getElementsByTagName('video')[0].play();");
+//    }
 
     public void makeFullscreen(){
         queURL("javascript:document.getElementsByTagName('video')[0].webkitRequestFullscreen();");
@@ -201,7 +201,7 @@ public class WebViewVideoView extends WebView {
         }else {
             class LoadRunner implements Runnable{
 
-                private String url;
+                private final String url;
                 private LoadRunner(String url){
                     this.url = url;
                 }
@@ -236,6 +236,8 @@ public class WebViewVideoView extends WebView {
         }
     }
 
+
+
     @Override
     public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
         return new BaseInputConnection(this, false); //this is needed for #dispatchKeyEvent() to be notified.
@@ -256,6 +258,24 @@ public class WebViewVideoView extends WebView {
         return super.dispatchKeyEvent(event);
     }
 
+    boolean clickWhenReady;
+
+    public void queClickCenter(){
+        clickWhenReady = true;
+    }
+    public void clickCenter(){
+        requestFocus();
+        MotionEvent motionEvent = MotionEvent.obtain(200,200,MotionEvent.ACTION_DOWN, getWidth()/2, getHeight()/2,0);
+        dispatchTouchEvent(motionEvent);
+        MotionEvent motionEvent2 = MotionEvent.obtain(200,200,MotionEvent.ACTION_UP, getWidth()/2, getHeight()/2,0);
+        dispatchTouchEvent(motionEvent2);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            ((VideoEnabledWebChromeClient)getWebChromeClient()).playPause();
+        }
+
+
+    }
 
     public void killWebView(){
         loadUrl("about:blank");

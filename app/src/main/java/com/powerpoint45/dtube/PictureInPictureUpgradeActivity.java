@@ -5,6 +5,7 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -15,7 +16,11 @@ import com.android.billingclient.api.BillingClientStateListener;
 import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.BillingResult;
 import com.android.billingclient.api.Purchase;
+import com.android.billingclient.api.PurchaseHistoryResponseListener;
+import com.android.billingclient.api.PurchasesResponseListener;
 import com.android.billingclient.api.PurchasesUpdatedListener;
+import com.android.billingclient.api.QueryPurchaseHistoryParams;
+import com.android.billingclient.api.QueryPurchasesParams;
 import com.android.billingclient.api.SkuDetails;
 import com.android.billingclient.api.SkuDetailsParams;
 import com.android.billingclient.api.SkuDetailsResponseListener;
@@ -40,13 +45,26 @@ public class PictureInPictureUpgradeActivity extends AppCompatActivity implement
                     Log.d("bill", "onBillingSetupFinished");
                     loadSKUs();
 
-                    for (Purchase p: billingClient.queryPurchases("inapp" ).getPurchasesList()) {
-                        Log.d("billp", "purchases: " + p.getPurchaseToken());
-                        //already purchased
-                        PreferenceManager.getDefaultSharedPreferences(PictureInPictureUpgradeActivity.this)
-                                .edit().putBoolean("upgraded",true).apply();
-                        Preferences.hasUpgrade = true;
-                    }
+                    billingClient.queryPurchasesAsync(QueryPurchasesParams.newBuilder().setProductType(BillingClient.ProductType.INAPP).build(), new PurchasesResponseListener() {
+                        @Override
+                        public void onQueryPurchasesResponse(@NonNull BillingResult billingResult, @NonNull List<Purchase> list) {
+                            for (Purchase p : list) {
+                                Log.d("billp", "purchases: " + p.toString());
+                                //already purchased
+                                PreferenceManager.getDefaultSharedPreferences(PictureInPictureUpgradeActivity.this)
+                                        .edit().putBoolean("upgraded",true).apply();
+                                Preferences.hasUpgrade = true;
+                            }
+                        }
+                    });
+
+//                    for (Purchase p: billingClient.queryPurchases("inapp" ).getPurchasesList()) {
+//                        Log.d("billp", "purchases: " + p.getPurchaseToken());
+//                        //already purchased
+//                        PreferenceManager.getDefaultSharedPreferences(PictureInPictureUpgradeActivity.this)
+//                                .edit().putBoolean("upgraded",true).apply();
+//                        Preferences.hasUpgrade = true;
+//                    }
                 }
             }
             @Override

@@ -17,7 +17,6 @@ class AppJavaScriptProxy {
     AppJavaScriptProxy(Activity activity) {
         this.activity = activity;
     }
-
     //Remember you cannot make UI calls from this scope!!!
 
 
@@ -28,6 +27,7 @@ class AppJavaScriptProxy {
 
     @JavascriptInterface
     public void loginCallback(boolean sucess){
+        Log.d("dtube4", sucess ? "loginCallback logged in":" loginCallback login failed");
         if (activity instanceof LoginActivity)
             ((LoginActivity)activity).gotLoginResult(sucess);
         else
@@ -79,14 +79,14 @@ class AppJavaScriptProxy {
 
 
     @JavascriptInterface
-    public void getAuthorVideosCallback(String jsonVideos, final String lastPermlink){
+    public void getAuthorVideosCallback(final String jsonVideos, final String lastPermlink, final String newLastAuthor){
 
         if (jsonVideos.equals("last") && lastPermlink.equals("last")){
             if (activity instanceof ChannelActivity){
                 activity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        ((ChannelActivity)activity).addVideos(null, lastPermlink);
+                        ((ChannelActivity)activity).addVideos(null, lastPermlink, newLastAuthor);
                     }
                 });
             }
@@ -108,7 +108,7 @@ class AppJavaScriptProxy {
                 activity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        ((ChannelActivity) activity).addVideos(videos, lastPermlink);
+                        ((ChannelActivity) activity).addVideos(videos, lastPermlink, newLastAuthor);
                     }
                 });
             }
@@ -130,8 +130,8 @@ class AppJavaScriptProxy {
     }
 
     @JavascriptInterface
-    public void getIsFollowingCallback(final boolean following, String author){
-
+    public void getIsFollowingCallback(final boolean following, final String author){
+        Log.d("following?","S:" +following);
         if (activity instanceof VideoPlayActivity){
             activity.runOnUiThread(new Runnable() {
                 @Override
@@ -177,23 +177,45 @@ class AppJavaScriptProxy {
             e.printStackTrace();
         }
     }
+    @JavascriptInterface
+    public void commentPostCallback(){
+//        if (activity instanceof VideoPlayActivity){
+//            ((VideoPlayActivity)activity).loadReplies();
+//        }
+    }
 
     @JavascriptInterface
     public void getRepliesCallback(String jsonComments){
         try {
+            Log.d("KK", "getRepliesCallback:"+jsonComments);
             JSONObject jo = new JSONObject(jsonComments);
             final Comment comment = new Comment();
             comment.indent = jo.getInt("indent");
             comment.permlink = jo.getString("permlink");
-            comment.likes = jo.getInt("likes");
-            comment.dislikes = jo.getInt("dislikes");
+
+            if (jo.has("likes"))
+                comment.likes = jo.getInt("likes");
+            if (jo.has("dislikes"))
+                comment.dislikes = jo.getInt("dislikes");
             comment.commentHTML = jo.getString("comment");
             //comment.commentHTML = Tools.getFormattedText(comment.commentHTML);
-            comment.setTime(jo.getString("date"));
-            comment.voteType = jo.getInt("voteType");
-            comment.price = jo.getString("price");
+
+
+            if (jo.get("date") instanceof Long){
+                comment.setTimeLong(jo.getLong("date"));
+            }else
+                comment.setTime(jo.getString("date"));
+
+
+
+            if (jo.has("voteType"))
+                comment.voteType = jo.getInt("voteType");
+
+            if (jo.has("price"))
+                comment.price = jo.getString("price");
+
             comment.userName = jo.getString("author");
-            comment.children = jo.getInt("children");
+            //comment.children = jo.getInt("children");
             comment.parent = jo.getString("parent");
 
 
@@ -201,6 +223,7 @@ class AppJavaScriptProxy {
                 activity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        Log.d("COMz:",comment.commentHTML);
                         ((VideoPlayActivity)activity).addReply(comment);
                     }
                 });
@@ -282,12 +305,20 @@ class AppJavaScriptProxy {
         ((MainActivity)activity).setSubscriptions(persons);
     }
 
+    @JavascriptInterface
+    public void getBalanceCallback(String accountName, String balance, String dollarBalance, String votingPower){
+        if (activity instanceof ChannelActivity){
+            ((ChannelActivity)activity).updateBalances(accountName, balance, dollarBalance, votingPower);
+        }
+    }
+
 
 
     public void manageFeed(String jsonFeed, int category){
         try {
             VideoArrayList videos = new VideoArrayList();
             JSONArray ja = new JSONArray(jsonFeed);
+
             for (int v = 0; v<ja.length(); v++){
                 JSONObject jo = ja.getJSONObject(v);
                 Video video = getVideoFromJsonObject(jo);
@@ -313,13 +344,28 @@ class AppJavaScriptProxy {
     }
 
 
+
+
+
     public Video getVideoFromJsonObject(JSONObject jo){
         Video video = new Video();
         try {
             video.title = jo.getString("title");
             video.user = jo.getString("username");
-            video.price = jo.getString("price");
-            video.setTime(jo.getString("date"));
+
+            if (jo.has("datelong")){
+                video.setTimeLong(jo.getLong("datelong"));
+            }
+
+
+            if (jo.has("date")) {
+                video.setTime(jo.getString("date"));
+            }
+
+            if (jo.has("price")){
+                video.price = jo.getString("price");
+            }
+
             if (jo.has("hash")) {
                 video.hash = jo.getString("hash");
             }
@@ -339,9 +385,21 @@ class AppJavaScriptProxy {
                 video.setDuration(jo.getString("duration"));
             }
 
+            if (jo.has("platform")){
+                video.setPlatform(jo.getString("platform"));
+            }
+
+            if (jo.has("blockchain"))
+                video.blockchain = jo.getInt("blockchain");
+
             if (jo.has("gateway")){
                 video.setGateway(jo.getString("gateway"));
             }
+
+            if (jo.has("priority_gw")){
+                video.setPriorityGateway(jo.getString("gateway"));
+            }
+
             if (jo.has("description")) {
                 video.longDescriptionHTML = jo.getString("description");
                 //video.longDescriptionHTML = Tools.getFormattedText(video.longDescriptionHTML);

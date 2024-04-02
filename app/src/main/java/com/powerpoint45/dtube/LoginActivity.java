@@ -37,20 +37,50 @@ public class LoginActivity extends AppCompatActivity {
     final int RESULT_QR_CODE = 0;
 
     boolean runningOnTV;
+    String selectedAPI;
+    int loginType;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+
         if (Preferences.darkMode)
             setTheme(R.style.AppThemeDark);
+
 
         setContentView(R.layout.activity_login);
         userNameEditText = findViewById(R.id.username);
         passwordEditText = findViewById(R.id.password);
         upvoteSwitch = findViewById(R.id.upvote_switch);
         followSwitch = findViewById(R.id.follow_switch);
-        steemitWebView = new SteemitWebView(this);
+
+        loginType = getIntent().getIntExtra("logintype",-1);
+
+        ImageView logo = findViewById(R.id.login_network_logo);
+        switch (loginType){
+            case DtubeAPI.NET_SELECT_AVION:
+                selectedAPI = DtubeAPI.PROVIDER_API_URL_AVALON;
+                logo.setImageResource(R.drawable.logo_black);
+                findViewById(R.id.upvote_project).setVisibility(View.GONE);
+                findViewById(R.id.help_holder).setVisibility(View.VISIBLE);
+                ((TextView)findViewById(R.id.follow_text)).setText(R.string.follow_us_avalon);
+                break;
+
+            case DtubeAPI.NET_SELECT_HIVE:
+                selectedAPI = DtubeAPI.PROVIDER_API_URL_HIVE;
+                logo.setImageResource(R.drawable.hive);
+                findViewById(R.id.help_holder).setVisibility(View.GONE);
+                break;
+
+            case DtubeAPI.NET_SELECT_STEEM:
+                selectedAPI = DtubeAPI.PROVIDER_API_URL_STEEM;
+                logo.setImageResource(R.drawable.steemit);
+                break;
+        }
+
+
+        steemitWebView = new SteemitWebView(this, selectedAPI);
 
         if (Preferences.darkMode){
             ((ImageView)findViewById(R.id.login_logo)).setImageResource(R.drawable.logo_white);
@@ -77,7 +107,9 @@ public class LoginActivity extends AppCompatActivity {
 
     public void gotLoginResult(final boolean sucess){
         if (sucess){
-            DtubeAPI.saveUserCredentials(userNameEditText.getText().toString(),passwordEditText.getText().toString(), this);
+            Preferences.selectedAPI = selectedAPI;
+            DtubeAPI.saveUserCredentials(userNameEditText.getText().toString(),passwordEditText.getText().toString(), DtubeAPI.getNetworkNumber(selectedAPI), this);
+            DtubeAPI.saveSelectedAPI(this, selectedAPI);
         }
         runOnUiThread(new Runnable() {
             @Override
@@ -100,7 +132,15 @@ public class LoginActivity extends AppCompatActivity {
     final int CAMERA_REQUEST_PERMISSION = 10;
 
     public void createAccountButtonClicked(View v){
-        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://signup.steemit.com/"));
+        Intent browserIntent = null;
+        if (loginType == DtubeAPI.NET_SELECT_STEEM) {
+            browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://signup.steemit.com/"));
+        } else if (loginType == DtubeAPI.NET_SELECT_HIVE) {
+            browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://signup.hive.io/"));
+        } else if (loginType == DtubeAPI.NET_SELECT_AVION) {
+            browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://signup.dtube.fso.ovh/"));
+        }
+
         startActivity(browserIntent);
     }
 
@@ -164,7 +204,15 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     public void helpButtonClicked(View v){
-        Intent aboutIntent = new Intent(LoginActivity.this,HelpActivity.class);
-        startActivity(aboutIntent);
+        if (loginType == DtubeAPI.NET_SELECT_AVION){
+            String url = "https://hive.blog/hive-196037/@immawake/how-to-create-a-dtube-account-and-use-gitcoin-web3-passport";
+            Intent i = new Intent(Intent.ACTION_VIEW);
+            i.setData(Uri.parse(url));
+            startActivity(i);
+        }else {
+            Intent aboutIntent = new Intent(LoginActivity.this, HelpActivity.class);
+            aboutIntent.putExtra("logintype", loginType);
+            startActivity(aboutIntent);
+        }
     }
 }

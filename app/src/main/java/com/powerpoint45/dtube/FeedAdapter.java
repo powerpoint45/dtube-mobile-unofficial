@@ -182,6 +182,7 @@ class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
 
 
             int finalPosition = position;
+            Log.d("DDDz",videos.get(position).getImageURL());
             Picasso.get().load(videos.get(position).getImageURL()).placeholder(placeholderDrawable)
                     .resize(720, 720).centerInside()//prevents image to be shown to be larger than 720px w or h. Makes scrolling smoother
                     .noFade()
@@ -193,6 +194,7 @@ class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
                         @Override
                         public void onError(Exception e) {
                             if (videos.size()>0 && finalPosition < videos.size()) {
+                                Log.d("DDz", videos.get(finalPosition).getBackupImageURL());
                                 Picasso.get().load(videos.get(finalPosition).getBackupImageURL()).placeholder(placeholderDrawable)
                                         .resize(720, 720).centerInside()//prevents image to be shown to be larger than 720px w or h. Makes scrolling smoother
                                         .noFade()

@@ -67,12 +67,17 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
             case "dark_mode":
                 if (pref!=null)
                     pref.unregisterOnSharedPreferenceChangeListener(this);
+
                 Preferences.darkMode = sharedPreferences.getBoolean("dark_mode", false);
                 MainActivity.changedDarkMode = true;
+
                 if (uiActivity!=null)
                     uiActivity.finish();
+
                 finish();
                 startActivity(new Intent(PreferencesActivity.this, PreferencesActivity.class));
+
+
                 break;
             default:
                 break;
@@ -88,13 +93,18 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
                     .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
 
                         public void onClick(DialogInterface dialog, int whichButton) {
-                            DtubeAPI.logout(PreferencesActivity.this);
+                            DtubeAPI.logoutAll(PreferencesActivity.this);
                             Intent i = new Intent();
                             i.putExtra("logout",true);
                             setResult(RESULT_OK,i);
                             PreferencesActivity.this.finish();
                         }})
                     .setNegativeButton(android.R.string.no, null).show();
+        } else if (header.id == R.id.manage_accounts) {
+            Intent intent  = new Intent();
+            intent.putExtra("accounts", true);
+            setResult(RESULT_OK, intent);
+            finish();
         }
     }
 

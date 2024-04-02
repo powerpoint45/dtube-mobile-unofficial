@@ -1,6 +1,7 @@
 package com.powerpoint45.dtube;
 
 import android.app.Activity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -74,6 +75,8 @@ public class ChannelAdapter extends RecyclerView.Adapter<ChannelAdapter.ViewHold
         LinearLayout v = (LinearLayout) LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.suggested_item, parent, false);
         v.setFocusable(true);
+        v.setClickable(true);
+        v.setFocusableInTouchMode(true);
         v.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         ViewHolder vh = new ViewHolder(v);
         return vh;
@@ -102,8 +105,11 @@ public class ChannelAdapter extends RecyclerView.Adapter<ChannelAdapter.ViewHold
             holder.durationText.setVisibility(View.INVISIBLE);
 
 
-        Picasso.get().load(videos.get(position).getImageURL()).placeholder(R.drawable.ic_ondemand_video).resize(400,400).centerInside().into(
-                holder.thumbView);
+        Log.d("dt","loading thumb : "+videos.get(position).getImageURL());
+
+        if (videos.get(position).getImageURL()!=null && videos.get(position).getImageURL().length()>4)
+            Picasso.get().load(videos.get(position).getImageURL()).placeholder(R.drawable.ic_ondemand_video).resize(400,400).centerInside().into(
+                    holder.thumbView);
     }
 
     // Return the size of your dataset (invoked by the layout manager)

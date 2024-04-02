@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -12,21 +13,90 @@
         android:id="@+id/search_toolbar"
         android:background="?attr/colorPrimary">
 
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="60dp">
+
         <EditText
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:inputType="text"
             android:id="@+id/searchView"
             android:singleLine="true"
             android:imeOptions="actionSearch"
             android:background="@null"/>
 
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/filter_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignEnd="@id/searchView"
+                android:layout_centerVertical="true"
+                android:padding="5dp"
+                android:layout_marginEnd="5dp"
+                android:background="?android:selectableItemBackground"
+                android:onClick="filterClicked"
+                android:visibility="visible"
+
+
+                app:srcCompat="@drawable/ic_filter_list" />
+
+
+        </RelativeLayout>
+
     </androidx.appcompat.widget.Toolbar>
+
+    <com.google.android.material.chip.ChipGroup
+        android:layout_margin="2dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/platform_select_group"
+        app:singleSelection="true">
+
+        <com.google.android.material.chip.Chip
+            style="@style/Widget.MaterialComponents.Chip.Choice"
+            app:chipIconEnabled="true"
+            android:focusable="true"
+            android:checkable="true"
+            android:clickable="true"
+
+            app:chipIcon="@drawable/dtube_circle"
+            android:id="@+id/platform_select_avalon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/avalon" />
+
+        <com.google.android.material.chip.Chip
+            android:focusable="true"
+            android:checkable="true"
+            android:clickable="true"
+            android:id="@+id/platform_select_hive"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:chipIconEnabled="true"
+            app:chipIcon="@drawable/hive_circle"
+            style="@style/Widget.MaterialComponents.Chip.Choice"
+            android:text="@string/hive" />
+
+
+    </com.google.android.material.chip.ChipGroup>
+
     <ImageView
         android:id="@+id/search_logo_asksteem"
         android:layout_gravity="center"
         android:layout_width="200dp"
         android:layout_height="200dp"
         app:srcCompat="@drawable/esteemsearch" />
+
+    <TextView
+        android:id="@+id/hivesearch_txt"
+        tools:ignore="HardcodedText"
+        android:text="@string/hivesearcher_url"
+        android:layout_width="match_parent"
+        android:gravity="center_horizontal"
+        android:layout_height="wrap_content">
+
+    </TextView>
 
     <ProgressBar
         android:id="@+id/search_progress"

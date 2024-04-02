@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <resources>
     <string name="app_name">DTube</string>
     <string name="subscribe">Subscribe</string>
@@ -18,7 +19,6 @@
     <string name="donate">Donate</string>
     <string name="donate_summary">Select your favorite method of payment to send any amount to the developer of this app. Your support is greatly appreciated ♥♥♥</string>
     <string name="not_logged_in">Not logged in</string>
-
     <string name="my_profile">My Profile</string>
     <string name="feed">Feed</string>
     <string name="feed_subscribed">Subscribed Feed</string>
@@ -26,14 +26,12 @@
     <string name="feed_trending">Trending Videos</string>
     <string name="feed_new">New Videos</string>
     <string name="feed_history">Watch Again</string>
-
     <string name="copied">Copied to clipboard</string>
     <string name="sub_item">Sub items</string>
     <string name="subscriptions">Subscriptions</string>
     <string name="username">Username</string>
-    <string name="password">Steemit posting key (not master password)</string>
+    <string name="password">Private posting key (not master password)</string>
     <string name="search">Search</string>
-
     <string name="update_now">Update now</string>
     <string name="later">Update later</string>
     <string name="update_available">Update available</string>
@@ -41,13 +39,12 @@
     <string name="do_not_show">Do not show again</string>
     <string name="wrong_qr_code">Please click on the QR code on Steemit first before scanning</string>
     <string name="no_data_qr_code">No data found</string>
-
     <string name="replies">View Replies</string>
     <string name="login_for_subs">Please login to see your subscription feed</string>
-
     <string name="remove_history">Remove video from watch history?</string>
-    <string name="upvote_us">Upvote our app <a href="https://steemit.com/steemdev/@immawake/dtube-android-unoffficial-minor-updates">post on Steemit</a> upon login to help support our Android app! </string>
-    <string name="follow_us">Follow our DTube/Steemit account <a href="https://steemit.com/@immawake">@immawake</a> upon login to see updates about our Android app! </string>
+    <string name="upvote_us">Upvote our app <a href="https://steemit.com/steemdev/@immawake/dtube-android-unoffficial-minor-updates">post on Hive/Steemit</a> upon login to help support our Android app! </string>
+    <string name="follow_us">Follow our DTube account <a href="https://hive.blog/@immawake">@immawake</a> upon login to see updates about our Android app! </string>
+    <string name="follow_us_avalon">Follow our DTube account <a href="https://d.tube/#!/c/luciddevteam01">@luciddevteam01</a> upon login to see updates about our Android app! </string>
 
     <string name="like_comment">Like Comment</string>
     <string name="dislike_comment">Dislike Comment</string>
@@ -61,6 +58,7 @@
     <string name="upload">Upload</string>
 
     <string name="logout">Logout</string>
+    <string name="logout_all">Logout All Accounts</string>
     <string name="logout_confirm">Are you sure you want to logout?</string>
 
     <string name="webview_alert">For proper functioning of this app, Android System Webview must be installed</string>
@@ -73,4 +71,10 @@
     <string name="create_account">Create Account</string>
     <string name="clear_history">Clear History</string>
     <string name="no_history">No saved history</string>
+    <string name="hivesearcher_url">Powered by <![CDATA[<a href="https://hivesearcher.com/">HiveSearcher</a>]]></string>
+    <string name="hive">Hive</string>
+    <string name="avalon">Avalon</string>
+    <string name="steemit">Steemit</string>
+
+    <string name="manage_accounts">Manage Accounts</string>
 </resources>
