@@ -1,3 +1,4 @@
+# Project has been discontinued. 
 
 [![](https://img.shields.io/discord/384517931230298124.svg)](https://discord.gg/3h88GDb)
 
